@@ -1,35 +1,88 @@
-function App() {
+/**
+ * App Component
+ * Main application component with React Router configuration
+ */
+
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ToastContainer } from './components/ToastContainer';
+import { Layout } from './components/layout';
+import {
+  HomePage,
+  ProgramsPage,
+  FormsPage,
+  CTAsPage,
+  BranchesPage,
+  CardsPage,
+  SettingsPage,
+  NotFoundPage,
+} from './pages';
+
+/**
+ * Main Application Component
+ *
+ * Features:
+ * - React Router v6 configuration
+ * - Error boundary for error handling
+ * - Toast notification system
+ * - Layout with nested routes
+ * - Route definitions for all pages
+ *
+ * Routes:
+ * - / - Home page (tenant selector)
+ * - /programs - Programs editor page
+ * - /forms - Forms editor page
+ * - /ctas - CTAs editor page
+ * - /branches - Branches editor page
+ * - /cards - Card inventory page
+ * - /settings - Configuration settings
+ * - * - 404 Not Found page
+ *
+ * @example
+ * ```tsx
+ * <App />
+ * ```
+ */
+const App: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <header className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            🎨 Picasso Config Builder
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Conversational Forms Configuration Tool
-          </p>
-        </header>
+    <ErrorBoundary>
+      <BrowserRouter>
+        {/* Toast Notification System */}
+        <ToastContainer />
 
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-          <h2 className="text-xl font-medium text-gray-900 mb-4">
-            Welcome to Picasso Config Builder
-          </h2>
-          <p className="text-gray-600 mb-6">
-            This tool helps you configure conversational forms, CTAs, and conversation branches.
-          </p>
-          <div className="inline-flex gap-4">
-            <button className="bg-primary hover:bg-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors">
-              Get Started
-            </button>
-            <button className="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-              View Docs
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+        {/* Main Routes */}
+        <Routes>
+          {/* Layout with nested routes */}
+          <Route path="/" element={<Layout />}>
+            {/* Home page */}
+            <Route index element={<HomePage />} />
 
-export default App
+            {/* Programs section */}
+            <Route path="programs" element={<ProgramsPage />} />
+
+            {/* Forms section */}
+            <Route path="forms" element={<FormsPage />} />
+
+            {/* CTAs section */}
+            <Route path="ctas" element={<CTAsPage />} />
+
+            {/* Branches section */}
+            <Route path="branches" element={<BranchesPage />} />
+
+            {/* Card inventory section (optional) */}
+            <Route path="cards" element={<CardsPage />} />
+
+            {/* Settings section */}
+            <Route path="settings" element={<SettingsPage />} />
+
+            {/* 404 Not Found */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
+  );
+};
+
+export default App;

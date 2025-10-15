@@ -20,7 +20,21 @@ const pathAliasPlugin = {
     build.onResolve({ filter: /^@/ }, args => {
       for (const [alias, aliasPath] of Object.entries(aliases)) {
         if (args.path === alias || args.path.startsWith(alias + '/')) {
-          const resolvedPath = args.path.replace(alias, aliasPath);
+          let resolvedPath = args.path.replace(alias, aliasPath);
+
+          // Try to resolve to actual file
+          const extensions = ['.tsx', '.ts', '.jsx', '.js', '/index.tsx', '/index.ts', '/index.jsx', '/index.js'];
+
+          // If path doesn't have extension, try adding them
+          if (!path.extname(resolvedPath)) {
+            for (const ext of extensions) {
+              const testPath = resolvedPath + ext;
+              if (fs.existsSync(testPath)) {
+                return { path: path.resolve(testPath) };
+              }
+            }
+          }
+
           return { path: path.resolve(resolvedPath) };
         }
       }
@@ -128,7 +142,7 @@ const buildOptions = {
   loader: {
     '.js': 'jsx',
     '.jsx': 'jsx',
-    '.ts': 'tsx',
+    '.ts': 'ts',
     '.tsx': 'tsx',
     '.png': 'dataurl',
     '.jpg': 'dataurl',
