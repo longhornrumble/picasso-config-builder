@@ -17,7 +17,10 @@
     "validate": "npm run typecheck && npm run build:production",
     "validate:quick": "npm run typecheck && npm run build:dev",
     "validate:phase2": "node scripts/validate-phase2.mjs",
-    "validate:phase3": "node scripts/validate-phase3.mjs"
+    "validate:phase3": "node scripts/validate-phase3.mjs",
+    "validate:phase5": "node scripts/validate-phase5.mjs",
+    "server:dev": "tsx src/lib/api/localDevServer.ts",
+    "server:prod": "node lambda/index.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
@@ -44,6 +47,8 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@types/express": "^4.17.23",
+    "@types/node": "^20.19.21",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
@@ -53,10 +58,12 @@
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "express": "^4.21.2",
     "postcss": "^8.4.32",
     "postcss-cli": "^11.0.0",
     "prettier": "^3.1.1",
     "tailwindcss": "^3.3.6",
+    "tsx": "^4.20.6",
     "typescript": "^5.2.2"
   },
   "engines": {

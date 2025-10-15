@@ -43,3 +43,11 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# Lambda
+lambda/node_modules/
+lambda/deployment.zip
+
+# Mock S3 (keep sample configs, ignore backups and runtime data)
+mock-s3/backups/*
+!mock-s3/backups/.gitkeep

@@ -1,0 +1,154 @@
+{
+  "tenant_id": "TEST002",
+  "version": "1.3",
+  "chat_title": "Acme Corp Recruiting",
+  "company_name": "Acme Corporation",
+  "last_updated": "2025-10-14T15:30:00.000Z",
+  "programs": {
+    "signing_bonus": {
+      "program_id": "signing_bonus",
+      "program_name": "Signing Bonus",
+      "description": "Competitive signing bonuses for select positions",
+      "eligibility": {
+        "positions": ["Software Engineer", "Data Scientist", "Product Manager"],
+        "level": ["mid", "senior", "staff"]
+      },
+      "bonus": {
+        "amount_range": [5000, 20000],
+        "currency": "USD",
+        "payment_schedule": "30 days after start date"
+      }
+    },
+    "relocation_assistance": {
+      "program_id": "relocation_assistance",
+      "program_name": "Relocation Assistance",
+      "description": "Support for candidates relocating for work",
+      "eligibility": {
+        "min_distance_miles": 50,
+        "positions": ["all"]
+      },
+      "coverage": {
+        "max_amount": 10000,
+        "currency": "USD",
+        "covered_expenses": ["moving", "temporary_housing", "travel"]
+      }
+    }
+  },
+  "conversational_forms": {
+    "contact_recruiter": {
+      "form_id": "contact_recruiter",
+      "form_name": "Contact Recruiter",
+      "description": "Get in touch with our recruiting team",
+      "fields": [
+        {
+          "field_id": "full_name",
+          "field_label": "Full Name",
+          "field_type": "text",
+          "required": true
+        },
+        {
+          "field_id": "email",
+          "field_label": "Email Address",
+          "field_type": "email",
+          "required": true
+        },
+        {
+          "field_id": "phone",
+          "field_label": "Phone Number",
+          "field_type": "phone",
+          "required": false
+        },
+        {
+          "field_id": "interest",
+          "field_label": "What position are you interested in?",
+          "field_type": "text",
+          "required": true
+        },
+        {
+          "field_id": "message",
+          "field_label": "Additional Information",
+          "field_type": "textarea",
+          "required": false
+        }
+      ],
+      "submission": {
+        "endpoint": "https://api.acmecorp.com/recruiting/contact",
+        "method": "POST"
+      }
+    }
+  },
+  "cta_definitions": {
+    "view_jobs": {
+      "cta_id": "view_jobs",
+      "cta_text": "View Open Positions",
+      "cta_type": "primary",
+      "action": {
+        "type": "url",
+        "target": "https://careers.acmecorp.com/jobs"
+      }
+    },
+    "contact_us": {
+      "cta_id": "contact_us",
+      "cta_text": "Contact Recruiter",
+      "cta_type": "secondary",
+      "action": {
+        "type": "form",
+        "form_id": "contact_recruiter"
+      }
+    }
+  },
+  "conversation_branches": {
+    "job_search": {
+      "branch_id": "job_search",
+      "branch_name": "Job Search",
+      "trigger": {
+        "keywords": ["jobs", "openings", "positions", "careers", "hiring"]
+      },
+      "response": "We have several exciting positions available! What type of role are you looking for?",
+      "cta": "view_jobs"
+    },
+    "company_culture": {
+      "branch_id": "company_culture",
+      "branch_name": "Company Culture",
+      "trigger": {
+        "keywords": ["culture", "values", "work environment", "team"]
+      },
+      "response": "At Acme Corp, we value innovation, collaboration, and work-life balance. Our team is passionate about building great products while maintaining a supportive work environment."
+    }
+  },
+  "branding": {
+    "primary_color": "#FF6B35",
+    "secondary_color": "#004E89",
+    "logo_url": "https://acmecorp.com/logo.png",
+    "font_family": "Roboto, sans-serif"
+  },
+  "features": {
+    "streaming_enabled": true,
+    "forms_enabled": true,
+    "smart_cards_enabled": true
+  },
+  "quick_help": [
+    "View open positions",
+    "Learn about culture",
+    "Contact recruiter"
+  ],
+  "action_chips": [
+    {
+      "label": "Jobs",
+      "action": "Show me open positions"
+    },
+    {
+      "label": "Culture",
+      "action": "Tell me about your culture"
+    }
+  ],
+  "widget_behavior": {
+    "greeting_message": "Welcome to Acme Corp! Looking for your next career opportunity?",
+    "placeholder_text": "Ask about jobs, culture, benefits...",
+    "auto_open": false
+  },
+  "aws": {
+    "bedrock_model_id": "anthropic.claude-3-5-haiku-20241022-v1:0",
+    "knowledge_base_id": "ACME_KB_002"
+  }
+}
