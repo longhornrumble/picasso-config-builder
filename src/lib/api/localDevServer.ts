@@ -396,6 +396,33 @@ app.get('/sections', (_req, res) => {
 });
 
 /**
+ * Root endpoint - API documentation
+ * GET /
+ */
+app.get('/', (_req, res) => {
+  res.json({
+    service: 'Picasso Config Manager - Local Development Server',
+    version: '1.0.0',
+    mode: 'development',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: 'GET /health',
+      tenants: {
+        list: 'GET /config/tenants',
+        metadata: 'GET /config/:tenantId/metadata',
+        load: 'GET /config/:tenantId?editable_only=true',
+        save: 'PUT /config/:tenantId',
+        delete: 'DELETE /config/:tenantId',
+        backups: 'GET /config/:tenantId/backups',
+      },
+      sections: 'GET /sections',
+    },
+    documentation: 'See docs/PHASE_5_S3_INTEGRATION.md for full API documentation',
+    mockS3Directory: MOCK_S3_DIR,
+  });
+});
+
+/**
  * 404 handler
  */
 app.use((req, res) => {
