@@ -16,7 +16,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "validate": "npm run typecheck && npm run build:production",
     "validate:quick": "npm run typecheck && npm run build:dev",
-    "validate:phase2": "node scripts/validate-phase2.mjs"
+    "validate:phase2": "node scripts/validate-phase2.mjs",
+    "validate:phase3": "node scripts/validate-phase3.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
