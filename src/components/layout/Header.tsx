@@ -36,8 +36,8 @@ export const Header: React.FC = () => {
   const saveConfig = useConfigStore((state) => state.config.saveConfig);
   const loading = useConfigStore((state) => state.ui.loading);
 
-  const isDeploying = loading.deploy || false;
-  const isSaving = loading.save || false;
+  const isDeploying = loading?.deploy || false;
+  const isSaving = loading?.save || false;
 
   const handleDeploy = async () => {
     setShowDeployModal(false);

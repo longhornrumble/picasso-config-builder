@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils/cn';
  * ```
  */
 export const ToastContainer: React.FC = () => {
-  const toasts = useConfigStore((state) => state.ui.toasts);
+  const toasts = useConfigStore((state) => state.ui.toasts) || [];
   const dismissToast = useConfigStore((state) => state.ui.dismissToast);
 
   const getIcon = (type: 'success' | 'error' | 'info' | 'warning') => {

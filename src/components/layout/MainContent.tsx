@@ -33,7 +33,7 @@ export const MainContent: React.FC<MainContentProps> = ({ children, className })
   const loading = useConfigStore((state) => state.ui.loading);
 
   // Check if any loading is in progress
-  const isLoading = Object.values(loading).some(Boolean);
+  const isLoading = loading ? Object.values(loading).some(Boolean) : false;
 
   return (
     <main className="flex-1 overflow-y-auto bg-gray-50 relative">
