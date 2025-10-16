@@ -2,8 +2,12 @@ import * as esbuild from 'esbuild';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { config as dotenvConfig } from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Load environment variables from .env.local
+dotenvConfig({ path: path.resolve(__dirname, '.env.local') });
 
 // Path alias plugin for esbuild
 const pathAliasPlugin = {

@@ -19,7 +19,8 @@
     "validate:phase2": "node scripts/validate-phase2.mjs",
     "validate:phase3": "node scripts/validate-phase3.mjs",
     "validate:phase5": "node scripts/validate-phase5.mjs",
-    "server:dev": "tsx src/lib/api/localDevServer.ts",
+    "server:dev": "tsx src/lib/api/localDevServerS3.ts",
+    "server:dev:mock": "tsx src/lib/api/localDevServer.ts",
     "server:prod": "node lambda/index.mjs"
   },
   "dependencies": {
@@ -47,6 +48,8 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.911.0",
+    "@aws-sdk/credential-providers": "^3.911.0",
     "@types/express": "^4.17.23",
     "@types/node": "^20.19.21",
     "@types/react": "^18.2.43",
@@ -54,6 +57,7 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "autoprefixer": "^10.4.16",
+    "dotenv": "^17.2.3",
     "esbuild": "^0.19.8",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",

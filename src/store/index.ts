@@ -33,31 +33,19 @@ import { createConfigSlice } from './slices/config';
  */
 export const useConfigStore = create<ConfigBuilderState>()(
   devtools(
-    persist(
-      immer((set, get, api) => ({
-        // Domain slices
-        programs: createProgramsSlice(set, get, api),
-        forms: createFormsSlice(set, get, api),
-        ctas: createCTAsSlice(set, get, api),
-        branches: createBranchesSlice(set, get, api),
-        cardInventory: createCardInventorySlice(set, get, api),
+    immer((set, get, api) => ({
+      // Domain slices
+      programs: createProgramsSlice(set, get, api),
+      forms: createFormsSlice(set, get, api),
+      ctas: createCTAsSlice(set, get, api),
+      branches: createBranchesSlice(set, get, api),
+      cardInventory: createCardInventorySlice(set, get, api),
 
-        // Application state
-        ui: createUISlice(set, get, api),
-        validation: createValidationSlice(set, get, api),
-        config: createConfigSlice(set, get, api),
-      })),
-      {
-        name: 'picasso-config-builder',
-        // Only persist UI preferences, not the full config
-        partialize: (state) => ({
-          ui: {
-            activeTab: state.ui.activeTab,
-            sidebarOpen: state.ui.sidebarOpen,
-          },
-        }),
-      }
-    ),
+      // Application state
+      ui: createUISlice(set, get, api),
+      validation: createValidationSlice(set, get, api),
+      config: createConfigSlice(set, get, api),
+    })),
     {
       name: 'ConfigBuilder',
       // Enable Redux DevTools features in development

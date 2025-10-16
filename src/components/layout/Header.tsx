@@ -4,9 +4,10 @@
  */
 
 import React, { useState } from 'react';
-import { Save, Upload, AlertCircle } from 'lucide-react';
+import { Save, Upload, AlertCircle, Eye } from 'lucide-react';
 import { TenantSelector } from '../TenantSelector';
 import { Button, Badge, Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription, ModalFooter } from '../ui';
+import { PreviewConfigModal } from '../preview/PreviewConfigModal';
 import { useConfigStore } from '@/store';
 
 /**
@@ -27,6 +28,7 @@ import { useConfigStore } from '@/store';
  */
 export const Header: React.FC = () => {
   const [showDeployModal, setShowDeployModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   const tenantId = useConfigStore((state) => state.config.tenantId);
   const isDirty = useConfigStore((state) => state.config.isDirty);
@@ -87,6 +89,18 @@ export const Header: React.FC = () => {
 
             {/* Tenant Selector */}
             <TenantSelector />
+
+            {/* Preview Button */}
+            {tenantId && (
+              <Button
+                onClick={() => setShowPreviewModal(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Eye className="w-4 h-4" />
+                <span className="hidden sm:inline">Preview</span>
+              </Button>
+            )}
 
             {/* Save Button */}
             {isDirty && tenantId && (
@@ -156,6 +170,12 @@ export const Header: React.FC = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Preview Config Modal */}
+      <PreviewConfigModal
+        open={showPreviewModal}
+        onOpenChange={setShowPreviewModal}
+      />
     </>
   );
 };

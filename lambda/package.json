@@ -8,10 +8,11 @@
     "package": "npm ci --production && zip -r deployment.zip . -x '*.zip' -x 'node_modules/.cache/*'",
     "deploy": "aws lambda update-function-code --function-name Picasso_Config_Manager --zip-file fileb://deployment.zip"
   },
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.470.0"
-  },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.911.0",
+    "@aws-sdk/credential-providers": "^3.911.0"
   }
 }
