@@ -170,16 +170,14 @@ export function createTestTenantConfig(
     conversational_forms: {
       'form-1': form,
     },
-    ctas: {
+    cta_definitions: {
       'cta-1': cta,
     },
-    routing: {
-      conversation_branches: {
-        'branch-1': branch,
-      },
+    conversation_branches: {
+      'branch-1': branch,
     },
     ...overrides,
-  };
+  } as any;
 }
 
 // ============================================================================
@@ -286,16 +284,14 @@ export function createLargeTenantConfig(
   ctasPerForm: number = 2,
   branchCount: number = 30
 ): TenantConfig {
-  const config: TenantConfig = {
+  const config: any = {
     tenant_id: 'LARGE_TENANT',
     version: '1.3.0',
     generated_at: Date.now(),
     programs: {},
     conversational_forms: {},
-    ctas: {},
-    routing: {
-      conversation_branches: {},
-    },
+    cta_definitions: {},
+    conversation_branches: {},
   };
 
   // Create programs
@@ -317,7 +313,7 @@ export function createLargeTenantConfig(
       // Create CTAs for each form
       for (let c = 0; c < ctasPerForm; c++) {
         const ctaId = `cta-${p + 1}-${f + 1}-${c + 1}`;
-        config.ctas![ctaId] = createTestCTA(formId, {
+        config.cta_definitions[ctaId] = createTestCTA(formId, {
           label: `CTA ${p + 1}-${f + 1}-${c + 1}`,
         });
       }
@@ -325,11 +321,11 @@ export function createLargeTenantConfig(
   }
 
   // Create branches
-  const allCtaIds = Object.keys(config.ctas!);
+  const allCtaIds = Object.keys(config.cta_definitions);
   for (let b = 0; b < branchCount; b++) {
     const branchId = `branch-${b + 1}`;
     const primaryCtaId = allCtaIds[b % allCtaIds.length];
-    config.routing!.conversation_branches![branchId] = createTestBranch(primaryCtaId, {
+    config.conversation_branches[branchId] = createTestBranch(primaryCtaId, {
       detection_keywords: [`keyword-${b + 1}`, `topic-${b + 1}`],
     });
   }

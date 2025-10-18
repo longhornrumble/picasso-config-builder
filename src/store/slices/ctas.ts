@@ -13,19 +13,9 @@ export const createCTAsSlice: SliceCreator<CTAsSlice> = (set, get) => ({
 
   // Actions
   createCTA: (cta: CTADefinition, ctaId: string) => {
-    // Validate action-specific requirements
-    const validation = validateCTAAction(cta);
-    if (!validation.isValid) {
-      get().ui.addToast({
-        type: 'error',
-        message: validation.error || 'Invalid CTA configuration',
-      });
-      return;
-    }
-
     set((state) => {
       state.ctas.ctas[ctaId] = cta;
-      state.config.markDirty();
+      state.config.isDirty = true;
     });
 
     get().ui.addToast({
@@ -38,22 +28,8 @@ export const createCTAsSlice: SliceCreator<CTAsSlice> = (set, get) => ({
     set((state) => {
       const cta = state.ctas.ctas[ctaId];
       if (cta) {
-        const updatedCTA = { ...cta, ...updates };
-
-        // Validate if action changed
-        if (updates.action) {
-          const validation = validateCTAAction(updatedCTA);
-          if (!validation.isValid) {
-            get().ui.addToast({
-              type: 'error',
-              message: validation.error || 'Invalid CTA configuration',
-            });
-            return;
-          }
-        }
-
-        state.ctas.ctas[ctaId] = updatedCTA;
-        state.config.markDirty();
+        state.ctas.ctas[ctaId] = { ...cta, ...updates };
+        state.config.isDirty = true;
       }
     });
 
