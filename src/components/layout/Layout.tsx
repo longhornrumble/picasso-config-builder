@@ -8,6 +8,7 @@ import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { MainContent } from './MainContent';
+import { ValidationPanel } from './ValidationPanel';
 
 /**
  * Application Layout
@@ -16,6 +17,7 @@ import { MainContent } from './MainContent';
  * - Header (top, sticky)
  * - Sidebar (left, sticky)
  * - MainContent (center, scrollable)
+ * - ValidationPanel (bottom-right, floating)
  * - Outlet for nested routes
  *
  * @example
@@ -25,12 +27,12 @@ import { MainContent } from './MainContent';
  */
 export const Layout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="app-layout">
       {/* Header */}
       <Header />
 
       {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="app-main-wrapper">
         {/* Sidebar */}
         <Sidebar />
 
@@ -39,6 +41,9 @@ export const Layout: React.FC = () => {
           <Outlet />
         </MainContent>
       </div>
+
+      {/* Validation Panel (floating) */}
+      <ValidationPanel />
     </div>
   );
 };

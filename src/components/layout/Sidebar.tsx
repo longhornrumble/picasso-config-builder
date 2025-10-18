@@ -11,7 +11,7 @@ import {
   FileText,
   MousePointerClick,
   GitBranch,
-  CreditCard,
+  Sparkles,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -79,8 +79,8 @@ export const Sidebar: React.FC = () => {
     },
     {
       to: '/cards',
-      label: 'Card Inventory',
-      icon: <CreditCard className="w-5 h-5" />,
+      label: 'Showcase Items',
+      icon: <Sparkles className="w-5 h-5" />,
     },
     {
       to: '/settings',
@@ -90,17 +90,24 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside
-      className={`
-        bg-white border-r border-gray-200 transition-all duration-300 ease-in-out
-        flex flex-col sticky top-16 h-[calc(100vh-4rem)]
-        ${sidebarOpen ? 'w-64' : 'w-16'}
-      `}
-    >
+    <>
+      {/* Mobile Backdrop - shown when sidebar is open on mobile */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={toggleSidebar}
+          aria-label="Close sidebar"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`app-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}
+      >
       {/* Sidebar Header with Toggle */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-600 flex-shrink-0">
         {sidebarOpen && (
-          <span className="text-sm font-semibold text-gray-700">Navigation</span>
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Navigation</span>
         )}
         <Button
           variant="ghost"
@@ -124,24 +131,30 @@ export const Sidebar: React.FC = () => {
             key={item.to}
             to={item.to}
             end={item.to === '/'}
+            onClick={() => {
+              // Close sidebar on mobile when a link is clicked
+              if (window.innerWidth < 768) {
+                toggleSidebar();
+              }
+            }}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                 isActive
-                  ? 'bg-green-50 text-green-700 font-medium'
-                  : 'text-gray-700 hover:bg-gray-50'
+                  ? 'bg-green-50 text-green-700 font-medium dark:bg-green-900/30 dark:text-green-400'
+                  : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800'
               }`
             }
             title={!sidebarOpen ? item.label : undefined}
           >
             {item.icon}
-            {sidebarOpen && <span className="text-sm">{item.label}</span>}
+            {sidebarOpen && <span className="text-sm whitespace-nowrap">{item.label}</span>}
           </NavLink>
         ))}
       </nav>
 
       {/* Error Count Badge */}
       {errorCount > 0 && (
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-gray-100 dark:border-gray-600 flex-shrink-0">
           <div
             className={`flex items-center gap-2 ${
               sidebarOpen ? 'justify-start' : 'justify-center'
@@ -151,7 +164,7 @@ export const Sidebar: React.FC = () => {
               {errorCount}
             </Badge>
             {sidebarOpen && (
-              <span className="text-xs text-gray-600">
+              <span className="text-xs text-gray-600 dark:text-gray-400">
                 {errorCount === 1 ? 'error' : 'errors'}
               </span>
             )}
@@ -159,5 +172,6 @@ export const Sidebar: React.FC = () => {
         </div>
       )}
     </aside>
+    </>
   );
 };

@@ -1,0 +1,581 @@
+/**
+ * CTAsEditor Component
+ *
+ * Full-featured editor for managing CTA (Call-to-Action) definitions.
+ * CTAs trigger various actions like starting forms, opening links, sending queries, or showing info.
+ */
+
+import React, { useState, useEffect } from 'react';
+import { Plus, Trash2, Copy, AlertCircle } from 'lucide-react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { Select } from '@/components/ui/Select';
+import { Badge } from '@/components/ui/Badge';
+import { DependencyWarningModal } from '@/components/modals/DependencyWarningModal';
+import { useConfigStore } from '@/store';
+import {
+  buildDependencyGraph,
+  getCTADeletionImpact,
+  formatDeletionImpact,
+} from '@/lib/validation/dependencyTracking';
+import type { CTADefinition, CTAActionType, CTAType, CTAStyle } from '@/types/config';
+
+/**
+ * CTAsEditor
+ *
+ * Features:
+ * - List view of all CTAs
+ * - Create new CTAs with action-specific fields
+ * - Edit CTA details inline
+ * - Conditional fields based on action type
+ * - Delete with confirmation
+ * - Duplicate CTAs
+ *
+ * @example
+ * ```tsx
+ * <CTAsEditor />
+ * ```
+ */
+export const CTAsEditor: React.FC = () => {
+  const ctas = useConfigStore((state) => state.ctas.getAllCTAs());
+  const forms = useConfigStore((state) => state.forms.getAllForms());
+  const programsRecord = useConfigStore((state) => state.programs.programs);
+  const formsRecord = useConfigStore((state) => state.forms.forms);
+  const ctasRecord = useConfigStore((state) => state.ctas.ctas);
+  const branchesRecord = useConfigStore((state) => state.branches.branches);
+  const createCTA = useConfigStore((state) => state.ctas.createCTA);
+  const updateCTA = useConfigStore((state) => state.ctas.updateCTA);
+  const deleteCTA = useConfigStore((state) => state.ctas.deleteCTA);
+  const duplicateCTA = useConfigStore((state) => state.ctas.duplicateCTA);
+
+  // New CTA state
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newCtaId, setNewCtaId] = useState('');
+  const [newCTA, setNewCTA] = useState<Partial<CTADefinition>>({
+    label: '',
+    action: 'start_form',
+    type: 'form_trigger',
+    style: 'primary',
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Dependency warning modal
+  const [deleteWarning, setDeleteWarning] = useState<{
+    ctaId: string;
+    ctaName: string;
+    impactMessage: string;
+    hasImpact: boolean;
+  } | null>(null);
+
+  // Editing state
+  const [editingValues, setEditingValues] = useState<Record<string, Partial<CTADefinition>>>({});
+
+  // Initialize editing values when CTAs change
+  useEffect(() => {
+    const initialValues: Record<string, Partial<CTADefinition>> = {};
+    ctas.forEach(({ id, cta }) => {
+      initialValues[id] = { ...cta };
+    });
+    setEditingValues(initialValues);
+  }, [ctas]);
+
+  // Action options
+  const actionOptions = [
+    { value: 'start_form', label: 'Start Form' },
+    { value: 'external_link', label: 'External Link' },
+    { value: 'send_query', label: 'Send Query' },
+    { value: 'show_info', label: 'Show Info' },
+  ];
+
+  // Type options
+  const typeOptions = [
+    { value: 'form_trigger', label: 'Form Trigger' },
+    { value: 'external_link', label: 'External Link' },
+    { value: 'bedrock_query', label: 'Bedrock Query' },
+    { value: 'info_request', label: 'Info Request' },
+  ];
+
+  // Style options
+  const styleOptions = [
+    { value: 'primary', label: 'Primary' },
+    { value: 'secondary', label: 'Secondary' },
+    { value: 'info', label: 'Info' },
+  ];
+
+  // Form options
+  const formOptions = forms.map((f) => ({
+    value: f.form_id,
+    label: f.title,
+  }));
+
+  // Validate new CTA
+  const validateNewCTA = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!newCtaId.trim()) {
+      errors.cta_id = 'CTA ID is required';
+    } else if (!/^[a-zA-Z0-9_-]+$/.test(newCtaId)) {
+      errors.cta_id = 'CTA ID can only contain letters, numbers, hyphens, and underscores';
+    } else if (ctas.some(({ id }) => id === newCtaId)) {
+      errors.cta_id = 'CTA ID already exists';
+    }
+
+    if (!newCTA.label?.trim()) {
+      errors.label = 'Label is required';
+    }
+
+    // Action-specific validation
+    if (newCTA.action === 'start_form' && !newCTA.formId) {
+      errors.formId = 'Form selection is required for start_form action';
+    }
+
+    if (newCTA.action === 'external_link' && !newCTA.url?.trim()) {
+      errors.url = 'URL is required for external_link action';
+    }
+
+    if (newCTA.action === 'send_query' && !newCTA.query?.trim()) {
+      errors.query = 'Query is required for send_query action';
+    }
+
+    if (newCTA.action === 'show_info' && !newCTA.prompt?.trim()) {
+      errors.prompt = 'Prompt is required for show_info action';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle create CTA
+  const handleCreateCTA = () => {
+    if (!validateNewCTA()) {
+      return;
+    }
+
+    const cta: CTADefinition = {
+      label: newCTA.label!.trim(),
+      action: newCTA.action as CTAActionType,
+      type: newCTA.type as CTAType,
+      style: newCTA.style as CTAStyle,
+      ...(newCTA.action === 'start_form' && { formId: newCTA.formId }),
+      ...(newCTA.action === 'external_link' && { url: newCTA.url?.trim() }),
+      ...(newCTA.action === 'send_query' && { query: newCTA.query?.trim() }),
+      ...(newCTA.action === 'show_info' && { prompt: newCTA.prompt?.trim() }),
+    };
+
+    createCTA(cta, newCtaId.trim());
+
+    // Reset form
+    setNewCtaId('');
+    setNewCTA({
+      label: '',
+      action: 'start_form',
+      type: 'form_trigger',
+      style: 'primary',
+    });
+    setFormErrors({});
+    setIsAddingNew(false);
+  };
+
+  // Handle cancel new
+  const handleCancelNew = () => {
+    setNewCtaId('');
+    setNewCTA({
+      label: '',
+      action: 'start_form',
+      type: 'form_trigger',
+      style: 'primary',
+    });
+    setFormErrors({});
+    setIsAddingNew(false);
+  };
+
+  // Handle field change
+  const handleFieldChange = (ctaId: string, field: keyof CTADefinition, value: any) => {
+    setEditingValues((prev) => ({
+      ...prev,
+      [ctaId]: {
+        ...prev[ctaId],
+        [field]: value,
+      },
+    }));
+  };
+
+  // Handle field blur - save changes
+  const handleFieldBlur = (ctaId: string, field: keyof CTADefinition) => {
+    const currentCTA = ctas.find(({ id }) => id === ctaId);
+    const editedCTA = editingValues[ctaId];
+
+    if (!currentCTA || !editedCTA) return;
+
+    // Check if value actually changed
+    if (currentCTA.cta[field] !== editedCTA[field]) {
+      updateCTA(ctaId, {
+        [field]: editedCTA[field],
+      });
+    }
+  };
+
+  // Handle delete request - build dependency graph and show warning
+  const handleDeleteRequest = (ctaId: string) => {
+    const cta = ctasRecord[ctaId];
+    if (!cta) return;
+
+    // Build dependency graph
+    const graph = buildDependencyGraph(
+      programsRecord,
+      formsRecord,
+      ctasRecord,
+      branchesRecord
+    );
+
+    // Get deletion impact
+    const impact = getCTADeletionImpact(ctaId, cta, graph);
+    const impactMessage = formatDeletionImpact('cta', cta.label, impact);
+    const hasImpact = impact.affectedEntities.branches.length > 0;
+
+    setDeleteWarning({
+      ctaId,
+      ctaName: cta.label,
+      impactMessage,
+      hasImpact,
+    });
+  };
+
+  // Handle delete confirm
+  const confirmDelete = () => {
+    if (deleteWarning) {
+      deleteCTA(deleteWarning.ctaId);
+      setDeleteWarning(null);
+    }
+  };
+
+  // Handle duplicate
+  const handleDuplicate = (ctaId: string) => {
+    duplicateCTA(ctaId);
+  };
+
+  // Get action badge color
+  const getActionBadgeVariant = (action: CTAActionType): 'default' | 'success' | 'warning' | 'secondary' => {
+    switch (action) {
+      case 'start_form':
+        return 'success';
+      case 'external_link':
+        return 'default';
+      case 'send_query':
+        return 'warning';
+      case 'show_info':
+        return 'secondary';
+      default:
+        return 'default';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="editor-header">
+        <div className="editor-title-section">
+          <h1 className="text-responsive-lg font-bold text-gray-900 dark:text-gray-100">CTAs</h1>
+          <p className="text-responsive-sm text-gray-600 dark:text-gray-400 mt-2">
+            Manage call-to-action buttons and their behaviors
+          </p>
+        </div>
+        <div className="editor-actions-section">
+          <Button onClick={() => setIsAddingNew(true)} disabled={isAddingNew} className="w-full sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" />
+            Add CTA
+          </Button>
+        </div>
+      </div>
+
+      {/* Add New CTA */}
+      {isAddingNew && (
+        <Card className="border-primary border-2">
+          <CardHeader>
+            <CardTitle>Create New CTA</CardTitle>
+            <CardDescription>
+              Add a new call-to-action button with specific behavior
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input
+              label="CTA ID"
+              value={newCtaId}
+              onChange={(e) => setNewCtaId(e.target.value)}
+              error={formErrors.cta_id}
+              placeholder="e.g., apply_now_btn"
+              helperText="Unique identifier (letters, numbers, hyphens, underscores)"
+              required
+            />
+            <Input
+              label="Label"
+              value={newCTA.label || ''}
+              onChange={(e) => setNewCTA({ ...newCTA, label: e.target.value })}
+              error={formErrors.label}
+              placeholder="e.g., Apply Now"
+              helperText="Button text displayed to users"
+              required
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Select
+                label="Action"
+                value={newCTA.action || 'start_form'}
+                onValueChange={(value) =>
+                  setNewCTA({ ...newCTA, action: value as CTAActionType })
+                }
+                options={actionOptions}
+                required
+              />
+              <Select
+                label="Type"
+                value={newCTA.type || 'form_trigger'}
+                onValueChange={(value) => setNewCTA({ ...newCTA, type: value as CTAType })}
+                options={typeOptions}
+                required
+              />
+              <Select
+                label="Style"
+                value={newCTA.style || 'primary'}
+                onValueChange={(value) => setNewCTA({ ...newCTA, style: value as CTAStyle })}
+                options={styleOptions}
+                required
+              />
+            </div>
+
+            {/* Conditional fields based on action */}
+            {newCTA.action === 'start_form' && (
+              <Select
+                label="Form"
+                value={newCTA.formId || ''}
+                onValueChange={(value) => setNewCTA({ ...newCTA, formId: value })}
+                options={formOptions}
+                placeholder="Select a form..."
+                error={formErrors.formId}
+                helperText="Form to start when button is clicked"
+                required
+              />
+            )}
+
+            {newCTA.action === 'external_link' && (
+              <Input
+                label="URL"
+                value={newCTA.url || ''}
+                onChange={(e) => setNewCTA({ ...newCTA, url: e.target.value })}
+                error={formErrors.url}
+                placeholder="https://example.com"
+                helperText="External link to open"
+                required
+              />
+            )}
+
+            {newCTA.action === 'send_query' && (
+              <Textarea
+                label="Query"
+                value={newCTA.query || ''}
+                onChange={(e) => setNewCTA({ ...newCTA, query: e.target.value })}
+                error={formErrors.query}
+                placeholder="Enter the query to send to Bedrock..."
+                helperText="Query sent to AI when button is clicked"
+                rows={3}
+                required
+              />
+            )}
+
+            {newCTA.action === 'show_info' && (
+              <Textarea
+                label="Prompt"
+                value={newCTA.prompt || ''}
+                onChange={(e) => setNewCTA({ ...newCTA, prompt: e.target.value })}
+                error={formErrors.prompt}
+                placeholder="Enter information to display..."
+                helperText="Information shown when button is clicked"
+                rows={3}
+                required
+              />
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleCancelNew}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateCTA}>Create CTA</Button>
+          </CardFooter>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {ctas.length === 0 && !isAddingNew && (
+        <Card className="bg-gray-50 dark:bg-gray-900/50">
+          <CardContent className="pt-8 pb-8 sm:pt-12 sm:pb-12 text-center px-4">
+            <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              No CTAs Defined
+            </h3>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 max-w-md mx-auto">
+              CTAs (Call-to-Actions) are buttons that trigger specific actions like starting forms,
+              opening links, or sending queries. Create your first CTA to get started.
+            </p>
+            <Button onClick={() => setIsAddingNew(true)} className="w-full sm:w-auto">
+              <Plus className="w-4 h-4 mr-2" />
+              Create First CTA
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* CTAs List */}
+      <div className="card-list">
+        {ctas.map(({ id, cta }) => {
+          const editedCTA = editingValues[id] || cta;
+          const form = cta.formId ? forms.find((f) => f.form_id === cta.formId) : null;
+
+          return (
+            <Card key={id} className="card-container">
+              <CardHeader>
+                <div className="card-header-responsive">
+                  <div className="card-header-content">
+                    <div className="flex-wrap-responsive mb-2">
+                      <CardTitle className="text-xs sm:text-sm font-mono text-gray-500">{id}</CardTitle>
+                      <Badge variant={getActionBadgeVariant(cta.action)}>
+                        {cta.action}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {cta.style}
+                      </Badge>
+                    </div>
+                    <Input
+                      value={editedCTA.label || ''}
+                      onChange={(e) => handleFieldChange(id, 'label', e.target.value)}
+                      onBlur={() => handleFieldBlur(id, 'label')}
+                      placeholder="CTA label"
+                      className="text-base sm:text-lg font-semibold"
+                    />
+                  </div>
+                  <div className="card-header-actions">
+                    <Button variant="outline" size="sm" onClick={() => handleDuplicate(id)} className="flex-1 sm:flex-none">
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteRequest(id)}
+                      className="flex-1 sm:flex-none"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Select
+                    label="Action"
+                    value={editedCTA.action || 'start_form'}
+                    onValueChange={(value) => {
+                      handleFieldChange(id, 'action', value);
+                      updateCTA(id, { action: value as CTAActionType });
+                    }}
+                    options={actionOptions}
+                  />
+                  <Select
+                    label="Type"
+                    value={editedCTA.type || 'form_trigger'}
+                    onValueChange={(value) => {
+                      handleFieldChange(id, 'type', value);
+                      updateCTA(id, { type: value as CTAType });
+                    }}
+                    options={typeOptions}
+                  />
+                  <Select
+                    label="Style"
+                    value={editedCTA.style || 'primary'}
+                    onValueChange={(value) => {
+                      handleFieldChange(id, 'style', value);
+                      updateCTA(id, { style: value as CTAStyle });
+                    }}
+                    options={styleOptions}
+                  />
+                </div>
+
+                {/* Conditional fields */}
+                {cta.action === 'start_form' && (
+                  <div>
+                    <Select
+                      label="Form"
+                      value={editedCTA.formId || ''}
+                      onValueChange={(value) => {
+                        handleFieldChange(id, 'formId', value);
+                        updateCTA(id, { formId: value });
+                      }}
+                      options={formOptions}
+                      placeholder="Select a form..."
+                    />
+                    {form && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        Links to: <span className="font-medium">{form.title}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {cta.action === 'external_link' && (
+                  <Input
+                    label="URL"
+                    value={editedCTA.url || ''}
+                    onChange={(e) => handleFieldChange(id, 'url', e.target.value)}
+                    onBlur={() => handleFieldBlur(id, 'url')}
+                    placeholder="https://example.com"
+                  />
+                )}
+
+                {cta.action === 'send_query' && (
+                  <Textarea
+                    label="Query"
+                    value={editedCTA.query || ''}
+                    onChange={(e) => handleFieldChange(id, 'query', e.target.value)}
+                    onBlur={() => handleFieldBlur(id, 'query')}
+                    placeholder="Query sent to Bedrock..."
+                    rows={2}
+                  />
+                )}
+
+                {cta.action === 'show_info' && (
+                  <Textarea
+                    label="Prompt"
+                    value={editedCTA.prompt || ''}
+                    onChange={(e) => handleFieldChange(id, 'prompt', e.target.value)}
+                    onBlur={() => handleFieldBlur(id, 'prompt')}
+                    placeholder="Information to display..."
+                    rows={2}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Dependency Warning Modal */}
+      <DependencyWarningModal
+        isOpen={!!deleteWarning}
+        onClose={() => setDeleteWarning(null)}
+        onConfirm={confirmDelete}
+        entityType="CTA"
+        entityName={deleteWarning?.ctaName || ''}
+        impactMessage={deleteWarning?.impactMessage || ''}
+        hasImpact={deleteWarning?.hasImpact || false}
+      />
+    </div>
+  );
+};

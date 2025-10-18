@@ -3,15 +3,14 @@
  * Main modal form for creating and editing conversational forms
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { X, Plus } from 'lucide-react';
 import {
   Modal,
   ModalContent,
   ModalHeader,
   ModalTitle,
   ModalDescription,
-  ModalFooter,
   Button,
   Input,
   Textarea,
@@ -21,7 +20,7 @@ import {
   Badge,
 } from '@/components/ui';
 import { conversationalFormSchema } from '@/lib/schemas';
-import { FieldsManager } from './FieldsManager';
+import { FieldCollection, FieldCollectionRef } from './FieldCollection';
 import { PostSubmissionSection } from './PostSubmissionSection';
 import type { ConversationalForm, FormField, PostSubmissionConfig, Program } from '@/types/config';
 import type { SelectOption } from '@/components/ui/Select';
@@ -118,6 +117,9 @@ export const FormForm: React.FC<FormFormProps> = ({
   open,
 }) => {
   const isEditMode = formId !== null && form !== null;
+
+  // Ref for FieldCollection to trigger add field
+  const fieldCollectionRef = useRef<FieldCollectionRef>(null);
 
   // Form state
   const [formData, setFormData] = useState<FormData>({
@@ -492,8 +494,9 @@ export const FormForm: React.FC<FormFormProps> = ({
               />
             </div>
 
-            {/* Fields Manager */}
-            <FieldsManager
+            {/* Fields Collection with Drag-Drop */}
+            <FieldCollection
+              ref={fieldCollectionRef}
               fields={formData.fields}
               onChange={(fields) => handleChange('fields', fields)}
               error={touched.fields ? errors.fields : undefined}
@@ -516,20 +519,32 @@ export const FormForm: React.FC<FormFormProps> = ({
             </Alert>
           </div>
 
-          <ModalFooter>
-            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-              Cancel
-            </Button>
+          <div className="flex items-center justify-between w-full pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
             <Button
-              type="submit"
-              variant="primary"
-              disabled={!isValid || isSubmitting || programOptions.length === 0}
+              type="button"
+              variant="outline"
+              onClick={() => fieldCollectionRef.current?.addField()}
+              className="flex items-center gap-1.5"
             >
-              {isSubmitting ? 'Saving...' : isEditMode ? 'Update Form' : 'Create Form'}
+              <Plus className="w-4 h-4" />
+              Add Field
             </Button>
-          </ModalFooter>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={!isValid || isSubmitting || programOptions.length === 0}
+              >
+                {isSubmitting ? 'Saving...' : isEditMode ? 'Update Form' : 'Create Form'}
+              </Button>
+            </div>
+          </div>
         </form>
       </ModalContent>
     </Modal>
   );
 };
+

@@ -1,0 +1,686 @@
+/**
+ * Responsive Layout System
+ *
+ * Centralized CSS for all responsive layouts and breakpoints.
+ * Replaces inline Tailwind classes for layout/width/responsive behavior.
+ *
+ * Maximum page width: 1440px
+ * Breakpoints:
+ * - Mobile: < 640px
+ * - Tablet: 640px - 1024px
+ * - Desktop: > 1024px
+ * - Max Width: 1440px
+ */
+
+/* ===================================
+   CSS CUSTOM PROPERTIES (VARIABLES)
+   =================================== */
+
+:root {
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1440px;
+
+  /* Layout constraints */
+  --max-content-width: 1440px;
+
+  /* Spacing */
+  --spacing-xs: 0.5rem;   /* 8px */
+  --spacing-sm: 0.75rem;  /* 12px */
+  --spacing-md: 1rem;     /* 16px */
+  --spacing-lg: 1.5rem;   /* 24px */
+  --spacing-xl: 2rem;     /* 32px */
+  --spacing-2xl: 3rem;    /* 48px */
+
+  /* Header height */
+  --header-height: 4rem;  /* 64px */
+
+  /* Sidebar widths */
+  --sidebar-width-expanded: 16rem;  /* 256px */
+  --sidebar-width-collapsed: 4rem;  /* 64px */
+}
+
+/* ===================================
+   BASE LAYOUT STRUCTURE
+   =================================== */
+
+/* App Layout Container - Full height viewport */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f9fafb;
+}
+
+/* Header Container - Sticky at top */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex-shrink: 0;
+  height: var(--header-height);
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.app-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 0 var(--spacing-sm);
+}
+
+@media (min-width: 640px) {
+  .app-header-inner {
+    padding: 0 var(--spacing-lg);
+  }
+}
+
+/* Main Content Wrapper - Sidebar + Content */
+.app-main-wrapper {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ===================================
+   SIDEBAR LAYOUT
+   =================================== */
+
+/* Sidebar Base */
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-right: 1px solid #e5e7eb;
+  transition: width 300ms ease-in-out, transform 300ms ease-in-out;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+/* Mobile Sidebar - Hidden by default, overlay when open */
+@media (max-width: 767px) {
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    width: var(--sidebar-width-expanded);
+    transform: translateX(-100%);
+  }
+
+  .app-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  /* Backdrop for mobile sidebar */
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+  }
+}
+
+/* Desktop Sidebar - Always visible, collapsible */
+@media (min-width: 768px) {
+  .app-sidebar {
+    position: relative;
+    width: var(--sidebar-width-collapsed);
+    height: 100%;
+    align-self: stretch;
+  }
+
+  .app-sidebar.sidebar-open {
+    width: var(--sidebar-width-expanded);
+  }
+
+  .sidebar-backdrop {
+    display: none;
+  }
+}
+
+/* ===================================
+   MAIN CONTENT AREA
+   =================================== */
+
+/* Main Content - Scrollable, fluid */
+.app-main-content {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #f9fafb;
+  position: relative;
+  min-height: 0;
+}
+
+/* Content Container - Max width constraint with fluid behavior */
+.content-container {
+  width: 100%;
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+  .content-container {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (min-width: 768px) {
+  .content-container {
+    padding: var(--spacing-lg) var(--spacing-xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-container {
+    padding: var(--spacing-xl) var(--spacing-2xl);
+  }
+}
+
+/* ===================================
+   PAGE LAYOUTS
+   =================================== */
+
+/* Standard Page Container */
+.page-container {
+  width: 100%;
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+}
+
+/* Page Header Section */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+@media (min-width: 640px) {
+  .page-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+    margin-bottom: var(--spacing-xl);
+  }
+}
+
+/* Page Title Group */
+.page-title-group {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Page Actions Group */
+.page-actions-group {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+@media (max-width: 639px) {
+  .page-actions-group {
+    width: 100%;
+  }
+
+  .page-actions-group > * {
+    flex: 1;
+  }
+}
+
+/* ===================================
+   GRID LAYOUTS
+   =================================== */
+
+/* Responsive Grid - 1 col mobile, 2 col tablet, 3-4 col desktop */
+.grid-responsive-1-2-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+  .grid-responsive-1-2-3 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-1-2-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.grid-responsive-1-2-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+  .grid-responsive-1-2-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-1-2-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-responsive-1-2-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* 2-column responsive grid (stats, info panels) */
+.grid-responsive-2-4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+}
+
+@media (min-width: 768px) {
+  .grid-responsive-2-4 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-md);
+  }
+}
+
+/* ===================================
+   CARD LAYOUTS
+   =================================== */
+
+/* Card List Container */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .card-list {
+    gap: var(--spacing-lg);
+  }
+}
+
+/* Card Container - Fluid width */
+.card-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Card Header Responsive Layout */
+.card-header-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+  .card-header-responsive {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+  }
+}
+
+.card-header-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+@media (max-width: 639px) {
+  .card-header-actions {
+    width: 100%;
+  }
+
+  .card-header-actions > * {
+    flex: 1;
+  }
+}
+
+/* ===================================
+   UTILITY CLASSES
+   =================================== */
+
+/* Spacing utilities */
+.space-y-4 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.space-y-6 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.space-y-8 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* Responsive text utilities */
+.text-responsive-sm {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-sm {
+    font-size: 1rem;
+  }
+}
+
+.text-responsive-base {
+  font-size: 1rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-base {
+    font-size: 1.125rem;
+  }
+}
+
+.text-responsive-lg {
+  font-size: 1.125rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-lg {
+    font-size: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .text-responsive-lg {
+    font-size: 1.5rem;
+  }
+}
+
+.text-responsive-xl {
+  font-size: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-xl {
+    font-size: 1.875rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .text-responsive-xl {
+    font-size: 2.25rem;
+  }
+}
+
+/* Fluid width utilities */
+.w-fluid {
+  width: 100%;
+  max-width: 100%;
+}
+
+.w-constrained {
+  width: 100%;
+  max-width: var(--max-content-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive visibility utilities */
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hide-mobile {
+    display: block;
+  }
+}
+
+.hide-desktop {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .hide-desktop {
+    display: none;
+  }
+}
+
+.show-mobile-only {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .show-mobile-only {
+    display: none;
+  }
+}
+
+.show-tablet-up {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .show-tablet-up {
+    display: block;
+  }
+}
+
+/* ===================================
+   FLEXBOX UTILITIES
+   =================================== */
+
+.flex-row-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+@media (min-width: 640px) {
+  .flex-row-responsive {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+}
+
+.flex-wrap-responsive {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+@media (min-width: 640px) {
+  .flex-wrap-responsive {
+    gap: var(--spacing-md);
+  }
+}
+
+/* ===================================
+   HEADER SPECIFIC LAYOUTS
+   =================================== */
+
+.header-left-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  flex: 1;
+}
+
+@media (min-width: 640px) {
+  .header-left-section {
+    gap: var(--spacing-md);
+  }
+}
+
+.header-right-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .header-right-section {
+    gap: var(--spacing-sm);
+  }
+}
+
+@media (min-width: 768px) {
+  .header-right-section {
+    gap: var(--spacing-md);
+  }
+}
+
+/* ===================================
+   LOADING AND OVERLAY
+   =================================== */
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===================================
+   VALIDATION PANEL
+   =================================== */
+
+.validation-panel {
+  position: fixed;
+  bottom: var(--spacing-md);
+  right: var(--spacing-md);
+  z-index: 30;
+  max-width: calc(100vw - var(--spacing-xl));
+}
+
+@media (min-width: 640px) {
+  .validation-panel {
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    max-width: 400px;
+  }
+}
+
+/* ===================================
+   PRINT STYLES
+   =================================== */
+
+@media print {
+  .app-header,
+  .app-sidebar,
+  .validation-panel,
+  .page-actions-group {
+    display: none !important;
+  }
+
+  .app-main-content {
+    overflow: visible;
+  }
+
+  .content-container {
+    max-width: none;
+    padding: 0;
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY - FOCUS STYLES
+   =================================== */
+
+/* Ensure focus states are visible for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* ===================================
+   RESPONSIVE UTILITIES FOR EDITORS
+   =================================== */
+
+/* Editor Header Section */
+.editor-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+@media (min-width: 640px) {
+  .editor-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+    margin-bottom: var(--spacing-xl);
+  }
+}
+
+.editor-title-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.editor-actions-section {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+@media (max-width: 639px) {
+  .editor-actions-section {
+    width: 100%;
+  }
+}
+
+/* ===================================
+   RESPONSIVE CONTAINER QUERIES
+   (Future-proof for container query support)
+   =================================== */
+
+@supports (container-type: inline-size) {
+  .container-responsive {
+    container-type: inline-size;
+  }
+
+  @container (min-width: 640px) {
+    .container-child-responsive {
+      display: flex;
+      flex-direction: row;
+    }
+  }
+}

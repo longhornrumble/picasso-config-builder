@@ -72,20 +72,16 @@ export const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="page-container space-y-6">
       {/* Welcome Section */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-gray-900">
+      <div className="text-center">
+        <h1 className="text-responsive-xl font-bold text-gray-900 dark:text-gray-100">
           Welcome to Picasso Config Builder
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Build and manage conversational forms, CTAs, and conversation branches
-          for your tenant configurations.
-        </p>
       </div>
 
       {/* Tenant Selector Card */}
-      <Card className="max-w-2xl mx-auto">
+      <Card className="card-container">
         <CardHeader>
           <CardTitle>Select a Tenant</CardTitle>
           <CardDescription>
@@ -99,36 +95,36 @@ export const HomePage: React.FC = () => {
 
       {/* Current Tenant Overview */}
       {tenantId && (
-        <Card className="max-w-2xl mx-auto">
+        <Card className="card-container">
           <CardHeader>
             <CardTitle>Current Configuration</CardTitle>
             <CardDescription>Tenant: {tenantId}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid-responsive-2-4">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">
+                <div className="text-2xl sm:text-3xl font-bold text-blue-600">
                   {Object.keys(programs).length}
                 </div>
-                <div className="text-sm text-gray-600">Programs</div>
+                <div className="text-responsive-sm text-gray-600">Programs</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">
+                <div className="text-2xl sm:text-3xl font-bold text-green-600">
                   {Object.keys(forms).length}
                 </div>
-                <div className="text-sm text-gray-600">Forms</div>
+                <div className="text-responsive-sm text-gray-600">Forms</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">
+                <div className="text-2xl sm:text-3xl font-bold text-purple-600">
                   {Object.keys(ctas).length}
                 </div>
-                <div className="text-sm text-gray-600">CTAs</div>
+                <div className="text-responsive-sm text-gray-600">CTAs</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-orange-600">
+                <div className="text-2xl sm:text-3xl font-bold text-orange-600">
                   {Object.keys(branches).length}
                 </div>
-                <div className="text-sm text-gray-600">Branches</div>
+                <div className="text-responsive-sm text-gray-600">Branches</div>
               </div>
             </div>
           </CardContent>
@@ -136,11 +132,11 @@ export const HomePage: React.FC = () => {
       )}
 
       {/* Quick Actions */}
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center">
+      <div className="w-fluid">
+        <h2 className="text-responsive-lg font-semibold text-gray-900 mb-4 text-center">
           Quick Actions
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid-responsive-1-2-4">
           {quickActions.map((action) => (
             <Card
               key={action.path}
@@ -148,10 +144,10 @@ export const HomePage: React.FC = () => {
               onClick={() => navigate(action.path)}
             >
               <CardContent className="pt-6">
-                <div className="flex flex-col items-center text-center space-y-3">
+                <div className="flex flex-col items-center text-center space-y-6">
                   <div className={action.color}>{action.icon}</div>
-                  <h3 className="font-semibold text-lg">{action.title}</h3>
-                  <p className="text-sm text-gray-600">{action.description}</p>
+                  <h3 className="font-semibold text-responsive-base">{action.title}</h3>
+                  <p className="text-responsive-sm text-gray-600">{action.description}</p>
                   <Button variant="ghost" size="sm" className="mt-2">
                     Open <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
@@ -164,12 +160,12 @@ export const HomePage: React.FC = () => {
 
       {/* Getting Started */}
       {!tenantId && (
-        <Card className="max-w-2xl mx-auto bg-blue-50 border-blue-200">
+        <Card className="card-container bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
-            <h3 className="font-semibold text-lg mb-2 text-blue-900">
+            <h3 className="font-semibold text-responsive-base mb-2 text-blue-900">
               Getting Started
             </h3>
-            <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
+            <ol className="list-decimal list-inside space-y-4 text-responsive-sm text-blue-800">
               <li>Select a tenant from the dropdown above</li>
               <li>Navigate to a section (Programs, Forms, CTAs, or Branches)</li>
               <li>Create or edit configurations</li>

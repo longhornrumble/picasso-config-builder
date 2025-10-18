@@ -36,6 +36,12 @@ export { validateBranch, validateBranches } from './branchValidation';
 export { validateRelationships } from './relationshipValidation';
 export { validateRuntimeBehavior } from './runtimeValidation';
 
+// Re-export dependency tracking
+export * from './dependencyTracking';
+
+// Re-export pre-deployment validation
+export * from './preDeploymentValidation';
+
 // ============================================================================
 // CONFIG VALIDATION (From Store State)
 // ============================================================================

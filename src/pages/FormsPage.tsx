@@ -6,7 +6,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui';
 import { useConfigStore } from '@/store';
-import { FormEditor } from '@/components/editors/FormEditor';
+import { FormsEditor } from '@/components/editors/FormsEditor/FormsEditor';
 
 /**
  * Forms Page
@@ -25,15 +25,15 @@ export const FormsPage: React.FC = () => {
     <div className="space-y-6">
       {/* No Tenant Selected */}
       {!tenantId ? (
-        <Card className="bg-amber-50 border-amber-200">
+        <Card className="bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800">
           <CardContent className="pt-6">
-            <p className="text-amber-800">
+            <p className="text-amber-800 dark:text-amber-300">
               Please select a tenant from the header to view and edit forms.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <FormEditor />
+        <FormsEditor />
       )}
     </div>
   );

@@ -1,0 +1,510 @@
+/**
+ * FormsEditor Component
+ *
+ * Full-featured editor for managing conversational forms.
+ * Provides form creation, editing, field management, and configuration.
+ */
+
+import React, { useState, useEffect } from 'react';
+import { Plus, Trash2, Copy, AlertCircle, ChevronDown, ChevronUp, ToggleLeft, ToggleRight } from 'lucide-react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { Select } from '@/components/ui/Select';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Badge } from '@/components/ui/Badge';
+import { DependencyWarningModal } from '@/components/modals/DependencyWarningModal';
+import { useConfigStore } from '@/store';
+import {
+  buildDependencyGraph,
+  getFormDeletionImpact,
+  formatDeletionImpact,
+} from '@/lib/validation/dependencyTracking';
+import type { ConversationalForm } from '@/types/config';
+
+/**
+ * FormsEditor
+ *
+ * Features:
+ * - List view of all forms
+ * - Create new forms with validation
+ * - Edit form details inline
+ * - Toggle enabled status
+ * - Fields summary display
+ * - Delete with confirmation
+ * - Duplicate forms
+ *
+ * @example
+ * ```tsx
+ * <FormsEditor />
+ * ```
+ */
+export const FormsEditor: React.FC = () => {
+  const forms = useConfigStore((state) => state.forms.getAllForms());
+  const programs = useConfigStore((state) => state.programs.getAllPrograms());
+  const programsRecord = useConfigStore((state) => state.programs.programs);
+  const formsRecord = useConfigStore((state) => state.forms.forms);
+  const ctasRecord = useConfigStore((state) => state.ctas.ctas);
+  const branchesRecord = useConfigStore((state) => state.branches.branches);
+  const createForm = useConfigStore((state) => state.forms.createForm);
+  const updateForm = useConfigStore((state) => state.forms.updateForm);
+  const deleteForm = useConfigStore((state) => state.forms.deleteForm);
+  const duplicateForm = useConfigStore((state) => state.forms.duplicateForm);
+
+  // New form state
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newForm, setNewForm] = useState<Partial<ConversationalForm>>({
+    form_id: '',
+    title: '',
+    description: '',
+    program: '',
+    enabled: true,
+    trigger_phrases: [],
+    fields: [],
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Dependency warning modal
+  const [deleteWarning, setDeleteWarning] = useState<{
+    formId: string;
+    formName: string;
+    impactMessage: string;
+    hasImpact: boolean;
+  } | null>(null);
+
+  // Expanded forms for details
+  const [expandedForms, setExpandedForms] = useState<Set<string>>(new Set());
+
+  // Editing state
+  const [editingValues, setEditingValues] = useState<Record<string, Partial<ConversationalForm>>>({});
+
+  // Initialize editing values when forms change
+  useEffect(() => {
+    const initialValues: Record<string, Partial<ConversationalForm>> = {};
+    forms.forEach((form) => {
+      initialValues[form.form_id] = { ...form };
+    });
+    setEditingValues(initialValues);
+  }, [forms]);
+
+  // Convert programs to select options
+  const programOptions = programs.map((p) => ({
+    value: p.program_id,
+    label: p.program_name,
+  }));
+
+  // Validate new form
+  const validateNewForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!newForm.form_id?.trim()) {
+      errors.form_id = 'Form ID is required';
+    } else if (!/^[a-zA-Z0-9_-]+$/.test(newForm.form_id)) {
+      errors.form_id = 'Form ID can only contain letters, numbers, hyphens, and underscores';
+    } else if (forms.some((f) => f.form_id === newForm.form_id)) {
+      errors.form_id = 'Form ID already exists';
+    }
+
+    if (!newForm.title?.trim()) {
+      errors.title = 'Title is required';
+    }
+
+    if (!newForm.program) {
+      errors.program = 'Program is required';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle create form
+  const handleCreateForm = () => {
+    if (!validateNewForm()) {
+      return;
+    }
+
+    const form: ConversationalForm = {
+      enabled: newForm.enabled ?? true,
+      form_id: newForm.form_id!.trim(),
+      program: newForm.program!,
+      title: newForm.title!.trim(),
+      description: newForm.description?.trim() || '',
+      trigger_phrases: [],
+      fields: [],
+    };
+
+    createForm(form);
+
+    // Reset form
+    setNewForm({
+      form_id: '',
+      title: '',
+      description: '',
+      program: '',
+      enabled: true,
+      trigger_phrases: [],
+      fields: [],
+    });
+    setFormErrors({});
+    setIsAddingNew(false);
+  };
+
+  // Handle cancel new
+  const handleCancelNew = () => {
+    setNewForm({
+      form_id: '',
+      title: '',
+      description: '',
+      program: '',
+      enabled: true,
+      trigger_phrases: [],
+      fields: [],
+    });
+    setFormErrors({});
+    setIsAddingNew(false);
+  };
+
+  // Handle field change
+  const handleFieldChange = (formId: string, field: keyof ConversationalForm, value: any) => {
+    setEditingValues((prev) => ({
+      ...prev,
+      [formId]: {
+        ...prev[formId],
+        [field]: value,
+      },
+    }));
+  };
+
+  // Handle field blur - save changes
+  const handleFieldBlur = (formId: string, field: keyof ConversationalForm) => {
+    const currentForm = forms.find((f) => f.form_id === formId);
+    const editedForm = editingValues[formId];
+
+    if (!currentForm || !editedForm) return;
+
+    // Check if value actually changed
+    if (currentForm[field] !== editedForm[field]) {
+      updateForm(formId, {
+        [field]: editedForm[field],
+      });
+    }
+  };
+
+  // Toggle enabled status
+  const handleToggleEnabled = (formId: string) => {
+    const form = forms.find((f) => f.form_id === formId);
+    if (form) {
+      updateForm(formId, { enabled: !form.enabled });
+    }
+  };
+
+  // Toggle expanded state
+  const toggleExpanded = (formId: string) => {
+    setExpandedForms((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(formId)) {
+        newSet.delete(formId);
+      } else {
+        newSet.add(formId);
+      }
+      return newSet;
+    });
+  };
+
+  // Handle delete request - build dependency graph and show warning
+  const handleDeleteRequest = (formId: string) => {
+    const form = formsRecord[formId];
+    if (!form) return;
+
+    // Build dependency graph
+    const graph = buildDependencyGraph(
+      programsRecord,
+      formsRecord,
+      ctasRecord,
+      branchesRecord
+    );
+
+    // Get deletion impact
+    const impact = getFormDeletionImpact(formId, form, graph);
+    const impactMessage = formatDeletionImpact('form', form.title, impact);
+    const hasImpact =
+      impact.affectedEntities.ctas.length > 0 ||
+      impact.affectedEntities.branches.length > 0;
+
+    setDeleteWarning({
+      formId,
+      formName: form.title,
+      impactMessage,
+      hasImpact,
+    });
+  };
+
+  // Handle delete confirm
+  const confirmDelete = () => {
+    if (deleteWarning) {
+      deleteForm(deleteWarning.formId);
+      setDeleteWarning(null);
+    }
+  };
+
+  // Handle duplicate
+  const handleDuplicate = (formId: string) => {
+    duplicateForm(formId);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="editor-header">
+        <div className="editor-title-section">
+          <h1 className="text-responsive-lg font-bold text-gray-900 dark:text-gray-100">Forms</h1>
+          <p className="text-responsive-sm text-gray-600 dark:text-gray-400 mt-2">
+            Manage conversational forms for data collection
+          </p>
+        </div>
+        <div className="editor-actions-section">
+          <Button onClick={() => setIsAddingNew(true)} disabled={isAddingNew || programs.length === 0} className="w-full sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Form
+          </Button>
+        </div>
+      </div>
+
+      {/* No programs warning */}
+      {programs.length === 0 && (
+        <Alert variant="warning">
+          <AlertDescription>
+            You must create at least one program before creating forms. Forms require a program assignment.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Add New Form */}
+      {isAddingNew && (
+        <Card className="border-primary border-2">
+          <CardHeader>
+            <CardTitle>Create New Form</CardTitle>
+            <CardDescription>
+              Add a new conversational form for data collection
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input
+              label="Form ID"
+              value={newForm.form_id || ''}
+              onChange={(e) => setNewForm({ ...newForm, form_id: e.target.value })}
+              error={formErrors.form_id}
+              placeholder="e.g., volunteer_application"
+              helperText="Unique identifier (letters, numbers, hyphens, underscores)"
+              required
+            />
+            <Input
+              label="Form Title"
+              value={newForm.title || ''}
+              onChange={(e) => setNewForm({ ...newForm, title: e.target.value })}
+              error={formErrors.title}
+              placeholder="e.g., Volunteer Application Form"
+              helperText="Display title for the form"
+              required
+            />
+            <Select
+              label="Program"
+              value={newForm.program || ''}
+              onValueChange={(value) => setNewForm({ ...newForm, program: value })}
+              options={programOptions}
+              placeholder="Select a program..."
+              error={formErrors.program}
+              helperText="Assign this form to a program"
+              required
+            />
+            <Textarea
+              label="Description"
+              value={newForm.description || ''}
+              onChange={(e) => setNewForm({ ...newForm, description: e.target.value })}
+              placeholder="Describe the purpose of this form..."
+              helperText="Brief description of the form's purpose"
+              rows={2}
+            />
+          </CardContent>
+          <CardFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleCancelNew}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateForm}>Create Form</Button>
+          </CardFooter>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {forms.length === 0 && !isAddingNew && programs.length > 0 && (
+        <Card className="bg-gray-50 dark:bg-gray-900/50">
+          <CardContent className="pt-8 pb-8 sm:pt-12 sm:pb-12 text-center px-4">
+            <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              No Forms Defined
+            </h3>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 max-w-md mx-auto">
+              Forms enable structured data collection through conversational interfaces. Create your first form to get started.
+            </p>
+            <Button onClick={() => setIsAddingNew(true)} className="w-full sm:w-auto">
+              <Plus className="w-4 h-4 mr-2" />
+              Create First Form
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Forms List */}
+      <div className="card-list">
+        {forms.map((form) => {
+          const editedForm = editingValues[form.form_id] || form;
+          const isExpanded = expandedForms.has(form.form_id);
+          const program = programs.find((p) => p.program_id === form.program);
+
+          return (
+            <Card key={form.form_id} className={`card-container ${!form.enabled ? 'opacity-60' : ''}`}>
+              <CardHeader>
+                <div className="card-header-responsive">
+                  <div className="card-header-content">
+                    <div className="flex-wrap-responsive mb-2">
+                      <CardTitle className="text-xs sm:text-sm font-mono text-gray-500">
+                        {form.form_id}
+                      </CardTitle>
+                      <Badge variant={form.enabled ? 'success' : 'secondary'}>
+                        {form.enabled ? 'Enabled' : 'Disabled'}
+                      </Badge>
+                      {program && (
+                        <Badge variant="outline" className="text-xs">
+                          {program.program_name}
+                        </Badge>
+                      )}
+                    </div>
+                    <Input
+                      value={editedForm.title || ''}
+                      onChange={(e) => handleFieldChange(form.form_id, 'title', e.target.value)}
+                      onBlur={() => handleFieldBlur(form.form_id, 'title')}
+                      placeholder="Form title"
+                      className="text-base sm:text-lg font-semibold"
+                    />
+                  </div>
+                  <div className="card-header-actions">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToggleEnabled(form.form_id)}
+                      title={form.enabled ? 'Disable form' : 'Enable form'}
+                      className="flex-1 sm:flex-none"
+                    >
+                      {form.enabled ? (
+                        <ToggleRight className="w-5 h-5 text-green-600" />
+                      ) : (
+                        <ToggleLeft className="w-5 h-5 text-gray-400" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDuplicate(form.form_id)}
+                      className="flex-1 sm:flex-none"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteRequest(form.form_id)}
+                      className="flex-1 sm:flex-none"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <Textarea
+                  label="Description"
+                  value={editedForm.description || ''}
+                  onChange={(e) => handleFieldChange(form.form_id, 'description', e.target.value)}
+                  onBlur={() => handleFieldBlur(form.form_id, 'description')}
+                  placeholder="Form description..."
+                  rows={2}
+                />
+
+                <Select
+                  label="Program"
+                  value={editedForm.program || ''}
+                  onValueChange={(value) => {
+                    handleFieldChange(form.form_id, 'program', value);
+                    updateForm(form.form_id, { program: value });
+                  }}
+                  options={programOptions}
+                  placeholder="Select a program..."
+                />
+
+                {/* Fields Summary */}
+                <div className="border-t pt-4">
+                  <button
+                    onClick={() => toggleExpanded(form.form_id)}
+                    className="flex items-center justify-between w-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                  >
+                    <span>Fields ({form.fields.length})</span>
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="mt-3 space-y-2">
+                      {form.fields.length === 0 ? (
+                        <p className="text-sm text-gray-500 italic">No fields defined</p>
+                      ) : (
+                        form.fields.map((field, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded text-sm"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-xs">
+                                {field.type}
+                              </Badge>
+                              <span className="font-medium">{field.label}</span>
+                              {field.required && (
+                                <span className="text-red-500 text-xs">*</span>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Dependency Warning Modal */}
+      <DependencyWarningModal
+        isOpen={!!deleteWarning}
+        onClose={() => setDeleteWarning(null)}
+        onConfirm={confirmDelete}
+        entityType="Form"
+        entityName={deleteWarning?.formName || ''}
+        impactMessage={deleteWarning?.impactMessage || ''}
+        hasImpact={deleteWarning?.hasImpact || false}
+      />
+    </div>
+  );
+};

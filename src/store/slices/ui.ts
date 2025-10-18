@@ -10,7 +10,8 @@ let toastIdCounter = 0;
 export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
   // State
   activeTab: 'programs',
-  sidebarOpen: true,
+  // Start with sidebar closed on mobile (< 768px), open on desktop
+  sidebarOpen: typeof window !== 'undefined' ? window.innerWidth >= 768 : true,
   activeEditor: null,
   activeEntityId: null,
   modalStack: [],

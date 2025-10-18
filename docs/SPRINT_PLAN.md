@@ -229,19 +229,27 @@ From PRD lines 299-309:
   - `src/components/editors/forms/FieldEditor.tsx`
   - `src/components/editors/forms/PostSubmission.tsx`
 
-**Task 3.5: Build Card Inventory Editor** (AC #9 - Optional)
+**Task 3.5: Build Content Showcase Editor** (AC #9 - Optional)
 - Agent: Frontend-Engineer
-- Time: 2 hours
-- Dependencies: Programs (3.1)
-- Description: Configure card inventory with strategy, requirements, program cards
+- Time: 3 hours
+- Dependencies: Programs (3.1), CTAs (3.3)
+- Description: Configure content showcase with rich visual items (programs, events, campaigns, initiatives) using ad inventory model
 - Acceptance:
-  - [ ] Can set strategy (qualification_first or exploration_first)
-  - [ ] Can define requirements with criticality flags
-  - [ ] Can create program cards
-  - [ ] Can set readiness thresholds
-- Testing: Configure card inventory, save/load
+  - [ ] Can create/edit/delete showcase items (CRUD)
+  - [ ] Can set item type (program, event, initiative, campaign)
+  - [ ] Can configure content (name, tagline, description, image_url)
+  - [ ] Can add supporting details (stats, testimonial, highlights array)
+  - [ ] Can define keyword triggers (array input)
+  - [ ] Can link to existing CTAs (dropdown selector)
+  - [ ] Can enable/disable showcase items (toggle)
+  - [ ] Validation: cta_id must reference existing CTA
+  - [ ] Validation: type must be one of allowed values
+  - [ ] Validation: at least one keyword required
+- Testing: Create showcase item, link to CTA, keyword matching
 - Deliverables:
-  - `src/components/editors/cards/CardInventoryEditor.tsx`
+  - `src/components/editors/showcase/ContentShowcaseEditor.tsx`
+  - `src/components/editors/showcase/ShowcaseItemForm.tsx`
+  - `src/components/editors/showcase/KeywordInput.tsx` (can reuse from branches)
 
 ### Phase 4: Validation Engine (Day 5)
 
@@ -328,6 +336,7 @@ From PRD lines 299-309:
   - `src/components/deploy/DeployButton.tsx`
   - `src/components/deploy/DeployDialog.tsx`
   - `src/components/deploy/DeploymentSummary.tsx`
+
 
 **Task 5.3: Implement Auto-Save to SessionStorage** (AC #13)
 - Agent: Backend-Engineer
@@ -1348,7 +1357,7 @@ vercel --prod
 | **AC #6**: User adds trigger phrases to form | 3.4 Form Editor | Frontend-Engineer | 2-3 |
 | **AC #7**: User creates CTAs (3 action types) | 3.3 CTA Editor | Frontend-Engineer | 4 |
 | **AC #8**: User creates branches with keywords, priority, CTAs | 3.2 Branch Editor | Frontend-Engineer | 4 |
-| **AC #9**: User configures card inventory (optional) | 3.5 Card Inventory Editor | Frontend-Engineer | 3 |
+| **AC #9**: User configures content showcase (optional) | 3.5 Content Showcase Editor | Frontend-Engineer | 3 |
 | **AC #10**: User configures post-submission settings | 3.4 Form Editor | Frontend-Engineer | 2-3 |
 | **AC #11**: System validates config with relationship checking | 4.1 Validation Engine, 4.2 Validation UI | Backend-Engineer, Frontend-Engineer | 5 |
 | **AC #12**: System shows dependency warnings before deletion | 4.3 Dependency Warnings | Frontend-Engineer | 5 |
@@ -1373,6 +1382,468 @@ vercel --prod
 | technical-writer | On-demand | 1 | Docs at end |
 | dx-engineer | On-demand | 1 | Polish at end |
 | Release-Manager | On-demand | 1 | Final deployment |
+
+---
+
+---
+
+## APPENDIX C: LAMBDA CHANGES FOR CONTENT SHOWCASE
+
+### Overview
+
+The Content Showcase feature requires updates to the Lambda response enhancer to detect and inject showcase cards based on keyword matching. This follows the same pattern as existing CTA detection.
+
+### Files Requiring Changes
+
+**Primary File:**
+- `/Lambdas/lambda/Bedrock_Streaming_Handler_Staging/response_enhancer.js`
+
+**No Changes Required:**
+- `/Lambdas/lambda/Master_Function_Staging/lambda_function.py` - Master Function just passes config to streaming handler
+
+---
+
+### Detailed Changes to response_enhancer.js
+
+#### Change 1: Update Config Loading (Lines 71-75)
+
+**Current:**
+```javascript
+// Extract relevant sections
+const result = {
+    conversation_branches: config.conversation_branches || {},
+    cta_definitions: config.cta_definitions || {},
+    conversational_forms: config.conversational_forms || {}
+};
+```
+
+**Updated:**
+```javascript
+// Extract relevant sections
+const result = {
+    conversation_branches: config.conversation_branches || {},
+    cta_definitions: config.cta_definitions || {},
+    conversational_forms: config.conversational_forms || {},
+    content_showcase: config.content_showcase || []  // NEW: Add showcase config
+};
+```
+
+**Rationale:** Load showcase items from tenant config alongside existing configuration sections.
+
+---
+
+#### Change 2: Add detectContentShowcase Function (New, After Line 236)
+
+**Add new function:**
+```javascript
+/**
+ * Detect content showcase opportunities based on keyword matching
+ * Similar to detectConversationBranch but returns rich showcase cards
+ */
+function detectContentShowcase(bedrockResponse, userQuery, config) {
+    const { content_showcase, cta_definitions } = config;
+
+    // Return null if no showcase items configured
+    if (!content_showcase || !Array.isArray(content_showcase) || content_showcase.length === 0) {
+        return null;
+    }
+
+    // Check each showcase item for keyword matches
+    for (const item of content_showcase) {
+        // Skip disabled items
+        if (!item.enabled) {
+            continue;
+        }
+
+        // Skip if no keywords defined
+        if (!item.keywords || !Array.isArray(item.keywords)) {
+            continue;
+        }
+
+        // Check if any keywords match the Bedrock response
+        const matches = item.keywords.some(keyword =>
+            bedrockResponse.toLowerCase().includes(keyword.toLowerCase())
+        );
+
+        if (matches) {
+            console.log(`Showcase item matched: ${item.id}`);
+
+            // Get linked CTA from definitions
+            const linkedCta = cta_definitions[item.cta_id];
+
+            if (!linkedCta) {
+                console.warn(`Showcase item ${item.id} references non-existent CTA: ${item.cta_id}`);
+                continue; // Skip this item if CTA doesn't exist
+            }
+
+            // Return showcase card with linked CTA
+            return {
+                showcaseCard: {
+                    id: item.id,
+                    type: item.type,
+                    name: item.name,
+                    tagline: item.tagline || '',
+                    description: item.description || '',
+                    image_url: item.image_url || '',
+                    stats: item.stats || '',
+                    testimonial: item.testimonial || '',
+                    highlights: item.highlights || [],
+                    cta: {
+                        id: item.cta_id,
+                        label: linkedCta.text || linkedCta.label,
+                        action: linkedCta.action || linkedCta.type,
+                        ...linkedCta
+                    }
+                }
+            };
+        }
+    }
+
+    console.log('No matching showcase item found');
+    return null;
+}
+```
+
+**Rationale:**
+- Follows same pattern as `detectConversationBranch` for consistency
+- Keyword-based matching (no scoring or complex logic)
+- Returns first match only (show 1 showcase card max per response)
+- Validates linked CTA exists before returning
+- Includes all showcase content fields for rich rendering
+
+---
+
+#### Change 3: Update enhanceResponse Function (Lines 274-478)
+
+**Location:** After form trigger detection (around line 406), before branch detection
+
+**Add showcase detection:**
+```javascript
+// After form trigger check (line ~406), add:
+
+// Check for content showcase opportunities (after forms, before branches)
+const showcaseResult = detectContentShowcase(bedrockResponse, userMessage, config);
+
+// Continue with existing branch detection...
+const branchResult = detectConversationBranch(bedrockResponse, userMessage, config, completedForms);
+```
+
+**Update return statements to include showcaseCards:**
+
+**Current return format:**
+```javascript
+return {
+    message: bedrockResponse,
+    ctaButtons: [...],
+    metadata: {...}
+};
+```
+
+**Updated return format:**
+```javascript
+return {
+    message: bedrockResponse,
+    showcaseCards: showcaseResult ? [showcaseResult.showcaseCard] : [],  // NEW
+    ctaButtons: [...],
+    metadata: {...}
+};
+```
+
+**Apply to all return statements:**
+1. Line ~360 (program switch detected)
+2. Line ~367 (suspended forms)
+3. Line ~390 (form trigger detected)
+4. Line ~452 (branch detected)
+5. Line ~465 (no enhancements)
+6. Line ~473 (error case)
+
+**Example for branch detection return (line ~452):**
+```javascript
+// BEFORE:
+return {
+    message: bedrockResponse,
+    ctaButtons: ctaButtons,
+    metadata: {
+        enhanced: true,
+        branch_detected: branchResult.branch,
+        filtered_forms: completedForms
+    }
+};
+
+// AFTER:
+return {
+    message: bedrockResponse,
+    showcaseCards: showcaseResult ? [showcaseResult.showcaseCard] : [],  // NEW
+    ctaButtons: ctaButtons,
+    metadata: {
+        enhanced: true,
+        branch_detected: branchResult.branch,
+        filtered_forms: completedForms,
+        showcase_detected: showcaseResult ? showcaseResult.showcaseCard.id : null  // NEW
+    }
+};
+```
+
+---
+
+#### Change 4: Update Module Exports (Line 482-486)
+
+**Current:**
+```javascript
+module.exports = {
+    enhanceResponse,
+    loadTenantConfig,
+    detectConversationBranch
+};
+```
+
+**Updated:**
+```javascript
+module.exports = {
+    enhanceResponse,
+    loadTenantConfig,
+    detectConversationBranch,
+    detectContentShowcase  // NEW: Export for testing
+};
+```
+
+---
+
+### Testing Lambda Changes
+
+**Unit Tests (to be added):**
+
+```javascript
+// Test 1: Showcase detection with matching keyword
+const config = {
+    content_showcase: [{
+        id: 'lovebox_card',
+        enabled: true,
+        name: 'Love Box',
+        keywords: ['love box', 'foster families'],
+        cta_id: 'lovebox_apply'
+    }],
+    cta_definitions: {
+        lovebox_apply: {
+            text: 'Apply for Love Box',
+            action: 'start_form',
+            formId: 'lb_apply'
+        }
+    }
+};
+
+const response = "We have a Love Box program for foster families.";
+const result = detectContentShowcase(response, 'tell me more', config);
+
+// Expected: showcaseCard with lovebox_card data
+
+// Test 2: No match
+const response2 = "We have volunteer opportunities.";
+const result2 = detectContentShowcase(response2, 'tell me more', config);
+
+// Expected: null
+
+// Test 3: Disabled item
+config.content_showcase[0].enabled = false;
+const result3 = detectContentShowcase(response, 'tell me more', config);
+
+// Expected: null
+
+// Test 4: Missing linked CTA
+config.content_showcase[0].cta_id = 'nonexistent';
+const result4 = detectContentShowcase(response, 'tell me more', config);
+
+// Expected: null (logs warning)
+```
+
+**Integration Test:**
+```javascript
+// Full enhanceResponse call with showcase
+const config = {
+    content_showcase: [/* ... */],
+    cta_definitions: {/* ... */},
+    conversation_branches: {/* ... */}
+};
+
+const result = await enhanceResponse(
+    "We have Love Box and Dare to Dream programs.",
+    "what volunteer opportunities?",
+    "test-tenant-hash",
+    {}
+);
+
+// Expected result:
+{
+    message: "We have Love Box and Dare to Dream programs.",
+    showcaseCards: [{
+        id: 'lovebox_card',
+        name: 'Love Box',
+        // ... full showcase card
+        cta: {
+            label: 'Apply for Love Box',
+            action: 'start_form',
+            formId: 'lb_apply'
+        }
+    }],
+    ctaButtons: [/* branch CTAs */],
+    metadata: {
+        enhanced: true,
+        showcase_detected: 'lovebox_card',
+        branch_detected: 'program_exploration'
+    }
+}
+```
+
+---
+
+### Priority Order (Updated)
+
+After implementing these changes, the detection priority will be:
+
+1. **Suspended Form Handling** (highest priority)
+   - Check for program switch
+   - If switching, return switch metadata
+   - If not switching, skip all CTAs/showcase
+
+2. **Direct Form Triggers**
+   - Trigger phrases in user query
+   - Return form CTA immediately
+
+3. **Content Showcase** (NEW)
+   - Keyword matching in Bedrock response
+   - Return showcase card with linked CTA
+   - Max 1 showcase card per response
+
+4. **Conversation Branches**
+   - Keyword matching in Bedrock response
+   - Return up to 3 regular CTAs
+
+5. **No Enhancements**
+   - Return empty ctaButtons and showcaseCards arrays
+
+---
+
+### Frontend Integration Points
+
+The frontend (Picasso widget) will need to handle the new `showcaseCards` array:
+
+**Response format:**
+```javascript
+{
+    message: "...",
+    showcaseCards: [
+        {
+            id: "lovebox_card",
+            type: "program",
+            name: "Love Box",
+            tagline: "Support foster families...",
+            description: "Pack monthly care boxes...",
+            image_url: "https://...",
+            stats: "2-3 hours/month",
+            testimonial: "Best experience! - Sarah M.",
+            highlights: ["Flexible schedule", "Monthly commitment"],
+            cta: {
+                id: "lovebox_apply",
+                label: "Apply for Love Box",
+                action: "start_form",
+                formId: "lb_apply"
+            }
+        }
+    ],
+    ctaButtons: [/* regular CTAs */],
+    metadata: {...}
+}
+```
+
+**Frontend rendering:**
+1. Check if `showcaseCards` array has items
+2. Render showcase card as rich visual component:
+   - Image at top (if image_url present)
+   - Name as heading
+   - Tagline as subheading
+   - Description as body text
+   - Stats, testimonial, highlights as supporting content
+   - Linked CTA button at bottom
+3. Render showcase cards BEFORE regular CTAs (visual hierarchy)
+4. Regular CTAs render below showcase cards
+
+---
+
+### Migration Path
+
+**For existing tenants:**
+- No breaking changes - `content_showcase` is optional
+- If config doesn't have `content_showcase`, function returns null
+- Existing CTA/branch detection continues to work unchanged
+
+**For new tenants:**
+- Web Config Builder will allow creating showcase items
+- Deploy with `content_showcase: []` in config (empty array)
+- Ops team can add showcase items over time
+
+**Config schema version:**
+- Consider incrementing to v1.4 when showcase is added to a tenant
+- Not required - showcase is additive, not breaking
+
+---
+
+### Performance Considerations
+
+**Caching:**
+- Showcase config is cached with rest of tenant config (5 min TTL)
+- No additional S3 calls required
+
+**Keyword Matching:**
+- O(n*m) complexity where n=showcase items, m=keywords per item
+- For typical usage (5 items × 5 keywords = 25 checks), negligible overhead
+- Runs after form triggers but before branch detection
+
+**Image Loading:**
+- Images are URLs in config, loaded by frontend
+- Lambda only passes URLs, doesn't fetch images
+- Frontend should lazy-load images for performance
+
+---
+
+### Deployment Steps
+
+1. **Test changes locally:**
+   - Update response_enhancer.js
+   - Run unit tests
+   - Test with sample config
+
+2. **Deploy to staging:**
+   ```bash
+   cd Lambdas/lambda/Bedrock_Streaming_Handler_Staging
+   npm ci --production
+   npm run package
+   aws lambda update-function-code --function-name Bedrock_Streaming_Handler_Staging --zip-file fileb://deployment.zip
+   ```
+
+3. **Test with staging tenant:**
+   - Add test showcase item to staging config
+   - Trigger conversation that matches keywords
+   - Verify showcase card appears in response
+
+4. **Deploy to production:**
+   - Same process as staging
+   - Monitor CloudWatch logs for errors
+   - Test with production tenant
+
+---
+
+### Rollback Plan
+
+If showcase feature causes issues:
+
+1. **Quick rollback:**
+   - Redeploy previous Lambda version
+   - Or: Set `enabled: false` on all showcase items in config
+
+2. **Gradual rollout:**
+   - Enable showcase for 1-2 test tenants initially
+   - Monitor for errors before wider rollout
+   - Use feature flag in config if needed
 
 ---
 

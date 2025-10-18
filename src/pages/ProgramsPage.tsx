@@ -25,10 +25,10 @@ export const ProgramsPage: React.FC = () => {
   // Show message if no tenant is selected
   if (!tenantId) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Programs</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Programs</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1 sm:mt-2">
             Manage program definitions and eligibility criteria
           </p>
         </div>

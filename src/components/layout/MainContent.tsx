@@ -36,12 +36,12 @@ export const MainContent: React.FC<MainContentProps> = ({ children, className })
   const isLoading = loading ? Object.values(loading).some(Boolean) : false;
 
   return (
-    <main className="flex-1 overflow-y-auto bg-gray-50 relative">
+    <main className="app-main-content">
       {/* Loading Overlay */}
       {isLoading && <LoadingOverlay isLoading={isLoading} />}
 
-      {/* Content Container */}
-      <div className={`max-w-7xl mx-auto p-6 ${className || ''}`}>
+      {/* Content Container - Fluid with responsive padding */}
+      <div className={`content-container ${className || ''}`}>
         <Breadcrumbs />
         {children}
       </div>

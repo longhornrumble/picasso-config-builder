@@ -61,10 +61,12 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load tenants';
         setError(errorMessage);
-        addToast({
-          type: 'error',
-          message: errorMessage,
-        });
+        if (addToast) {
+          addToast({
+            type: 'error',
+            message: errorMessage,
+          });
+        }
       } finally {
         setIsLoading(false);
       }

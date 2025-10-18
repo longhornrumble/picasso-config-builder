@@ -38,7 +38,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', ...props }, ref) => {
     const variants = {
       default: 'bg-white dark:bg-gray-900',
-      outlined: 'bg-white border-2 border-gray-200 dark:bg-gray-900 dark:border-gray-700',
+      outlined: 'bg-white border-2 border-gray-200 dark:bg-gray-900 dark:border-gray-600',
       elevated: 'bg-white shadow-lg dark:bg-gray-900',
     };
 
@@ -46,7 +46,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'rounded-lg border border-gray-200 text-gray-950 dark:border-gray-800 dark:text-gray-50',
+          'rounded-lg border border-gray-200 text-gray-950 dark:border-gray-600 dark:text-gray-50',
           variants[variant],
           className
         )}
@@ -73,7 +73,7 @@ export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
       ref={ref}
       className={cn(
         'flex flex-col space-y-1.5 p-6',
-        bordered && 'border-b border-gray-200 dark:border-gray-800',
+        bordered && 'border-b border-gray-200 dark:border-gray-600',
         className
       )}
       {...props}
@@ -156,7 +156,7 @@ export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
       ref={ref}
       className={cn(
         'flex items-center p-6 pt-0',
-        bordered && 'border-t border-gray-200 pt-6 dark:border-gray-800',
+        bordered && 'border-t border-gray-200 pt-6 dark:border-gray-600',
         className
       )}
       {...props}

@@ -1,15 +1,17 @@
 /**
  * BranchesPage Component
- * Conversation branches editor page
+ * Conversation branches editor page with full CRUD functionality
  */
 
 import React from 'react';
-import { BranchEditor } from '@/components/editors';
+import { Card, CardContent } from '@/components/ui';
+import { useConfigStore } from '@/store';
+import { BranchesEditor } from '@/components/editors/BranchesEditor';
 
 /**
  * Branches Page
  *
- * Full-featured branch editor for managing conversation routing
+ * Displays the BranchesEditor component for managing conversation routing
  *
  * @example
  * ```tsx
@@ -17,5 +19,22 @@ import { BranchEditor } from '@/components/editors';
  * ```
  */
 export const BranchesPage: React.FC = () => {
-  return <BranchEditor />;
+  const tenantId = useConfigStore((state) => state.config.tenantId);
+
+  return (
+    <div className="space-y-6">
+      {/* No Tenant Selected */}
+      {!tenantId ? (
+        <Card className="bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800">
+          <CardContent className="pt-6">
+            <p className="text-amber-800 dark:text-amber-300">
+              Please select a tenant from the header to view and edit branches.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <BranchesEditor />
+      )}
+    </div>
+  );
 };

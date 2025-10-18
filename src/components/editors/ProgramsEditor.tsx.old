@@ -1,0 +1,383 @@
+/**
+ * ProgramsEditor Component
+ *
+ * Full-featured editor for managing program definitions.
+ * Provides inline editing, creation, deletion, and duplication of programs.
+ */
+
+import React, { useState } from 'react';
+import { Plus, Trash2, Copy, AlertCircle } from 'lucide-react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { DependencyWarningModal } from '@/components/modals/DependencyWarningModal';
+import { useConfigStore } from '@/store';
+import {
+  buildDependencyGraph,
+  getProgramDeletionImpact,
+  formatDeletionImpact,
+} from '@/lib/validation/dependencyTracking';
+import type { Program } from '@/types/config';
+
+/**
+ * ProgramsEditor
+ *
+ * Features:
+ * - List view of all programs
+ * - Inline editing with auto-save
+ * - Add new programs with validation
+ * - Delete with confirmation
+ * - Duplicate programs
+ * - Empty state
+ *
+ * @example
+ * ```tsx
+ * <ProgramsEditor />
+ * ```
+ */
+export const ProgramsEditor: React.FC = () => {
+  const programs = useConfigStore((state) => state.programs.getAllPrograms());
+  const programsRecord = useConfigStore((state) => state.programs.programs);
+  const formsRecord = useConfigStore((state) => state.forms.forms);
+  const ctasRecord = useConfigStore((state) => state.ctas.ctas);
+  const branchesRecord = useConfigStore((state) => state.branches.branches);
+  const createProgram = useConfigStore((state) => state.programs.createProgram);
+  const updateProgram = useConfigStore((state) => state.programs.updateProgram);
+  const deleteProgram = useConfigStore((state) => state.programs.deleteProgram);
+  const duplicateProgram = useConfigStore((state) => state.programs.duplicateProgram);
+
+  // New program form state
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newProgram, setNewProgram] = useState<Program>({
+    program_id: '',
+    program_name: '',
+    description: '',
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Dependency warning modal
+  const [deleteWarning, setDeleteWarning] = useState<{
+    programId: string;
+    programName: string;
+    impactMessage: string;
+    hasImpact: boolean;
+  } | null>(null);
+
+  // Editing state for each program (only store overrides, not all values)
+  const [editingOverrides, setEditingOverrides] = useState<Record<string, Partial<Program>>>({});
+
+  // Get the editing value for a program (override or original)
+  const getEditingValue = (program: Program, field: keyof Program): string => {
+    const override = editingOverrides[program.program_id];
+    if (override && field in override) {
+      return String(override[field] || '');
+    }
+    return String(program[field] || '');
+  };
+
+  // Validate new program form
+  const validateNewProgram = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!newProgram.program_id.trim()) {
+      errors.program_id = 'Program ID is required';
+    } else if (!/^[a-zA-Z0-9_-]+$/.test(newProgram.program_id)) {
+      errors.program_id = 'Program ID can only contain letters, numbers, hyphens, and underscores';
+    } else if (programs.some((p) => p.program_id === newProgram.program_id)) {
+      errors.program_id = 'Program ID already exists';
+    }
+
+    if (!newProgram.program_name.trim()) {
+      errors.program_name = 'Program name is required';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle create new program
+  const handleCreateProgram = () => {
+    if (!validateNewProgram()) {
+      return;
+    }
+
+    createProgram({
+      program_id: newProgram.program_id.trim(),
+      program_name: newProgram.program_name.trim(),
+      description: newProgram.description?.trim() || undefined,
+    });
+
+    // Reset form
+    setNewProgram({ program_id: '', program_name: '', description: '' });
+    setFormErrors({});
+    setIsAddingNew(false);
+  };
+
+  // Handle cancel new program
+  const handleCancelNew = () => {
+    setNewProgram({ program_id: '', program_name: '', description: '' });
+    setFormErrors({});
+    setIsAddingNew(false);
+  };
+
+  // Handle field change for existing program
+  const handleFieldChange = (programId: string, field: keyof Program, value: string) => {
+    setEditingOverrides((prev) => ({
+      ...prev,
+      [programId]: {
+        ...prev[programId],
+        [field]: value,
+      },
+    }));
+  };
+
+  // Handle blur - save changes
+  const handleFieldBlur = (programId: string, field: keyof Program) => {
+    const currentProgram = programs.find((p) => p.program_id === programId);
+    const override = editingOverrides[programId];
+
+    if (!currentProgram || !override || !(field in override)) return;
+
+    const newValue = override[field];
+
+    // Check if value actually changed
+    if (currentProgram[field] !== newValue) {
+      // Validate and update
+      if (field === 'program_name' && !String(newValue).trim()) {
+        // Revert to original value - remove override
+        setEditingOverrides((prev) => {
+          const newOverrides = { ...prev };
+          if (newOverrides[programId]) {
+            delete newOverrides[programId][field];
+            if (Object.keys(newOverrides[programId]).length === 0) {
+              delete newOverrides[programId];
+            }
+          }
+          return newOverrides;
+        });
+        return;
+      }
+
+      updateProgram(programId, {
+        [field]: newValue,
+      });
+
+      // Clear the override after saving
+      setEditingOverrides((prev) => {
+        const newOverrides = { ...prev };
+        if (newOverrides[programId]) {
+          delete newOverrides[programId][field];
+          if (Object.keys(newOverrides[programId]).length === 0) {
+            delete newOverrides[programId];
+          }
+        }
+        return newOverrides;
+      });
+    }
+  };
+
+  // Handle delete request - build dependency graph and show warning
+  const handleDeleteRequest = (programId: string) => {
+    const program = programsRecord[programId];
+    if (!program) return;
+
+    // Build dependency graph
+    const graph = buildDependencyGraph(
+      programsRecord,
+      formsRecord,
+      ctasRecord,
+      branchesRecord
+    );
+
+    // Get deletion impact
+    const impact = getProgramDeletionImpact(programId, program, graph);
+    const impactMessage = formatDeletionImpact('program', program.program_name, impact);
+    const hasImpact =
+      impact.affectedEntities.forms.length > 0 ||
+      impact.affectedEntities.ctas.length > 0 ||
+      impact.affectedEntities.branches.length > 0;
+
+    setDeleteWarning({
+      programId,
+      programName: program.program_name,
+      impactMessage,
+      hasImpact,
+    });
+  };
+
+  // Handle delete confirm
+  const confirmDelete = () => {
+    if (deleteWarning) {
+      deleteProgram(deleteWarning.programId);
+      setDeleteWarning(null);
+    }
+  };
+
+  // Handle duplicate
+  const handleDuplicate = (programId: string) => {
+    duplicateProgram(programId);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="editor-header">
+        <div className="editor-title-section">
+          <h1 className="text-responsive-lg font-bold text-gray-900 dark:text-gray-100">Programs</h1>
+          <p className="text-responsive-sm text-gray-600 dark:text-gray-400 mt-2">
+            Manage program definitions and eligibility criteria
+          </p>
+        </div>
+        <div className="editor-actions-section">
+          <Button onClick={() => setIsAddingNew(true)} disabled={isAddingNew} className="w-full sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Program
+          </Button>
+        </div>
+      </div>
+
+      {/* Add New Program Form */}
+      {isAddingNew && (
+        <Card className="border-primary border-2">
+          <CardHeader>
+            <CardTitle>Create New Program</CardTitle>
+            <CardDescription>
+              Add a new program definition to your configuration
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input
+              label="Program ID"
+              value={newProgram.program_id}
+              onChange={(e) => setNewProgram({ ...newProgram, program_id: e.target.value })}
+              error={formErrors.program_id}
+              placeholder="e.g., financial_aid_2024"
+              helperText="Unique identifier for the program (letters, numbers, hyphens, underscores)"
+              required
+            />
+            <Input
+              label="Program Name"
+              value={newProgram.program_name}
+              onChange={(e) => setNewProgram({ ...newProgram, program_name: e.target.value })}
+              error={formErrors.program_name}
+              placeholder="e.g., Financial Aid Program 2024"
+              helperText="Display name for the program"
+              required
+            />
+            <Textarea
+              label="Description"
+              value={newProgram.description}
+              onChange={(e) => setNewProgram({ ...newProgram, description: e.target.value })}
+              placeholder="Describe the program's purpose and eligibility criteria..."
+              helperText="Optional description of the program"
+              rows={3}
+            />
+          </CardContent>
+          <CardFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleCancelNew}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateProgram}>Create Program</Button>
+          </CardFooter>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {programs.length === 0 && !isAddingNew && (
+        <Card className="bg-gray-50 dark:bg-gray-900/50">
+          <CardContent className="pt-8 pb-8 sm:pt-12 sm:pb-12 text-center px-4">
+            <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              No Programs Defined
+            </h3>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 max-w-md mx-auto">
+              Programs help organize your forms and define eligibility criteria. Create your first
+              program to get started.
+            </p>
+            <Button onClick={() => setIsAddingNew(true)} className="w-full sm:w-auto">
+              <Plus className="w-4 h-4 mr-2" />
+              Create First Program
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Programs List */}
+      <div className="card-list">
+        {programs.map((program) => {
+          return (
+            <Card key={program.program_id} className="card-container">
+              <CardHeader>
+                <div className="card-header-responsive">
+                  <div className="card-header-content">
+                    <CardTitle className="text-xs sm:text-sm font-mono text-gray-500 mb-2">
+                      {program.program_id}
+                    </CardTitle>
+                    <Input
+                      value={getEditingValue(program, 'program_name')}
+                      onChange={(e) =>
+                        handleFieldChange(program.program_id, 'program_name', e.target.value)
+                      }
+                      onBlur={() => handleFieldBlur(program.program_id, 'program_name')}
+                      placeholder="Program name"
+                      className="text-base sm:text-lg font-semibold"
+                    />
+                  </div>
+                  <div className="card-header-actions">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDuplicate(program.program_id)}
+                      className="flex-1 sm:flex-none"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteRequest(program.program_id)}
+                      className="flex-1 sm:flex-none"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Textarea
+                  label="Description"
+                  value={getEditingValue(program, 'description')}
+                  onChange={(e) =>
+                    handleFieldChange(program.program_id, 'description', e.target.value)
+                  }
+                  onBlur={() => handleFieldBlur(program.program_id, 'description')}
+                  placeholder="Add a description for this program..."
+                  rows={2}
+                />
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Dependency Warning Modal */}
+      <DependencyWarningModal
+        isOpen={!!deleteWarning}
+        onClose={() => setDeleteWarning(null)}
+        onConfirm={confirmDelete}
+        entityType="Program"
+        entityName={deleteWarning?.programName || ''}
+        impactMessage={deleteWarning?.impactMessage || ''}
+        hasImpact={deleteWarning?.hasImpact || false}
+      />
+    </div>
+  );
+};

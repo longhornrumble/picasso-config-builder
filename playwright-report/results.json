@@ -1,0 +1,2928 @@
+{
+  "config": {
+    "configFile": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/playwright.config.ts",
+    "rootDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "playwright-report/results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "mobile-chrome",
+        "name": "mobile-chrome",
+        "testDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "mobile-safari",
+        "name": "mobile-safari",
+        "testDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 5,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:8080",
+      "reuseExistingServer": true,
+      "timeout": 120000,
+      "stdout": "ignore",
+      "stderr": "pipe"
+    }
+  },
+  "suites": [
+    {
+      "title": "branch-editor.spec.ts",
+      "file": "branch-editor.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "CTA Creation & Branch Assignment",
+          "file": "branch-editor.spec.ts",
+          "line": 36,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should create CTAs, assign to branch, validate and deploy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-e1b32603d9b2dbb3bfcc",
+              "file": "branch-editor.spec.ts",
+              "line": 43,
+              "column": 3
+            },
+            {
+              "title": "should display CTA preview in branch editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-b7212cdd9f49811f53ac",
+              "file": "branch-editor.spec.ts",
+              "line": 226,
+              "column": 3
+            },
+            {
+              "title": "should allow editing CTA assignments in branch",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-62c52249d916deddc25b",
+              "file": "branch-editor.spec.ts",
+              "line": 265,
+              "column": 3
+            },
+            {
+              "title": "should create CTAs, assign to branch, validate and deploy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-8b088a871f898f888093",
+              "file": "branch-editor.spec.ts",
+              "line": 43,
+              "column": 3
+            },
+            {
+              "title": "should display CTA preview in branch editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-6863fe3d1beb41f9e110",
+              "file": "branch-editor.spec.ts",
+              "line": 226,
+              "column": 3
+            },
+            {
+              "title": "should allow editing CTA assignments in branch",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-00a36242685975b1dbea",
+              "file": "branch-editor.spec.ts",
+              "line": 265,
+              "column": 3
+            },
+            {
+              "title": "should create CTAs, assign to branch, validate and deploy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-905d7c4cb09ee29826b0",
+              "file": "branch-editor.spec.ts",
+              "line": 43,
+              "column": 3
+            },
+            {
+              "title": "should display CTA preview in branch editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-851f9bd320ee665ca758",
+              "file": "branch-editor.spec.ts",
+              "line": 226,
+              "column": 3
+            },
+            {
+              "title": "should allow editing CTA assignments in branch",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-10a454973159103b3d79",
+              "file": "branch-editor.spec.ts",
+              "line": 265,
+              "column": 3
+            },
+            {
+              "title": "should create CTAs, assign to branch, validate and deploy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-edfbb06aa1cff3cf50c9",
+              "file": "branch-editor.spec.ts",
+              "line": 43,
+              "column": 3
+            },
+            {
+              "title": "should display CTA preview in branch editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-9cf5212dfc2047495a2d",
+              "file": "branch-editor.spec.ts",
+              "line": 226,
+              "column": 3
+            },
+            {
+              "title": "should allow editing CTA assignments in branch",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-2653999459546cbec644",
+              "file": "branch-editor.spec.ts",
+              "line": 265,
+              "column": 3
+            },
+            {
+              "title": "should create CTAs, assign to branch, validate and deploy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-cf100bf690f07e5174e4",
+              "file": "branch-editor.spec.ts",
+              "line": 43,
+              "column": 3
+            },
+            {
+              "title": "should display CTA preview in branch editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-4c7d4f60613e94c0e491",
+              "file": "branch-editor.spec.ts",
+              "line": 226,
+              "column": 3
+            },
+            {
+              "title": "should allow editing CTA assignments in branch",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f60aa6ea4373217a8de7-927aa51c1d20e977f1a6",
+              "file": "branch-editor.spec.ts",
+              "line": 265,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "cross-browser.spec.ts",
+      "file": "cross-browser.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Cross-Browser Compatibility",
+          "file": "cross-browser.spec.ts",
+          "line": 27,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should load home page in under 2 seconds",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-8eeaff326722266dd47a",
+              "file": "cross-browser.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "should successfully create and deploy a form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-3c722e6d0ce42d1ee0cd",
+              "file": "cross-browser.spec.ts",
+              "line": 40,
+              "column": 3
+            },
+            {
+              "title": "should successfully edit an existing form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-df43ae7c091a5ee73b11",
+              "file": "cross-browser.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should successfully create and deploy a CTA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-ff84e4978f3f0d3cb089",
+              "file": "cross-browser.spec.ts",
+              "line": 118,
+              "column": 3
+            },
+            {
+              "title": "should render UI components correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-4e80b0754553e7028807",
+              "file": "cross-browser.spec.ts",
+              "line": 158,
+              "column": 3
+            },
+            {
+              "title": "should handle modals correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-04f5e3756cc3b33d9b9a",
+              "file": "cross-browser.spec.ts",
+              "line": 184,
+              "column": 3
+            },
+            {
+              "title": "should handle form validation consistently",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-f74c9d750d49f11c0698",
+              "file": "cross-browser.spec.ts",
+              "line": 219,
+              "column": 3
+            },
+            {
+              "title": "should support keyboard navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-82968b06fa4d738c0ebc",
+              "file": "cross-browser.spec.ts",
+              "line": 245,
+              "column": 3
+            },
+            {
+              "title": "should handle long content without layout issues",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-67d1129a5e7cb5378188",
+              "file": "cross-browser.spec.ts",
+              "line": 269,
+              "column": 3
+            },
+            {
+              "title": "should maintain state across navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-054c872706bb46ea888f",
+              "file": "cross-browser.spec.ts",
+              "line": 295,
+              "column": 3
+            },
+            {
+              "title": "should handle rapid clicks without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-c6ccc36a6c3579b834c1",
+              "file": "cross-browser.spec.ts",
+              "line": 322,
+              "column": 3
+            },
+            {
+              "title": "should load home page in under 2 seconds",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-5c7d2564e732d6aaccae",
+              "file": "cross-browser.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "should successfully create and deploy a form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-5d99ac3619cd1dcc3b32",
+              "file": "cross-browser.spec.ts",
+              "line": 40,
+              "column": 3
+            },
+            {
+              "title": "should successfully edit an existing form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-6e906e57dcafcdf8e81b",
+              "file": "cross-browser.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should successfully create and deploy a CTA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-f709c4f4d48c73c8bb83",
+              "file": "cross-browser.spec.ts",
+              "line": 118,
+              "column": 3
+            },
+            {
+              "title": "should render UI components correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-df355d2fd58467be3fbe",
+              "file": "cross-browser.spec.ts",
+              "line": 158,
+              "column": 3
+            },
+            {
+              "title": "should handle modals correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-745faf431ac83a9d5d04",
+              "file": "cross-browser.spec.ts",
+              "line": 184,
+              "column": 3
+            },
+            {
+              "title": "should handle form validation consistently",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-8d411cc7856cf3c7aa92",
+              "file": "cross-browser.spec.ts",
+              "line": 219,
+              "column": 3
+            },
+            {
+              "title": "should support keyboard navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-53fca74acde6b3d26b86",
+              "file": "cross-browser.spec.ts",
+              "line": 245,
+              "column": 3
+            },
+            {
+              "title": "should handle long content without layout issues",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-770d87686b2ea3eedc04",
+              "file": "cross-browser.spec.ts",
+              "line": 269,
+              "column": 3
+            },
+            {
+              "title": "should maintain state across navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-502441b89ed83f898e8a",
+              "file": "cross-browser.spec.ts",
+              "line": 295,
+              "column": 3
+            },
+            {
+              "title": "should handle rapid clicks without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-9d58389160d1b0d33e69",
+              "file": "cross-browser.spec.ts",
+              "line": 322,
+              "column": 3
+            },
+            {
+              "title": "should load home page in under 2 seconds",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-af97cf3fbceb33838c54",
+              "file": "cross-browser.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "should successfully create and deploy a form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-be99f73bc7683d6f3915",
+              "file": "cross-browser.spec.ts",
+              "line": 40,
+              "column": 3
+            },
+            {
+              "title": "should successfully edit an existing form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-a8205522a4fd38b78b0e",
+              "file": "cross-browser.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should successfully create and deploy a CTA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-07165d5232daf88d47f7",
+              "file": "cross-browser.spec.ts",
+              "line": 118,
+              "column": 3
+            },
+            {
+              "title": "should render UI components correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-b95a3de65209c495aef2",
+              "file": "cross-browser.spec.ts",
+              "line": 158,
+              "column": 3
+            },
+            {
+              "title": "should handle modals correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-7f76c005d57fc4f349cb",
+              "file": "cross-browser.spec.ts",
+              "line": 184,
+              "column": 3
+            },
+            {
+              "title": "should handle form validation consistently",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-29693009778b0b740ba3",
+              "file": "cross-browser.spec.ts",
+              "line": 219,
+              "column": 3
+            },
+            {
+              "title": "should support keyboard navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-601d680cc62107267ee1",
+              "file": "cross-browser.spec.ts",
+              "line": 245,
+              "column": 3
+            },
+            {
+              "title": "should handle long content without layout issues",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-fba962cfba37806ed32c",
+              "file": "cross-browser.spec.ts",
+              "line": 269,
+              "column": 3
+            },
+            {
+              "title": "should maintain state across navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-2891fd82adb6e8e79374",
+              "file": "cross-browser.spec.ts",
+              "line": 295,
+              "column": 3
+            },
+            {
+              "title": "should handle rapid clicks without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-9ea0084bcea457824bc5",
+              "file": "cross-browser.spec.ts",
+              "line": 322,
+              "column": 3
+            },
+            {
+              "title": "should load home page in under 2 seconds",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-ba11d632f9c89873f902",
+              "file": "cross-browser.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "should successfully create and deploy a form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-23bbfa76d0ed4cfa6965",
+              "file": "cross-browser.spec.ts",
+              "line": 40,
+              "column": 3
+            },
+            {
+              "title": "should successfully edit an existing form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-6e6bc64cdafab9f054df",
+              "file": "cross-browser.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should successfully create and deploy a CTA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-f3348a5271094b3640c3",
+              "file": "cross-browser.spec.ts",
+              "line": 118,
+              "column": 3
+            },
+            {
+              "title": "should render UI components correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-d99c67e4edf32dba5b47",
+              "file": "cross-browser.spec.ts",
+              "line": 158,
+              "column": 3
+            },
+            {
+              "title": "should handle modals correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-5b104ff530b9c396fc30",
+              "file": "cross-browser.spec.ts",
+              "line": 184,
+              "column": 3
+            },
+            {
+              "title": "should handle form validation consistently",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-6f9e75a60a3805f4d657",
+              "file": "cross-browser.spec.ts",
+              "line": 219,
+              "column": 3
+            },
+            {
+              "title": "should support keyboard navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-a3e7d81a5bc4285208cf",
+              "file": "cross-browser.spec.ts",
+              "line": 245,
+              "column": 3
+            },
+            {
+              "title": "should handle long content without layout issues",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-9c4101bdb926145f57df",
+              "file": "cross-browser.spec.ts",
+              "line": 269,
+              "column": 3
+            },
+            {
+              "title": "should maintain state across navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-c7d558f8d849a0bcdffb",
+              "file": "cross-browser.spec.ts",
+              "line": 295,
+              "column": 3
+            },
+            {
+              "title": "should handle rapid clicks without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-5a75993813fe03cbef50",
+              "file": "cross-browser.spec.ts",
+              "line": 322,
+              "column": 3
+            },
+            {
+              "title": "should load home page in under 2 seconds",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-1d007d65ab626fb83e7e",
+              "file": "cross-browser.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "should successfully create and deploy a form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-37509d8e40142d493a80",
+              "file": "cross-browser.spec.ts",
+              "line": 40,
+              "column": 3
+            },
+            {
+              "title": "should successfully edit an existing form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-8ddd4450dec6e301656d",
+              "file": "cross-browser.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "should successfully create and deploy a CTA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-70a14f8a7d0f0398b316",
+              "file": "cross-browser.spec.ts",
+              "line": 118,
+              "column": 3
+            },
+            {
+              "title": "should render UI components correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-f5f3dd2a3c586f3d7bbb",
+              "file": "cross-browser.spec.ts",
+              "line": 158,
+              "column": 3
+            },
+            {
+              "title": "should handle modals correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-82ae42387a44ba3f4b49",
+              "file": "cross-browser.spec.ts",
+              "line": 184,
+              "column": 3
+            },
+            {
+              "title": "should handle form validation consistently",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-1876c649d7b740735dbf",
+              "file": "cross-browser.spec.ts",
+              "line": 219,
+              "column": 3
+            },
+            {
+              "title": "should support keyboard navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-16d4e8488a0bf91a5389",
+              "file": "cross-browser.spec.ts",
+              "line": 245,
+              "column": 3
+            },
+            {
+              "title": "should handle long content without layout issues",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-5f9cc66a728c09736397",
+              "file": "cross-browser.spec.ts",
+              "line": 269,
+              "column": 3
+            },
+            {
+              "title": "should maintain state across navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-af92127e099fade3d5ac",
+              "file": "cross-browser.spec.ts",
+              "line": 295,
+              "column": 3
+            },
+            {
+              "title": "should handle rapid clicks without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-4638cb70e320f53687d2",
+              "file": "cross-browser.spec.ts",
+              "line": 322,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Browser-Specific Features",
+          "file": "cross-browser.spec.ts",
+          "line": 345,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should work with browser back/forward buttons",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-a817b57edc800457199e",
+              "file": "cross-browser.spec.ts",
+              "line": 346,
+              "column": 3
+            },
+            {
+              "title": "should handle page refresh without data loss",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-367940dd77c0f2514d92",
+              "file": "cross-browser.spec.ts",
+              "line": 367,
+              "column": 3
+            },
+            {
+              "title": "should work with browser back/forward buttons",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-04934db1c02eb7a6768f",
+              "file": "cross-browser.spec.ts",
+              "line": 346,
+              "column": 3
+            },
+            {
+              "title": "should handle page refresh without data loss",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-5f5e1f23f89c70fca3a8",
+              "file": "cross-browser.spec.ts",
+              "line": 367,
+              "column": 3
+            },
+            {
+              "title": "should work with browser back/forward buttons",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-0b0590d9193664bac066",
+              "file": "cross-browser.spec.ts",
+              "line": 346,
+              "column": 3
+            },
+            {
+              "title": "should handle page refresh without data loss",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-bcb9b11d63375a58967d",
+              "file": "cross-browser.spec.ts",
+              "line": 367,
+              "column": 3
+            },
+            {
+              "title": "should work with browser back/forward buttons",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-b14dca654e5512c72fa8",
+              "file": "cross-browser.spec.ts",
+              "line": 346,
+              "column": 3
+            },
+            {
+              "title": "should handle page refresh without data loss",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-733a84f40b854a97d7af",
+              "file": "cross-browser.spec.ts",
+              "line": 367,
+              "column": 3
+            },
+            {
+              "title": "should work with browser back/forward buttons",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-a0c745c6d23e37ebd157",
+              "file": "cross-browser.spec.ts",
+              "line": 346,
+              "column": 3
+            },
+            {
+              "title": "should handle page refresh without data loss",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "988e5ab7a922d34581e7-f3cb369fa363b90dc6a6",
+              "file": "cross-browser.spec.ts",
+              "line": 367,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "dependency-warnings.spec.ts",
+      "file": "dependency-warnings.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Dependency Warning Flow",
+          "file": "dependency-warnings.spec.ts",
+          "line": 27,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show dependency warning when deleting program used by form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-7146418ec2b68880e178",
+              "file": "dependency-warnings.spec.ts",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting form used by CTA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-bb2ef7e6e7975089df1b",
+              "file": "dependency-warnings.spec.ts",
+              "line": 202,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting CTA used by branch",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-5d601579cedf992322b6",
+              "file": "dependency-warnings.spec.ts",
+              "line": 251,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting program used by form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-60304d5d0dbd68425fc7",
+              "file": "dependency-warnings.spec.ts",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting form used by CTA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-bfb9bf8f1d600b2b4553",
+              "file": "dependency-warnings.spec.ts",
+              "line": 202,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting CTA used by branch",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-b7ee1211af09b32c0ea4",
+              "file": "dependency-warnings.spec.ts",
+              "line": 251,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting program used by form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-6823dc91e426d095338b",
+              "file": "dependency-warnings.spec.ts",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting form used by CTA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-d7af0ac50c9e12bf17c0",
+              "file": "dependency-warnings.spec.ts",
+              "line": 202,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting CTA used by branch",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-73bb80ad7a564288abce",
+              "file": "dependency-warnings.spec.ts",
+              "line": 251,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting program used by form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-82bbb7c45f8fafe706bb",
+              "file": "dependency-warnings.spec.ts",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting form used by CTA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-2304135e45e8d1a5eb6e",
+              "file": "dependency-warnings.spec.ts",
+              "line": 202,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting CTA used by branch",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-66725d8f30750bf11d4f",
+              "file": "dependency-warnings.spec.ts",
+              "line": 251,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting program used by form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-e2ae75703b222a2e180b",
+              "file": "dependency-warnings.spec.ts",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting form used by CTA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-79bc47e2d22aaa1fc7d9",
+              "file": "dependency-warnings.spec.ts",
+              "line": 202,
+              "column": 3
+            },
+            {
+              "title": "should show dependency warning when deleting CTA used by branch",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "56126e475dbbb99294b3-c769d49904aa8b0021d4",
+              "file": "dependency-warnings.spec.ts",
+              "line": 251,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "form-creation.spec.ts",
+      "file": "form-creation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Complete Form Creation Flow",
+          "file": "form-creation.spec.ts",
+          "line": 32,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should create a complete form with program, fields, triggers, and deploy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-60edf40a8f382938e724",
+              "file": "form-creation.spec.ts",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "should persist form data across navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-23aee2132d145f57e8b8",
+              "file": "form-creation.spec.ts",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields before submission",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-66c4283df06486b825bd",
+              "file": "form-creation.spec.ts",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "should create a complete form with program, fields, triggers, and deploy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-b66f75f192938f20425e",
+              "file": "form-creation.spec.ts",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "should persist form data across navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-9f21f3429dbac152bca8",
+              "file": "form-creation.spec.ts",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields before submission",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-eec02daa787360c7ef30",
+              "file": "form-creation.spec.ts",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "should create a complete form with program, fields, triggers, and deploy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-07ad9494d1057a7a213b",
+              "file": "form-creation.spec.ts",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "should persist form data across navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-9a19d5ef2a6caf706f3d",
+              "file": "form-creation.spec.ts",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields before submission",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-dbfc6bdd405f6e8913e4",
+              "file": "form-creation.spec.ts",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "should create a complete form with program, fields, triggers, and deploy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-a6938d15f83bbff3a672",
+              "file": "form-creation.spec.ts",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "should persist form data across navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-f058d53587dccb2e0147",
+              "file": "form-creation.spec.ts",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields before submission",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-eab7d546fcbbdc63c890",
+              "file": "form-creation.spec.ts",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "should create a complete form with program, fields, triggers, and deploy",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-4f31c9e0ebed874079b0",
+              "file": "form-creation.spec.ts",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "should persist form data across navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-cae3f78f8a280f782021",
+              "file": "form-creation.spec.ts",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "should validate required fields before submission",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-df3a9f7c0459e6fb1d39",
+              "file": "form-creation.spec.ts",
+              "line": 271,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "validation.spec.ts",
+      "file": "validation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Validation Error Blocking Deployment",
+          "file": "validation.spec.ts",
+          "line": 28,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should block deployment when CTA has start_form action without formId",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-fda6757da4b2a8bfb53b",
+              "file": "validation.spec.ts",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "should show validation errors for duplicate IDs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-523d539aaa287ba03d81",
+              "file": "validation.spec.ts",
+              "line": 199,
+              "column": 3
+            },
+            {
+              "title": "should show validation errors for missing required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-24116feb0f14f7f1b78a",
+              "file": "validation.spec.ts",
+              "line": 223,
+              "column": 3
+            },
+            {
+              "title": "should validate on blur for individual fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-c210466bd18d51b47ab9",
+              "file": "validation.spec.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "should clear validation errors after fixing issues",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-a7f808fa06dc839d37c1",
+              "file": "validation.spec.ts",
+              "line": 257,
+              "column": 3
+            },
+            {
+              "title": "should block deployment when CTA has start_form action without formId",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-a97a1b0206b4a0be5d09",
+              "file": "validation.spec.ts",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "should show validation errors for duplicate IDs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-1a52bf5f9cec1b7389ca",
+              "file": "validation.spec.ts",
+              "line": 199,
+              "column": 3
+            },
+            {
+              "title": "should show validation errors for missing required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-c27ec7cafdfec1fbf04e",
+              "file": "validation.spec.ts",
+              "line": 223,
+              "column": 3
+            },
+            {
+              "title": "should validate on blur for individual fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-e37a1b8700b709d467dd",
+              "file": "validation.spec.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "should clear validation errors after fixing issues",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-3eca47f6a94a2d09f70d",
+              "file": "validation.spec.ts",
+              "line": 257,
+              "column": 3
+            },
+            {
+              "title": "should block deployment when CTA has start_form action without formId",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-bb9fb27c91d8c82a1e18",
+              "file": "validation.spec.ts",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "should show validation errors for duplicate IDs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-0234e9e3bb0576e30378",
+              "file": "validation.spec.ts",
+              "line": 199,
+              "column": 3
+            },
+            {
+              "title": "should show validation errors for missing required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-71b22f752ddbb581a2a7",
+              "file": "validation.spec.ts",
+              "line": 223,
+              "column": 3
+            },
+            {
+              "title": "should validate on blur for individual fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-909283c2226e59818f15",
+              "file": "validation.spec.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "should clear validation errors after fixing issues",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-2c25ef85c1cb2c751850",
+              "file": "validation.spec.ts",
+              "line": 257,
+              "column": 3
+            },
+            {
+              "title": "should block deployment when CTA has start_form action without formId",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-05196023e15ba2984944",
+              "file": "validation.spec.ts",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "should show validation errors for duplicate IDs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-8b39575ea585d2cdce82",
+              "file": "validation.spec.ts",
+              "line": 199,
+              "column": 3
+            },
+            {
+              "title": "should show validation errors for missing required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-6f1e9cf6b9a383a72de3",
+              "file": "validation.spec.ts",
+              "line": 223,
+              "column": 3
+            },
+            {
+              "title": "should validate on blur for individual fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-f35fba8d67e82e8e2775",
+              "file": "validation.spec.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "should clear validation errors after fixing issues",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-b2704d0440005ead5981",
+              "file": "validation.spec.ts",
+              "line": 257,
+              "column": 3
+            },
+            {
+              "title": "should block deployment when CTA has start_form action without formId",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-d768a5d1055db3e5f560",
+              "file": "validation.spec.ts",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "should show validation errors for duplicate IDs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-bcb3c5f999559b78ac81",
+              "file": "validation.spec.ts",
+              "line": 199,
+              "column": 3
+            },
+            {
+              "title": "should show validation errors for missing required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-94615f23afa65a3492ea",
+              "file": "validation.spec.ts",
+              "line": 223,
+              "column": 3
+            },
+            {
+              "title": "should validate on blur for individual fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-52ac018efcc19e791a4a",
+              "file": "validation.spec.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "should clear validation errors after fixing issues",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1c599a7f4afdfa3cc2e4-a3bd9f878f016962e5aa",
+              "file": "validation.spec.ts",
+              "line": 257,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-10-18T15:06:49.097Z",
+    "duration": 340.124,
+    "expected": 0,
+    "skipped": 135,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

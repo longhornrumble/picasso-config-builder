@@ -62,6 +62,12 @@ export interface FieldValidationResult {
   errors: FieldValidationError[];
 }
 
+/**
+ * Simple field-level validation errors
+ * Maps field names to error messages
+ */
+export type ValidationErrors = Record<string, string | undefined>;
+
 // ============================================================================
 // DEPENDENCY TRACKING
 // ============================================================================

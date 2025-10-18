@@ -46,20 +46,20 @@ export const SettingsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <Settings className="w-8 h-8 text-gray-600" />
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+          <Settings className="w-8 h-8 text-gray-600 dark:text-gray-400" />
           Settings
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
           Configuration metadata and validation status
         </p>
       </div>
 
       {/* No Tenant Selected */}
       {!tenantId && (
-        <Card className="bg-amber-50 border-amber-200">
+        <Card className="bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800">
           <CardContent className="pt-6">
-            <p className="text-amber-800">
+            <p className="text-amber-800 dark:text-amber-300">
               Please select a tenant from the header to view settings.
             </p>
           </CardContent>
@@ -78,19 +78,19 @@ export const SettingsPage: React.FC = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Tenant ID</label>
-                  <p className="text-gray-900 mt-1">{tenantId}</p>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tenant ID</label>
+                  <p className="text-gray-900 dark:text-gray-100 mt-1">{tenantId}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Config Version</label>
-                  <p className="text-gray-900 mt-1">{baseConfig.version || 'N/A'}</p>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Config Version</label>
+                  <p className="text-gray-900 dark:text-gray-100 mt-1">{baseConfig.version || 'N/A'}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Subscription Tier</label>
-                  <p className="text-gray-900 mt-1">{baseConfig.subscription_tier || 'N/A'}</p>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Subscription Tier</label>
+                  <p className="text-gray-900 dark:text-gray-100 mt-1">{baseConfig.subscription_tier || 'N/A'}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Status</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                   <div className="mt-1">
                     {isDirty ? (
                       <Badge variant="warning">Unsaved changes</Badge>
@@ -125,26 +125,26 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-3 gap-4">
-                <div className="border border-gray-200 rounded-lg p-4">
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <AlertCircle className="w-5 h-5 text-red-600" />
-                    <span className="text-sm font-medium text-gray-700">Errors</span>
+                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-500" />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Errors</span>
                   </div>
-                  <p className="text-2xl font-bold text-red-600">{errorCount}</p>
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-500">{errorCount}</p>
                 </div>
-                <div className="border border-gray-200 rounded-lg p-4">
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <AlertCircle className="w-5 h-5 text-amber-600" />
-                    <span className="text-sm font-medium text-gray-700">Warnings</span>
+                    <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500" />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Warnings</span>
                   </div>
-                  <p className="text-2xl font-bold text-amber-600">{warningCount}</p>
+                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-500">{warningCount}</p>
                 </div>
-                <div className="border border-gray-200 rounded-lg p-4">
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-5 h-5 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">Last Validated</span>
+                    <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Last Validated</span>
                   </div>
-                  <p className="text-sm text-gray-900">{formatDate(lastValidated)}</p>
+                  <p className="text-sm text-gray-900 dark:text-gray-100">{formatDate(lastValidated)}</p>
                 </div>
               </div>
 
@@ -174,14 +174,14 @@ export const SettingsPage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Last Saved</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Last Saved</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {formatDate(lastSaved)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Config Generated</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Config Generated</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {formatDate(baseConfig.generated_at || null)}
                 </span>
               </div>
@@ -189,15 +189,15 @@ export const SettingsPage: React.FC = () => {
           </Card>
 
           {/* Deployment History */}
-          <Card className="bg-blue-50 border-blue-200">
+          <Card className="bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800">
             <CardHeader>
-              <CardTitle className="text-blue-900 flex items-center gap-2">
+              <CardTitle className="text-blue-900 dark:text-blue-400 flex items-center gap-2">
                 <Info className="w-5 h-5" />
                 Deployment History
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-300">
                 Deployment history tracking will be implemented in a future release.
               </p>
             </CardContent>

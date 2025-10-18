@@ -75,8 +75,19 @@ app.get('/config/tenants', async (_req, res) => {
           const filePath = path.join(MOCK_S3_DIR, file);
           const stats = await fs.stat(filePath);
 
+          // Read config to get tenant name
+          let tenantName = tenantId;
+          try {
+            const configData = await fs.readFile(filePath, 'utf-8');
+            const config = JSON.parse(configData);
+            tenantName = config.company_name || config.chat_title || tenantId;
+          } catch {
+            // If config can't be read, use tenantId as name
+          }
+
           return {
             tenantId,
+            tenantName,
             key: file,
             lastModified: stats.mtime,
             size: stats.size,

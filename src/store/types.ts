@@ -10,6 +10,7 @@ import type {
   CTADefinition,
   ConversationBranch,
   CardInventory,
+  ShowcaseItem,
   TenantConfig,
 } from '@/types/config';
 
@@ -149,9 +150,28 @@ export interface BranchesSlice {
 }
 
 // ============================================================================
-// CARD INVENTORY SLICE
+// CONTENT SHOWCASE SLICE
 // ============================================================================
 
+export interface ContentShowcaseSlice {
+  // State
+  content_showcase: ShowcaseItem[];
+
+  // Actions
+  createShowcaseItem: (item: ShowcaseItem) => void;
+  updateShowcaseItem: (id: string, updates: Partial<ShowcaseItem>) => void;
+  deleteShowcaseItem: (id: string) => void;
+
+  // Selectors
+  getShowcaseItems: () => ShowcaseItem[];
+  getShowcaseItem: (id: string) => ShowcaseItem | undefined;
+}
+
+// ============================================================================
+// CARD INVENTORY SLICE (DEPRECATED - Use ContentShowcaseSlice instead)
+// ============================================================================
+
+/** @deprecated Use ContentShowcaseSlice instead */
 export interface CardInventorySlice {
   // State
   cardInventory: CardInventory | null;
@@ -270,6 +290,7 @@ export interface ConfigBuilderState {
   forms: FormsSlice;
   ctas: CTAsSlice;
   branches: BranchesSlice;
+  contentShowcase: ContentShowcaseSlice;
   cardInventory: CardInventorySlice;
   ui: UISlice;
   validation: ValidationSlice;

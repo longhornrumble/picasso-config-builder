@@ -20,7 +20,7 @@ export const messages = {
     missingPrompt: 'Prompt is required when action is "show_info"',
     genericLabel: 'Button text is generic. Consider using more specific, actionable text',
     genericLabelExamples: 'Generic labels like "Click Here", "Learn More", or "Submit" reduce user engagement',
-    vaguePrompt: 'Info CTA prompts should be specific questions or requests, not generic phrases',
+    vaguePrompt: 'Info CTA prompts should be specific questions or requests, not vague or generic phrases',
     formWithoutProgram: (formId: string) =>
       `Form "${formId}" referenced by this CTA doesn't have a program assigned`,
   },
@@ -32,12 +32,12 @@ export const messages = {
     noFields: 'Form must have at least one field',
     noTriggerPhrases: 'Form has no trigger phrases - users can only access it via CTA',
     tooManyFields: (count: number) =>
-      `Form has ${count} fields. Long forms (>10 fields) may reduce completion rates`,
+      `Form has too many fields (${count} total). Long forms (>10 fields) may reduce completion rates`,
     missingEmailValidation: 'Email fields should have email format validation',
     missingPhoneValidation: 'Phone fields should have phone format validation',
     noRequiredFields: 'Form should have at least one required field',
-    selectNeedsOptions: 'Select fields must have at least one option',
-    duplicateFieldId: (id: string) => `Duplicate field ID: "${id}"`,
+    selectNeedsOptions: 'Select fields must have at least one option (options required)',
+    duplicateFieldId: (id: string) => `duplicate field ID: "${id}"`,
     eligibilityNeedsFailureMessage: 'Eligibility gate fields must have a failure message',
   },
 
@@ -47,9 +47,9 @@ export const messages = {
     noPrimaryCTA: 'Branch must have a primary CTA',
     invalidPrimaryCTA: (ctaId: string) => `Referenced CTA "${ctaId}" does not exist`,
     invalidSecondaryCTA: (ctaId: string, index: number) =>
-      `Secondary CTA ${index + 1} "${ctaId}" does not exist`,
+      `secondary CTA ${index + 1} "${ctaId}" does not exist`,
     tooManyCTAs: (count: number) =>
-      `Branch has ${count} total CTAs. Runtime limits to 3 buttons - only first 3 will be shown`,
+      `Branch has too many CTAs (${count} total). Runtime limits to 3 buttons - only first 3 will be shown`,
     keywordsLookLikeQueries:
       'Keywords contain question words. Detection keywords should match anticipated Bedrock responses, not user queries',
     questionWords: (words: string[]) => `Found question words: ${words.join(', ')}`,
@@ -60,9 +60,9 @@ export const messages = {
 
   // Relationship Messages
   relationship: {
-    circularDependency: (entities: string[]) => `Circular dependency detected: ${entities.join(' → ')}`,
+    circularDependency: (entities: string[]) => `circular dependency detected: ${entities.join(' → ')}`,
     orphanedEntity: (entityType: string, entityId: string) =>
-      `${entityType} "${entityId}" is not referenced by any other entity`,
+      `orphaned ${entityType} "${entityId}" is not referenced by any other entity`,
   },
 
   // Runtime Messages
@@ -159,6 +159,7 @@ export function createInfo(
 export function isGenericLabel(label: string): boolean {
   const genericLabels = [
     'click here',
+    'click',
     'learn more',
     'submit',
     'go',
@@ -171,7 +172,8 @@ export function isGenericLabel(label: string): boolean {
   ];
 
   const normalized = label.toLowerCase().trim();
-  return genericLabels.some((generic) => normalized === generic || normalized.includes(generic));
+  // Only match exact labels, not if they contain generic words
+  return genericLabels.some((generic) => normalized === generic);
 }
 
 /**

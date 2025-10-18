@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
 import type { ConfigBuilderState } from './types';
@@ -12,6 +12,7 @@ import { createProgramsSlice } from './slices/programs';
 import { createFormsSlice } from './slices/forms';
 import { createCTAsSlice } from './slices/ctas';
 import { createBranchesSlice } from './slices/branches';
+import { createContentShowcaseSlice } from './slices/contentShowcase';
 import { createCardInventorySlice } from './slices/cardInventory';
 import { createUISlice } from './slices/ui';
 import { createValidationSlice } from './slices/validation';
@@ -39,6 +40,7 @@ export const useConfigStore = create<ConfigBuilderState>()(
       forms: createFormsSlice(set, get, api),
       ctas: createCTAsSlice(set, get, api),
       branches: createBranchesSlice(set, get, api),
+      contentShowcase: createContentShowcaseSlice(set, get, api),
       cardInventory: createCardInventorySlice(set, get, api),
 
       // Application state
@@ -79,7 +81,13 @@ export const useCTAs = () => useConfigStore((state) => state.ctas);
 export const useBranches = () => useConfigStore((state) => state.branches);
 
 /**
+ * Hook to access content showcase slice
+ */
+export const useContentShowcase = () => useConfigStore((state) => state.contentShowcase);
+
+/**
  * Hook to access card inventory slice
+ * @deprecated Use useContentShowcase instead
  */
 export const useCardInventory = () => useConfigStore((state) => state.cardInventory);
 
@@ -192,6 +200,7 @@ export type {
   FormsSlice,
   CTAsSlice,
   BranchesSlice,
+  ContentShowcaseSlice,
   CardInventorySlice,
   UISlice,
   ValidationSlice,

@@ -122,13 +122,66 @@ export interface ConversationBranch {
 }
 
 // ============================================================================
-// CARD INVENTORY
+// CONTENT SHOWCASE (Content Inventory / Ad System)
 // ============================================================================
 
+export type ShowcaseItemType = 'program' | 'event' | 'initiative' | 'campaign';
+export type ShowcaseActionType = 'prompt' | 'url' | 'cta';
+
+export interface ShowcaseItemAction {
+  type: ShowcaseActionType;
+  label: string;
+
+  // For 'prompt' action - sends message to Bedrock
+  prompt?: string;
+
+  // For 'url' action - opens external link
+  url?: string;
+  open_in_new_tab?: boolean;
+
+  // For 'cta' action - triggers existing CTA
+  cta_id?: string;
+}
+
+export interface ShowcaseItem {
+  id: string;
+  type: ShowcaseItemType;
+  enabled: boolean;
+
+  // Content
+  name: string;
+  tagline: string;
+  description: string;
+  image_url?: string;
+
+  // Supporting details
+  stats?: string;
+  testimonial?: string;
+  highlights?: string[];
+
+  // Targeting
+  keywords: string[];
+
+  // Action configuration
+  action?: ShowcaseItemAction;
+}
+
+export interface ContentShowcase {
+  content_showcase: ShowcaseItem[];
+}
+
+// ============================================================================
+// CARD INVENTORY (DEPRECATED - Use ContentShowcase instead)
+// ============================================================================
+
+/** @deprecated Use ShowcaseItemType instead */
 export type CardStrategy = 'qualification_first' | 'exploration_first' | 'custom';
+/** @deprecated Use ContentShowcase instead */
 export type RequirementType = 'age' | 'commitment' | 'background_check' | 'location' | 'custom';
+/** @deprecated Use ContentShowcase instead */
 export type RequirementEmphasis = 'low' | 'medium' | 'high';
 
+/** @deprecated Use ContentShowcase instead */
 export interface PrimaryCTA {
   type: string;
   title: string;
@@ -136,6 +189,7 @@ export interface PrimaryCTA {
   trigger_phrases: string[];
 }
 
+/** @deprecated Use ContentShowcase instead */
 export interface Requirement {
   type: RequirementType;
   value: string;
@@ -144,6 +198,7 @@ export interface Requirement {
   display_text: string;
 }
 
+/** @deprecated Use ContentShowcase instead */
 export interface ProgramCard {
   name: string;
   description: string;
@@ -151,6 +206,7 @@ export interface ProgramCard {
   url: string;
 }
 
+/** @deprecated Use ContentShowcase instead */
 export interface ReadinessThresholds {
   show_requirements: number;
   show_programs: number;
@@ -158,6 +214,7 @@ export interface ReadinessThresholds {
   show_forms: number;
 }
 
+/** @deprecated Use ContentShowcase instead */
 export interface CardInventory {
   strategy: CardStrategy;
   primary_cta: PrimaryCTA;

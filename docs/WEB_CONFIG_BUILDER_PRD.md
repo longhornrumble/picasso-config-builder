@@ -70,11 +70,11 @@ Operations teams currently manage conversational forms through manual JSON editi
    - Branch priority/sort order
    - Primary CTA assignment
    - Secondary CTAs assignment (max 2 recommended for 3 total)
-9. User configures card inventory (optional):
-   - Strategy (qualification_first or exploration_first)
-   - Requirements with criticality flags
-   - Program cards with commitment details
-   - Readiness thresholds
+9. User configures content showcase (optional):
+   - Showcase items (programs, events, campaigns, initiatives)
+   - Rich visual content (images, testimonials, stats, highlights)
+   - Keyword targeting for contextual delivery
+   - Links to existing CTAs for action
 10. User configures post-submission settings (confirmation message, next steps, action buttons)
     - Note: Email notifications and integrations are configured separately in Bubble
 11. System validates config with relationship checking:
@@ -240,15 +240,17 @@ Deleting this CTA will remove it from these branches.
 - Warn when branch has >3 total CTAs (1 primary + 2 secondary)
 - Explain that runtime limits to 3 buttons for clarity
 
-**Card Inventory Alignment:**
-- If card inventory exists, validate that programs in forms match program_cards
-- Warn if strategy is qualification_first but requirements aren't defined
+**Content Showcase Alignment (Optional):**
+- If content_showcase exists, validate that cta_id references exist
+- Warn if showcase item missing image_url (reduces visual impact)
+- Validate type is one of: program, event, initiative, campaign
 
 **Example Validation Messages:**
 ```
 ⚠️  Branch "volunteer_interest" has 4 total CTAs - only first 3 will display at runtime
 ℹ️  Form "lb_apply" assigned to program "lovebox" - will be filtered after completion
-✅ Card inventory strategy "qualification_first" has 3 requirements defined
+✅ Content showcase item "lovebox_card" correctly linked to CTA "lovebox_apply"
+⚠️  Showcase item "holiday_drive_card" missing image_url - will have less visual impact
 ```
 
 ### Pre-Deployment Validation
@@ -281,6 +283,250 @@ Before allowing deployment to S3, system must pass all critical validations:
 
 [Review Warnings] [Deploy to S3]
 ```
+
+---
+
+## Content Showcase (Optional Feature)
+
+### Overview
+
+The Content Showcase feature allows tenants to present contextually relevant programs, events, campaigns, and initiatives as rich visual cards during conversations. Think of it as **advertising inventory** that can be served based on conversation context—similar to how CTAs work, but with enhanced visual storytelling.
+
+### Mental Model: Ad Inventory
+
+Content showcase items are like **sponsored content** that appears when contextually relevant:
+- Could be programs (Love Box, Dare to Dream), events (volunteer fairs), campaigns (holiday drives), or initiatives (community outreach)
+- Keyword-based triggering (same pattern as existing CTAs)
+- Rich visual content (images, testimonials, stats, highlights)
+- Links to existing CTAs for action (creates a pathway: showcase → CTA → form)
+
+### Why This Approach?
+
+**Simplified from original "Card Inventory" design:**
+- ❌ Removed: Readiness thresholds (0.0-1.0 scoring) - Lambda doesn't support scoring systems
+- ❌ Removed: Strategy system (qualification_first vs exploration_first) - duplicates existing branch priority
+- ❌ Removed: Requirements section - duplicates form eligibility gates
+- ✅ Kept: Keyword-based triggering (aligns with existing architecture)
+- ✅ Kept: Visual content presentation (differentiated from simple CTAs)
+- ✅ Added: Clear link to CTAs (creates content hierarchy)
+
+### Data Structure
+
+```javascript
+content_showcase: [
+  {
+    id: "lovebox_card",
+    type: "program",  // program | event | initiative | campaign
+    enabled: true,
+
+    // Core Content
+    name: "Love Box",
+    tagline: "Support foster families in your community",
+    description: "Pack monthly care boxes with essential items for foster families. Make a direct impact with just 2-3 hours per month.",
+    image_url: "https://cdn.example.com/programs/lovebox.jpg",
+
+    // Supporting Details (optional)
+    stats: "2-3 hours/month",
+    testimonial: "Best volunteer experience I've had! - Sarah M.",
+    highlights: [
+      "Flexible schedule - pack boxes at home",
+      "Monthly commitment",
+      "Direct impact on local families"
+    ],
+
+    // Keyword Targeting
+    keywords: [
+      "love box",
+      "foster families",
+      "foster care",
+      "wraparound services",
+      "care packages"
+    ],
+
+    // Link to Existing CTA
+    cta_id: "lovebox_apply"  // References cta_definitions
+  },
+  {
+    id: "holiday_drive_card",
+    type: "campaign",
+    enabled: true,
+
+    name: "Holiday Gift Drive",
+    tagline: "Bring joy to families this season",
+    description: "Help us collect and distribute gifts to 200+ families during the holiday season.",
+    image_url: "https://cdn.example.com/campaigns/holiday-2025.jpg",
+
+    stats: "Goal: 200 families",
+    highlights: [
+      "Nov 1 - Dec 15",
+      "Drop-off locations across the city",
+      "Tax-deductible donations"
+    ],
+
+    keywords: [
+      "holiday",
+      "christmas",
+      "gifts",
+      "seasonal",
+      "donation drive"
+    ],
+
+    cta_id: "holiday_donate"
+  }
+]
+```
+
+### How It Works
+
+**1. Lambda Detection (response_enhancer.js)**
+```javascript
+function detectContentShowcase(bedrockResponse, userQuery, config) {
+  const { content_showcase, cta_definitions } = config;
+
+  // Similar to detectConversationBranch, use keyword matching
+  for (const item of content_showcase || []) {
+    if (!item.enabled) continue;
+
+    const matches = item.keywords.some(keyword =>
+      bedrockResponse.toLowerCase().includes(keyword.toLowerCase())
+    );
+
+    if (matches) {
+      // Get linked CTA
+      const linkedCta = cta_definitions[item.cta_id];
+
+      return {
+        showcaseCard: item,
+        linkedCta: linkedCta
+      };
+    }
+  }
+
+  return null;
+}
+```
+
+**2. Enhanced Response Format**
+```javascript
+{
+  message: "Bedrock response...",
+  showcaseCards: [
+    {
+      id: "lovebox_card",
+      type: "program",
+      name: "Love Box",
+      tagline: "Support foster families...",
+      description: "...",
+      image_url: "...",
+      stats: "2-3 hours/month",
+      testimonial: "...",
+      highlights: ["...", "..."],
+      cta: {
+        label: "Apply for Love Box",
+        action: "start_form",
+        formId: "lb_apply"
+      }
+    }
+  ],
+  ctaButtons: [...], // Regular CTAs
+  metadata: {...}
+}
+```
+
+**3. Frontend Rendering**
+- Showcase cards render as rich visual components (larger than CTAs)
+- Display image, name, tagline, description, stats, testimonial, highlights
+- Include linked CTA button at bottom of card
+- Cards appear before regular CTAs (visual hierarchy)
+
+### Use Cases
+
+**Programs:**
+- Love Box (foster family support)
+- Dare to Dream (mentorship)
+- After-school tutoring programs
+- Community gardening initiatives
+
+**Events:**
+- Volunteer orientation sessions
+- Community fundraisers
+- Training workshops
+- Annual galas
+
+**Campaigns:**
+- Holiday gift drives
+- Back-to-school supply drives
+- Summer reading program
+- Matching donation campaigns
+
+**Initiatives:**
+- New community center opening
+- Partnership announcements
+- Recognition programs
+- Special projects
+
+### Integration with Existing CTAs
+
+Content showcase creates a **content hierarchy**:
+
+1. **Conversation** (Bedrock response)
+2. **Showcase Card** (rich visual storytelling)
+3. **CTA** (linked action button)
+4. **Form** (data collection)
+
+Example flow:
+```
+User: "How can I help foster families?"
+→ Bedrock: "We have several programs..."
+→ Showcase Card: [Love Box visual card with testimonial]
+→ CTA: "Apply for Love Box" button
+→ Form: Love Box application
+```
+
+### Multi-Tenant Considerations
+
+- Each tenant defines their own showcase inventory
+- Disabled by default (optional feature)
+- Keywords are tenant-specific (no cross-tenant conflicts)
+- Images hosted by tenant (or CDN)
+- No limits on number of showcase items (but recommend 3-5 per tenant)
+
+### Validation Rules
+
+**Required Fields:**
+- `id`: Unique identifier
+- `type`: One of program, event, initiative, campaign
+- `enabled`: Boolean
+- `name`: Display name
+- `keywords`: Array with at least 1 keyword
+- `cta_id`: Must reference existing CTA in cta_definitions
+
+**Optional Fields:**
+- `tagline`, `description`, `image_url`, `stats`, `testimonial`, `highlights`
+
+**Validation Messages:**
+```
+❌ Showcase item "lovebox_card" references CTA "lovebox_apply" which doesn't exist
+✅ Showcase item "holiday_drive_card" correctly linked to CTA "holiday_donate"
+⚠️  Showcase item "lovebox_card" missing image_url - card will have less visual impact
+```
+
+### Runtime Behavior
+
+**Priority Order:**
+1. Forms (direct trigger phrases - highest priority)
+2. Showcase Cards (contextual, rich content)
+3. Regular CTAs (fallback, simple buttons)
+
+**Max Cards Per Response:**
+- Show at most 1 showcase card per response
+- If multiple cards match, show first match
+- Regular CTAs still appear (max 3 total)
+
+**Performance:**
+- Showcase config cached with rest of tenant config (5 min TTL)
+- Keyword matching is O(n*m) where n=items, m=keywords (acceptable for <20 items)
+- Image loading handled by frontend (lazy load)
 
 ---
 

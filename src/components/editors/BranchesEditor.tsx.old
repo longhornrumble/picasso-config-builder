@@ -1,0 +1,604 @@
+/**
+ * BranchesEditor Component
+ * Full CRUD interface for conversation branches with keyword detection and CTA routing
+ */
+
+import React, { useState } from 'react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Input,
+  Button,
+  Badge,
+  Select,
+} from '@/components/ui';
+import { DependencyWarningModal } from '@/components/modals/DependencyWarningModal';
+import { useConfigStore } from '@/store';
+import {
+  buildDependencyGraph,
+  getBranchDeletionImpact,
+  formatDeletionImpact,
+} from '@/lib/validation/dependencyTracking';
+import {
+  Plus,
+  Copy,
+  Trash2,
+  AlertCircle,
+  Edit2,
+  X,
+  Tag,
+} from 'lucide-react';
+import type { ConversationBranch } from '@/types/config';
+
+/**
+ * Form state for creating/editing branches
+ */
+interface BranchFormState {
+  branchId: string;
+  keywords: string[];
+  primaryCTA: string;
+  secondaryCTAs: string[];
+}
+
+/**
+ * Validation errors for branch form
+ */
+interface BranchFormErrors {
+  branchId?: string;
+  keywords?: string;
+  primaryCTA?: string;
+}
+
+/**
+ * Branches Editor Component
+ */
+export const BranchesEditor: React.FC = () => {
+  // Store state
+  const branches = useConfigStore((state) => Object.entries(state.branches.branches));
+  const ctas = useConfigStore((state) => Object.entries(state.ctas.ctas));
+  const programsRecord = useConfigStore((state) => state.programs.programs);
+  const formsRecord = useConfigStore((state) => state.forms.forms);
+  const ctasRecord = useConfigStore((state) => state.ctas.ctas);
+  const branchesRecord = useConfigStore((state) => state.branches.branches);
+  const createBranch = useConfigStore((state) => state.branches.createBranch);
+  const deleteBranch = useConfigStore((state) => state.branches.deleteBranch);
+  const duplicateBranch = useConfigStore((state) => state.branches.duplicateBranch);
+  const setPrimaryCTA = useConfigStore((state) => state.branches.setPrimaryCTA);
+  const addSecondaryCTA = useConfigStore((state) => state.branches.addSecondaryCTA);
+  const removeSecondaryCTA = useConfigStore((state) => state.branches.removeSecondaryCTA);
+  const addKeyword = useConfigStore((state) => state.branches.addKeyword);
+  const removeKeyword = useConfigStore((state) => state.branches.removeKeyword);
+
+  // Local state
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newBranch, setNewBranch] = useState<BranchFormState>({
+    branchId: '',
+    keywords: [],
+    primaryCTA: '',
+    secondaryCTAs: [],
+  });
+  const [newKeywordInput, setNewKeywordInput] = useState('');
+  const [errors, setErrors] = useState<BranchFormErrors>({});
+  const [deleteWarning, setDeleteWarning] = useState<{
+    branchId: string;
+    branchName: string;
+    impactMessage: string;
+    hasImpact: boolean;
+  } | null>(null);
+  const [editingKeywords, setEditingKeywords] = useState<Record<string, boolean>>({});
+  const [keywordInput, setKeywordInput] = useState<Record<string, string>>({});
+
+  // CTA options for dropdowns
+  const ctaOptions = ctas.map(([id, cta]) => ({
+    value: id,
+    label: cta.label,
+  }));
+
+  // Validation
+  const validateNewBranch = (): boolean => {
+    const newErrors: BranchFormErrors = {};
+
+    if (!newBranch.branchId.trim()) {
+      newErrors.branchId = 'Branch ID is required';
+    } else if (!/^[a-zA-Z0-9_-]+$/.test(newBranch.branchId)) {
+      newErrors.branchId = 'Branch ID can only contain letters, numbers, hyphens, and underscores';
+    } else if (branches.some(([id]) => id === newBranch.branchId)) {
+      newErrors.branchId = 'Branch ID already exists';
+    }
+
+    if (newBranch.keywords.length === 0) {
+      newErrors.keywords = 'At least one keyword is required';
+    }
+
+    if (!newBranch.primaryCTA) {
+      newErrors.primaryCTA = 'Primary CTA is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle create
+  const handleCreate = () => {
+    if (!validateNewBranch()) return;
+
+    const branch: ConversationBranch = {
+      detection_keywords: newBranch.keywords,
+      available_ctas: {
+        primary: newBranch.primaryCTA,
+        secondary: newBranch.secondaryCTAs,
+      },
+    };
+
+    createBranch(branch, newBranch.branchId);
+
+    // Reset form
+    setNewBranch({
+      branchId: '',
+      keywords: [],
+      primaryCTA: '',
+      secondaryCTAs: [],
+    });
+    setNewKeywordInput('');
+    setErrors({});
+    setIsAddingNew(false);
+  };
+
+  // Handle delete request - build dependency graph and show warning
+  const handleDeleteRequest = (branchId: string) => {
+    const branch = branchesRecord[branchId];
+    if (!branch) return;
+
+    // Build dependency graph
+    const graph = buildDependencyGraph(
+      programsRecord,
+      formsRecord,
+      ctasRecord,
+      branchesRecord
+    );
+
+    // Get deletion impact (branches never have dependencies)
+    const impact = getBranchDeletionImpact(branchId, branch, graph);
+    const impactMessage = formatDeletionImpact('branch', branchId, impact);
+
+    setDeleteWarning({
+      branchId,
+      branchName: branchId,
+      impactMessage,
+      hasImpact: false, // Branches never have dependencies
+    });
+  };
+
+  // Handle delete confirm
+  const confirmDelete = () => {
+    if (deleteWarning) {
+      deleteBranch(deleteWarning.branchId);
+      setDeleteWarning(null);
+    }
+  };
+
+  // Handle duplicate
+  const handleDuplicate = (branchId: string) => {
+    duplicateBranch(branchId);
+  };
+
+  // Add keyword to new branch form
+  const handleAddKeywordToForm = () => {
+    const keyword = newKeywordInput.trim();
+    if (keyword && !newBranch.keywords.includes(keyword)) {
+      setNewBranch({
+        ...newBranch,
+        keywords: [...newBranch.keywords, keyword],
+      });
+      setNewKeywordInput('');
+      setErrors({ ...errors, keywords: undefined });
+    }
+  };
+
+  // Remove keyword from new branch form
+  const handleRemoveKeywordFromForm = (keyword: string) => {
+    setNewBranch({
+      ...newBranch,
+      keywords: newBranch.keywords.filter((k) => k !== keyword),
+    });
+  };
+
+  // Add secondary CTA to new branch form
+  const handleAddSecondaryCTAToForm = (ctaId: string) => {
+    if (ctaId && !newBranch.secondaryCTAs.includes(ctaId)) {
+      setNewBranch({
+        ...newBranch,
+        secondaryCTAs: [...newBranch.secondaryCTAs, ctaId],
+      });
+    }
+  };
+
+  // Remove secondary CTA from new branch form
+  const handleRemoveSecondaryCTAFromForm = (ctaId: string) => {
+    setNewBranch({
+      ...newBranch,
+      secondaryCTAs: newBranch.secondaryCTAs.filter((id) => id !== ctaId),
+    });
+  };
+
+  // Add keyword to existing branch
+  const handleAddKeyword = (branchId: string) => {
+    const keyword = keywordInput[branchId]?.trim();
+    if (keyword) {
+      addKeyword(branchId, keyword);
+      setKeywordInput({ ...keywordInput, [branchId]: '' });
+    }
+  };
+
+  // Get CTA label by ID
+  const getCTALabel = (ctaId: string): string => {
+    const cta = ctas.find(([id]) => id === ctaId);
+    return cta ? cta[1].label : ctaId;
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="editor-header">
+        <div className="editor-title-section">
+          <h1 className="text-responsive-lg font-bold tracking-tight">Conversation Branches</h1>
+          <p className="text-responsive-sm text-muted-foreground mt-2">
+            Define conversation routing based on keywords and available CTAs
+          </p>
+        </div>
+        <div className="editor-actions-section">
+          {!isAddingNew && branches.length > 0 && (
+            <Button onClick={() => setIsAddingNew(true)} className="w-full sm:w-auto">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Branch
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Warning if no CTAs exist */}
+      {ctas.length === 0 && (
+        <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-amber-800 dark:text-amber-200 font-medium">
+                  No CTAs Available
+                </p>
+                <p className="text-amber-700 dark:text-amber-300 text-sm mt-1">
+                  You must create at least one CTA before creating branches. Branches require a
+                  primary CTA for routing.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Create Form */}
+      {isAddingNew && (
+        <Card className="border-2 border-primary">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-base sm:text-lg font-semibold">Create New Branch</h3>
+              <Button variant="ghost" size="sm" onClick={() => setIsAddingNew(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Branch ID */}
+            <div>
+              <Input
+                label="Branch ID"
+                value={newBranch.branchId}
+                onChange={(e) =>
+                  setNewBranch({ ...newBranch, branchId: e.target.value })
+                }
+                error={errors.branchId}
+                placeholder="e.g., volunteer_inquiry"
+                required
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Unique identifier (letters, numbers, hyphens, underscores only)
+              </p>
+            </div>
+
+            {/* Detection Keywords */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Detection Keywords <span className="text-destructive">*</span>
+              </label>
+              <div className="flex gap-2 mb-2">
+                <Input
+                  value={newKeywordInput}
+                  onChange={(e) => setNewKeywordInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddKeywordToForm();
+                    }
+                  }}
+                  placeholder="Add keyword..."
+                  error={errors.keywords}
+                />
+                <Button
+                  type="button"
+                  onClick={handleAddKeywordToForm}
+                  disabled={!newKeywordInput.trim()}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              {newBranch.keywords.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {newBranch.keywords.map((keyword) => (
+                    <Badge key={keyword} variant="secondary" className="gap-1">
+                      <Tag className="w-3 h-3" />
+                      {keyword}
+                      <button
+                        onClick={() => handleRemoveKeywordFromForm(keyword)}
+                        className="ml-1 hover:text-destructive"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              {errors.keywords && (
+                <p className="text-xs text-destructive mt-1">{errors.keywords}</p>
+              )}
+            </div>
+
+            {/* Primary CTA */}
+            <div>
+              <Select
+                label="Primary CTA"
+                value={newBranch.primaryCTA}
+                onValueChange={(value) =>
+                  setNewBranch({ ...newBranch, primaryCTA: value })
+                }
+                options={ctaOptions}
+                error={errors.primaryCTA}
+                required
+                disabled={ctas.length === 0}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Main call-to-action shown when branch is triggered
+              </p>
+            </div>
+
+            {/* Secondary CTAs */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Secondary CTAs</label>
+              <Select
+                value="__placeholder__"
+                onValueChange={(value) => {
+                  if (value !== '__placeholder__') {
+                    handleAddSecondaryCTAToForm(value);
+                  }
+                }}
+                options={[
+                  { value: '__placeholder__', label: 'Add secondary CTA...' },
+                  ...ctaOptions.filter(
+                    (opt) =>
+                      opt.value !== newBranch.primaryCTA &&
+                      !newBranch.secondaryCTAs.includes(opt.value)
+                  ),
+                ]}
+                disabled={ctas.length === 0}
+              />
+              {newBranch.secondaryCTAs.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {newBranch.secondaryCTAs.map((ctaId) => (
+                    <Badge key={ctaId} variant="outline" className="gap-1">
+                      {getCTALabel(ctaId)}
+                      <button
+                        onClick={() => handleRemoveSecondaryCTAFromForm(ctaId)}
+                        className="ml-1 hover:text-destructive"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Additional CTAs available in this conversation branch
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
+              <Button onClick={handleCreate} disabled={ctas.length === 0} className="w-full sm:w-auto">
+                Create Branch
+              </Button>
+              <Button variant="outline" onClick={() => setIsAddingNew(false)} className="w-full sm:w-auto">
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {branches.length === 0 && !isAddingNew && (
+        <Card className="bg-gray-50 dark:bg-gray-900/50">
+          <CardContent className="pt-8 pb-8 sm:pt-12 sm:pb-12 text-center px-4">
+            <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              No Branches Defined
+            </h3>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 max-w-md mx-auto">
+              Conversation branches route users to relevant CTAs based on keywords detected in the
+              conversation. Create your first branch to enable keyword-based routing.
+            </p>
+            <Button
+              onClick={() => setIsAddingNew(true)}
+              disabled={ctas.length === 0}
+              className="w-full sm:w-auto"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create First Branch
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Branch List */}
+      <div className="card-list">
+        {branches.map(([branchId, branch]) => (
+          <Card key={branchId} className="card-container">
+            <CardHeader>
+              <div className="card-header-responsive">
+                <div className="card-header-content">
+                  <h3 className="text-responsive-base font-semibold">{branchId}</h3>
+                </div>
+                <div className="card-header-actions">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDuplicate(branchId)}
+                    title="Duplicate branch"
+                    className="flex-1 sm:flex-none"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteRequest(branchId)}
+                    title="Delete branch"
+                    className="flex-1 sm:flex-none"
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Detection Keywords */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium">Detection Keywords</label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setEditingKeywords({
+                        ...editingKeywords,
+                        [branchId]: !editingKeywords[branchId],
+                      })
+                    }
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {branch.detection_keywords.map((keyword) => (
+                    <Badge key={keyword} variant="secondary" className="gap-1">
+                      <Tag className="w-3 h-3" />
+                      {keyword}
+                      {editingKeywords[branchId] && (
+                        <button
+                          onClick={() => removeKeyword(branchId, keyword)}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </Badge>
+                  ))}
+                </div>
+                {editingKeywords[branchId] && (
+                  <div className="flex gap-2">
+                    <Input
+                      value={keywordInput[branchId] || ''}
+                      onChange={(e) =>
+                        setKeywordInput({ ...keywordInput, [branchId]: e.target.value })
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddKeyword(branchId);
+                        }
+                      }}
+                      placeholder="Add keyword..."
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => handleAddKeyword(branchId)}
+                      disabled={!keywordInput[branchId]?.trim()}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Primary CTA */}
+              <div>
+                <label className="text-sm font-medium block mb-2">Primary CTA</label>
+                <Select
+                  value={branch.available_ctas.primary}
+                  onValueChange={(value) => setPrimaryCTA(branchId, value)}
+                  options={ctaOptions}
+                />
+              </div>
+
+              {/* Secondary CTAs */}
+              <div>
+                <label className="text-sm font-medium block mb-2">Secondary CTAs</label>
+                <Select
+                  value="__placeholder__"
+                  onValueChange={(value) => {
+                    if (value !== '__placeholder__') {
+                      addSecondaryCTA(branchId, value);
+                    }
+                  }}
+                  options={[
+                    { value: '__placeholder__', label: 'Add secondary CTA...' },
+                    ...ctaOptions.filter(
+                      (opt) =>
+                        opt.value !== branch.available_ctas.primary &&
+                        !branch.available_ctas.secondary.includes(opt.value)
+                    ),
+                  ]}
+                />
+                {branch.available_ctas.secondary.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {branch.available_ctas.secondary.map((ctaId) => (
+                      <Badge key={ctaId} variant="outline" className="gap-1">
+                        {getCTALabel(ctaId)}
+                        <button
+                          onClick={() => removeSecondaryCTA(branchId, ctaId)}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Dependency Warning Modal */}
+      <DependencyWarningModal
+        isOpen={!!deleteWarning}
+        onClose={() => setDeleteWarning(null)}
+        onConfirm={confirmDelete}
+        entityType="Branch"
+        entityName={deleteWarning?.branchName || ''}
+        impactMessage={deleteWarning?.impactMessage || ''}
+        hasImpact={deleteWarning?.hasImpact || false}
+      />
+    </div>
+  );
+};
