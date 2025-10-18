@@ -19,11 +19,18 @@ import {
   createTestProgram,
   createTestForm,
   resetIdCounter,
+  resetConfigStore,
 } from './testUtils';
 import * as configOps from '@/lib/api/config-operations';
 
 // Mock the config operations module
-vi.mock('@/lib/api/config-operations');
+vi.mock('@/lib/api/config-operations', () => ({
+  loadConfig: vi.fn(),
+  saveConfig: vi.fn(),
+  deployConfig: vi.fn(),
+  listTenants: vi.fn(),
+  getTenantMetadata: vi.fn(),
+}));
 
 describe('S3 Deployment Workflow Integration Tests', () => {
   let mockS3: ReturnType<typeof createMockS3API>;
@@ -33,30 +40,22 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     mockS3 = createMockS3API();
 
     // Mock all config operations
-    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
+    (configOps.loadConfig as any).mockImplementation((tenantId: string) =>
       mockS3.loadConfig(tenantId)
     );
-    vi.mocked(configOps.saveConfig).mockImplementation((tenantId, config, options) =>
+    (configOps.saveConfig as any).mockImplementation((tenantId: string, config: any, options?: any) =>
       mockS3.saveConfig(tenantId, config, options)
     );
-    vi.mocked(configOps.deployConfig).mockImplementation((tenantId, config) =>
+    (configOps.deployConfig as any).mockImplementation((tenantId: string, config: any) =>
       mockS3.deployConfig(tenantId, config)
     );
-    vi.mocked(configOps.listTenants).mockImplementation(() => mockS3.listTenants());
-    vi.mocked(configOps.getTenantMetadata).mockImplementation((tenantId) =>
+    (configOps.listTenants as any).mockImplementation(() => mockS3.listTenants());
+    (configOps.getTenantMetadata as any).mockImplementation((tenantId: string) =>
       mockS3.getTenantMetadata(tenantId)
     );
 
     // Reset store state
-    const { result } = renderHook(() => useConfigStore());
-    act(() => {
-      result.current.programs.programs = {};
-      result.current.forms.forms = {};
-      result.current.ctas.ctas = {};
-      result.current.branches.branches = {};
-      result.current.config.tenantId = null;
-      result.current.config.isDirty = false;
-    });
+    resetConfigStore(useConfigStore);
   });
 
   it('should load config from S3 and populate store', async () => {
@@ -68,7 +67,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
 
     // Load config
     await act(async () => {
-      await result.current.config.loadFromS3('TEST_TENANT');
+      await result.current.config.loadConfig('TEST_TENANT');
     });
 
     // Verify store populated
@@ -87,13 +86,13 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     mockS3._setMockConfig('TEST_TENANT', initialConfig);
 
     await act(async () => {
-      await result.current.config.loadFromS3('TEST_TENANT');
+      await result.current.config.loadConfig('TEST_TENANT');
     });
 
     expect(result.current.config.isDirty).toBe(false);
 
     // Step 2: Edit config - create new program
-    act(() => {
+    await act(async () => {
       const newProgram = createTestProgram({
         program_id: 'new-program',
         program_name: 'New Program',
@@ -105,15 +104,15 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     expect(Object.keys(result.current.programs.programs)).toHaveLength(2);
 
     // Step 3: Validate
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     expect(result.current.validation.isValid).toBe(true);
 
     // Step 4 & 5: Merge and deploy
     await act(async () => {
-      await result.current.config.deployToS3();
+      await result.current.config.deployConfig();
     });
 
     // Verify deployment
@@ -135,11 +134,11 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
     await act(async () => {
-      await result.current.config.loadFromS3('TEST_TENANT');
+      await result.current.config.loadConfig('TEST_TENANT');
     });
 
     // Make changes
-    act(() => {
+    await act(async () => {
       const newProgram = createTestProgram({
         program_id: 'new-program',
         program_name: 'New Program',
@@ -149,7 +148,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
 
     // Save (not deploy)
     await act(async () => {
-      await result.current.config.saveToS3();
+      await result.current.config.saveConfig();
     });
 
     expect(mockS3.saveConfig).toHaveBeenCalledTimes(1);
@@ -157,7 +156,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
 
     // Now deploy
     await act(async () => {
-      await result.current.config.deployToS3();
+      await result.current.config.deployConfig();
     });
 
     expect(mockS3.deployConfig).toHaveBeenCalledTimes(1);
@@ -185,11 +184,11 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
     await act(async () => {
-      await result.current.config.loadFromS3('TEST_TENANT');
+      await result.current.config.loadConfig('TEST_TENANT');
     });
 
     // Make changes to programs only
-    act(() => {
+    await act(async () => {
       const newProgram = createTestProgram({
         program_id: 'new-program',
         program_name: 'New Program',
@@ -199,7 +198,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
 
     // Deploy
     await act(async () => {
-      await result.current.config.deployToS3();
+      await result.current.config.deployConfig();
     });
 
     // Verify content_showcase preserved
@@ -219,11 +218,11 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
     await act(async () => {
-      await result.current.config.loadFromS3('TEST_TENANT');
+      await result.current.config.loadConfig('TEST_TENANT');
     });
 
     // Make changes
-    act(() => {
+    await act(async () => {
       const newProgram = createTestProgram({
         program_id: 'new-program',
         program_name: 'New Program',
@@ -236,7 +235,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
 
     // Deploy
     await act(async () => {
-      await result.current.config.deployToS3();
+      await result.current.config.deployConfig();
     });
 
     // Verify version and timestamp updated
@@ -257,11 +256,11 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     mockS3._setMockConfig('TEST_TENANT', minimalConfig);
 
     await act(async () => {
-      await result.current.config.loadFromS3('TEST_TENANT');
+      await result.current.config.loadConfig('TEST_TENANT');
     });
 
     // Add forms, CTAs, branches
-    act(() => {
+    await act(async () => {
       const programId = Object.keys(result.current.programs.programs)[0];
       const form = createTestForm(programId, 3, { form_id: 'new-form' });
       result.current.forms.createForm(form);
@@ -291,7 +290,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
 
     // Deploy
     await act(async () => {
-      await result.current.config.deployToS3();
+      await result.current.config.deployConfig();
     });
 
     // Verify all sections deployed
@@ -309,13 +308,13 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
     await act(async () => {
-      await result.current.config.loadFromS3('TEST_TENANT');
+      await result.current.config.loadConfig('TEST_TENANT');
     });
 
     const initialProgramCount = Object.keys(result.current.programs.programs).length;
 
     // Make changes and deploy
-    act(() => {
+    await act(async () => {
       const newProgram = createTestProgram({
         program_id: 'new-program',
         program_name: 'New Program',
@@ -324,12 +323,12 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     });
 
     await act(async () => {
-      await result.current.config.deployToS3();
+      await result.current.config.deployConfig();
     });
 
     // Reload from S3
     await act(async () => {
-      await result.current.config.loadFromS3('TEST_TENANT');
+      await result.current.config.loadConfig('TEST_TENANT');
     });
 
     // Verify reload includes new program
@@ -345,11 +344,11 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
     await act(async () => {
-      await result.current.config.loadFromS3('TEST_TENANT');
+      await result.current.config.loadConfig('TEST_TENANT');
     });
 
     // Make changes
-    act(() => {
+    await act(async () => {
       const newProgram = createTestProgram({
         program_id: 'new-program',
         program_name: 'New Program',
@@ -359,7 +358,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
 
     // Deploy (should create backup by default)
     await act(async () => {
-      await result.current.config.deployToS3();
+      await result.current.config.deployConfig();
     });
 
     // Verify deployConfig was called (which should create backup)
@@ -384,7 +383,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
 
     // Load tenant 1
     await act(async () => {
-      await result.current.config.loadFromS3('TENANT_1');
+      await result.current.config.loadConfig('TENANT_1');
     });
 
     expect(result.current.config.tenantId).toBe('TENANT_1');
@@ -392,13 +391,13 @@ describe('S3 Deployment Workflow Integration Tests', () => {
 
     // Switch to tenant 2
     await act(async () => {
-      await result.current.config.loadFromS3('TENANT_2');
+      await result.current.config.loadConfig('TENANT_2');
     });
 
     expect(result.current.config.tenantId).toBe('TENANT_2');
 
     // Make changes to tenant 2
-    act(() => {
+    await act(async () => {
       const newProgram = createTestProgram({
         program_id: 'tenant2-program',
         program_name: 'Tenant 2 Program',
@@ -407,7 +406,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     });
 
     await act(async () => {
-      await result.current.config.deployToS3();
+      await result.current.config.deployConfig();
     });
 
     // Verify tenant 2 has changes
@@ -428,13 +427,13 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
     await act(async () => {
-      await result.current.config.loadFromS3('TEST_TENANT');
+      await result.current.config.loadConfig('TEST_TENANT');
     });
 
     expect(result.current.config.isDirty).toBe(false);
 
     // Make change
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({
           program_id: 'new-program',
@@ -447,7 +446,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
 
     // Save
     await act(async () => {
-      await result.current.config.saveToS3();
+      await result.current.config.saveConfig();
     });
 
     expect(result.current.config.isDirty).toBe(false);

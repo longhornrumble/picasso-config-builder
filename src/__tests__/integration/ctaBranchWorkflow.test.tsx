@@ -18,33 +18,23 @@ import {
   createTestForm,
   resetIdCounter,
   extractValidationErrors,
+  resetConfigStore,
 } from './testUtils';
 
 describe('CTA and Branch Workflow Integration Tests', () => {
   beforeEach(() => {
     resetIdCounter();
     // Reset store state
-    const { result } = renderHook(() => useConfigStore());
-    act(() => {
-      result.current.programs.programs = {};
-      result.current.forms.forms = {};
-      result.current.ctas.ctas = {};
-      result.current.branches.branches = {};
-      result.current.validation.isValid = true;
-      result.current.validation.programResults = {};
-      result.current.validation.formResults = {};
-      result.current.validation.ctaResults = {};
-      result.current.validation.branchResults = {};
-    });
+    resetConfigStore(useConfigStore);
   });
 
-  it('should create CTAs with all action types', () => {
+  it('should create CTAs with all action types', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create form for form_trigger CTA
     let programId: string;
     let formId: string;
-    act(() => {
+    await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
       result.current.programs.createProgram(program);
       programId = program.program_id;
@@ -55,7 +45,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Create form_trigger CTA
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Start Application',
@@ -69,7 +59,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Create external_link CTA
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Visit Website',
@@ -83,7 +73,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Create send_query CTA
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Learn More',
@@ -97,7 +87,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Create show_info CTA
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Get Info',
@@ -132,11 +122,11 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(showInfoCTA?.prompt).toBeDefined();
   });
 
-  it('should create branch and assign CTAs', () => {
+  it('should create branch and assign CTAs', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create CTAs
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Primary Action',
@@ -172,7 +162,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Create branch with primary CTA
-    act(() => {
+    await act(async () => {
       result.current.branches.createBranch(
         {
           detection_keywords: ['volunteer', 'help', 'community service'],
@@ -193,7 +183,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(branch?.detection_keywords).toHaveLength(3);
 
     // Add secondary CTAs
-    act(() => {
+    await act(async () => {
       result.current.branches.addSecondaryCTA('branch-volunteer', 'cta-secondary-1');
       result.current.branches.addSecondaryCTA('branch-volunteer', 'cta-secondary-2');
     });
@@ -205,11 +195,11 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(updatedBranch?.available_ctas.secondary).toContain('cta-secondary-2');
   });
 
-  it('should handle keyword management in branches', () => {
+  it('should handle keyword management in branches', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create CTA and branch
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Test CTA',
@@ -239,7 +229,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(branch?.detection_keywords).toContain('initial');
 
     // Add keyword
-    act(() => {
+    await act(async () => {
       result.current.branches.addKeyword('test-branch', 'new keyword');
     });
 
@@ -249,7 +239,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(branch?.detection_keywords).toContain('new keyword');
 
     // Remove keyword
-    act(() => {
+    await act(async () => {
       result.current.branches.removeKeyword('test-branch', 'initial');
     });
 
@@ -259,11 +249,11 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(branch?.detection_keywords).not.toContain('initial');
   });
 
-  it('should update primary CTA assignment', () => {
+  it('should update primary CTA assignment', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create CTAs
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Original Primary',
@@ -288,7 +278,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Create branch
-    act(() => {
+    await act(async () => {
       result.current.branches.createBranch(
         {
           detection_keywords: ['test'],
@@ -306,7 +296,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(branch?.available_ctas.primary).toBe('cta-original');
 
     // Update primary CTA
-    act(() => {
+    await act(async () => {
       result.current.branches.setPrimaryCTA('test-branch', 'cta-new');
     });
 
@@ -315,11 +305,11 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(branch?.available_ctas.primary).toBe('cta-new');
   });
 
-  it('should remove secondary CTA', () => {
+  it('should remove secondary CTA', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create CTAs and branch
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Primary',
@@ -370,7 +360,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(branch?.available_ctas.secondary).toHaveLength(2);
 
     // Remove one secondary CTA
-    act(() => {
+    await act(async () => {
       result.current.branches.removeSecondaryCTA('test-branch', 'cta-secondary-1');
     });
 
@@ -381,11 +371,11 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(branch?.available_ctas.secondary).not.toContain('cta-secondary-1');
   });
 
-  it('should validate CTA requires formId for start_form action', () => {
+  it('should validate CTA requires formId for start_form action', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create CTA without formId
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Invalid CTA',
@@ -399,8 +389,8 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Run validation
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Verify validation fails
@@ -409,11 +399,11 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(errors.some((e) => e.includes('Form ID'))).toBe(true);
   });
 
-  it('should validate CTA requires url for external_link action', () => {
+  it('should validate CTA requires url for external_link action', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create CTA without url
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Invalid Link',
@@ -427,8 +417,8 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Run validation
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Verify validation fails
@@ -437,11 +427,11 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(errors.some((e) => e.includes('URL'))).toBe(true);
   });
 
-  it('should validate branch requires primary CTA', () => {
+  it('should validate branch requires primary CTA', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create branch without primary CTA
-    act(() => {
+    await act(async () => {
       result.current.branches.createBranch(
         {
           detection_keywords: ['test'],
@@ -455,8 +445,8 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Run validation
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Verify validation fails
@@ -465,11 +455,11 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(errors.some((e) => e.includes('primary CTA'))).toBe(true);
   });
 
-  it('should validate branch requires keywords', () => {
+  it('should validate branch requires keywords', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create CTA
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Test CTA',
@@ -483,7 +473,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Create branch without keywords
-    act(() => {
+    await act(async () => {
       result.current.branches.createBranch(
         {
           detection_keywords: [], // No keywords
@@ -497,8 +487,8 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Run validation
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Verify validation fails
@@ -507,13 +497,13 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(errors.some((e) => e.includes('keyword'))).toBe(true);
   });
 
-  it('should duplicate CTA with all properties', () => {
+  it('should duplicate CTA with all properties', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create program and form
     let programId: string;
     let formId: string;
-    act(() => {
+    await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
       result.current.programs.createProgram(program);
       programId = program.program_id;
@@ -524,7 +514,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Create CTA
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Original CTA',
@@ -538,7 +528,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Duplicate CTA
-    act(() => {
+    await act(async () => {
       result.current.ctas.duplicateCTA('original-cta');
     });
 
@@ -553,11 +543,11 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(duplicate!.cta.formId).toBe(formId);
   });
 
-  it('should duplicate branch with all keywords and CTAs', () => {
+  it('should duplicate branch with all keywords and CTAs', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create CTAs
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Primary',
@@ -582,7 +572,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Create branch
-    act(() => {
+    await act(async () => {
       result.current.branches.createBranch(
         {
           detection_keywords: ['keyword1', 'keyword2', 'keyword3'],
@@ -596,7 +586,7 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     });
 
     // Duplicate branch
-    act(() => {
+    await act(async () => {
       result.current.branches.duplicateBranch('original-branch');
     });
 

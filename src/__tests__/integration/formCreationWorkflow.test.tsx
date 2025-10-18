@@ -20,6 +20,10 @@ import {
   createTestFormField,
   resetIdCounter,
   extractValidationErrors,
+  extractValidationWarnings,
+  getEntityErrors,
+  getEntityWarnings,
+  getValidationSummary,
   resetConfigStore,
 } from './testUtils';
 import type { FormField } from '@/types/config';
@@ -30,12 +34,12 @@ describe('Form Creation Workflow Integration Tests', () => {
     resetConfigStore(useConfigStore);
   });
 
-  it('should complete full form creation workflow successfully', () => {
+  it('should complete full form creation workflow successfully', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Step 1: Create program
     let programId: string;
-    act(() => {
+    await act(async () => {
       const program = createTestProgram({
         program_id: 'test-program-1',
         program_name: 'Volunteer Program',
@@ -51,7 +55,7 @@ describe('Form Creation Workflow Integration Tests', () => {
 
     // Step 2: Create form with 5 fields (all types)
     let formId: string;
-    act(() => {
+    await act(async () => {
       result.current.forms.createForm({
         enabled: true,
         form_id: 'volunteer-form',
@@ -81,8 +85,8 @@ describe('Form Creation Workflow Integration Tests', () => {
       { type: 'textarea', id: 'motivation', label: 'Why do you want to volunteer?' },
     ];
 
-    fieldTypes.forEach((fieldSpec, index) => {
-      act(() => {
+    for (const [index, fieldSpec] of fieldTypes.entries()) {
+      await act(async () => {
         const field = createTestFormField({
           id: fieldSpec.id,
           type: fieldSpec.type,
@@ -101,7 +105,7 @@ describe('Form Creation Workflow Integration Tests', () => {
         });
         result.current.forms.addField(formId, field);
       });
-    });
+    }
 
     // Verify all fields added
     expect(result.current.forms.forms[formId].fields).toHaveLength(5);
@@ -115,7 +119,7 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(result.current.forms.forms[formId].fields[3].options).toHaveLength(3);
 
     // Step 4: Add trigger phrases
-    act(() => {
+    await act(async () => {
       result.current.forms.updateForm(formId, {
         trigger_phrases: ['volunteer', 'volunteer application', 'apply to volunteer', 'sign up'],
       });
@@ -127,7 +131,7 @@ describe('Form Creation Workflow Integration Tests', () => {
 
     // Step 5: Create CTA referencing the form
     let ctaId: string;
-    act(() => {
+    await act(async () => {
       ctaId = 'volunteer-cta';
       result.current.ctas.createCTA(
         {
@@ -148,7 +152,7 @@ describe('Form Creation Workflow Integration Tests', () => {
 
     // Step 6: Create branch with CTA assignment
     let branchId: string;
-    act(() => {
+    await act(async () => {
       branchId = 'volunteer-branch';
       result.current.branches.createBranch(
         {
@@ -168,8 +172,8 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(result.current.branches.branches[branchId].detection_keywords).toHaveLength(3);
 
     // Step 7: Run validation
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Verify validation passes
@@ -194,13 +198,13 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(allBranches[0].branch.available_ctas.primary).toBe(allCTAs[0].id);
   });
 
-  it('should handle form field reordering', () => {
+  it('should handle form field reordering', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create program and form
     let programId: string;
     let formId: string;
-    act(() => {
+    await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
       result.current.programs.createProgram(program);
       programId = program.program_id;
@@ -218,7 +222,7 @@ describe('Form Creation Workflow Integration Tests', () => {
     });
 
     // Add 3 fields
-    act(() => {
+    await act(async () => {
       result.current.forms.addField(
         formId,
         createTestFormField({ id: 'field1', label: 'Field 1' })
@@ -239,7 +243,7 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(result.current.forms.forms[formId].fields[2].label).toBe('Field 3');
 
     // Reorder: move field at index 0 to index 2
-    act(() => {
+    await act(async () => {
       result.current.forms.reorderFields(formId, 0, 2);
     });
 
@@ -249,13 +253,13 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(result.current.forms.forms[formId].fields[2].label).toBe('Field 1');
   });
 
-  it('should handle form field deletion', () => {
+  it('should handle form field deletion', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create program and form with fields
     let programId: string;
     let formId: string;
-    act(() => {
+    await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
       result.current.programs.createProgram(program);
       programId = program.program_id;
@@ -289,7 +293,7 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(result.current.forms.forms[formId].fields).toHaveLength(3);
 
     // Delete middle field
-    act(() => {
+    await act(async () => {
       result.current.forms.deleteField(formId, 1);
     });
 
@@ -299,13 +303,13 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(result.current.forms.forms[formId].fields[1].label).toBe('Field 3');
   });
 
-  it('should handle form field updates', () => {
+  it('should handle form field updates', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create program and form with field
     let programId: string;
     let formId: string;
-    act(() => {
+    await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
       result.current.programs.createProgram(program);
       programId = program.program_id;
@@ -336,7 +340,7 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(result.current.forms.forms[formId].fields[0].required).toBe(false);
 
     // Update field
-    act(() => {
+    await act(async () => {
       result.current.forms.updateField(formId, 0, {
         label: 'New Label',
         required: true,
@@ -350,11 +354,11 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(result.current.forms.forms[formId].fields[0].hint).toBe('This is a helpful hint');
   });
 
-  it('should validate form requires program reference', () => {
+  it('should validate form requires program reference', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create form without program
-    act(() => {
+    await act(async () => {
       result.current.forms.createForm({
         enabled: true,
         form_id: 'orphan-form',
@@ -372,8 +376,8 @@ describe('Form Creation Workflow Integration Tests', () => {
     });
 
     // Run validation
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Verify validation fails
@@ -382,12 +386,12 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(errors.some((e) => e.includes('Program'))).toBe(true);
   });
 
-  it('should warn when form has no trigger phrases', () => {
+  it('should warn when form has no trigger phrases', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create program and form
     let programId: string;
-    act(() => {
+    await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
       result.current.programs.createProgram(program);
       programId = program.program_id;
@@ -404,24 +408,24 @@ describe('Form Creation Workflow Integration Tests', () => {
     });
 
     // Run validation
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Should pass validation but have warnings
     expect(result.current.validation.isValid).toBe(true);
-    const formResult = result.current.validation.formResults['test-form'];
-    expect(formResult?.warnings.length).toBeGreaterThan(0);
-    expect(formResult?.warnings.some((w) => w.message.includes('trigger phrases'))).toBe(true);
+    const formWarnings = getEntityWarnings(result.current.validation, 'test-form');
+    expect(formWarnings.length).toBeGreaterThan(0);
+    expect(formWarnings.some((w) => w.message.includes('trigger phrases'))).toBe(true);
   });
 
-  it('should duplicate form with all fields and relationships', () => {
-    const { result } = renderHook(() => useConfigStore();
+  it('should duplicate form with all fields and relationships', async () => {
+    const { result } = renderHook(() => useConfigStore());
 
     // Create program and form
     let programId: string;
     let formId: string;
-    act(() => {
+    await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
       result.current.programs.createProgram(program);
       programId = program.program_id;
@@ -449,7 +453,7 @@ describe('Form Creation Workflow Integration Tests', () => {
     });
 
     // Duplicate form
-    act(() => {
+    await act(async () => {
       result.current.forms.duplicateForm(formId);
     });
 

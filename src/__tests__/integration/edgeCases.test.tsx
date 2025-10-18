@@ -18,10 +18,19 @@ import {
   createTestForm,
   createLargeTenantConfig,
   resetIdCounter,
+  resetConfigStore,
+  getEntityErrors,
+  getEntityWarnings,
 } from './testUtils';
 import * as configOps from '@/lib/api/config-operations';
 
-vi.mock('@/lib/api/config-operations');
+vi.mock('@/lib/api/config-operations', () => ({
+  loadConfig: vi.fn(),
+  saveConfig: vi.fn(),
+  deployConfig: vi.fn(),
+  listTenants: vi.fn(),
+  getTenantMetadata: vi.fn(),
+}));
 
 describe('Edge Cases Integration Tests', () => {
   beforeEach(() => {
@@ -29,15 +38,7 @@ describe('Edge Cases Integration Tests', () => {
     vi.clearAllMocks();
 
     // Reset store state
-    const { result } = renderHook(() => useConfigStore());
-    act(() => {
-      result.current.programs.programs = {};
-      result.current.forms.forms = {};
-      result.current.ctas.ctas = {};
-      result.current.branches.branches = {};
-      result.current.config.tenantId = null;
-      result.current.config.isDirty = false;
-    });
+    resetConfigStore(useConfigStore);
   });
 
   it('should handle empty config', async () => {
@@ -57,13 +58,13 @@ describe('Edge Cases Integration Tests', () => {
     };
 
     mockS3._setMockConfig('EMPTY_TENANT', emptyConfig);
-    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
+    (configOps.loadConfig as any).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
 
     // Load empty config
     await act(async () => {
-      await result.current.config.loadFromS3('EMPTY_TENANT');
+      await result.current.config.loadConfig('EMPTY_TENANT');
     });
 
     // Verify store populated with empty collections
@@ -74,7 +75,7 @@ describe('Edge Cases Integration Tests', () => {
     expect(Object.keys(result.current.branches.branches)).toHaveLength(0);
 
     // Should be able to add entities to empty config
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({
           program_id: 'first-program',
@@ -93,16 +94,16 @@ describe('Edge Cases Integration Tests', () => {
     const largeConfig = createLargeTenantConfig(10, 3, 2, 30);
 
     mockS3._setMockConfig('LARGE_TENANT', largeConfig);
-    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
+    (configOps.loadConfig as any).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
-    vi.mocked(configOps.saveConfig).mockImplementation((tenantId, config, options) =>
+    (configOps.saveConfig as any).mockImplementation((tenantId, config, options) =>
       mockS3.saveConfig(tenantId, config, options)
     );
 
     // Load large config
     await act(async () => {
-      await result.current.config.loadFromS3('LARGE_TENANT');
+      await result.current.config.loadConfig('LARGE_TENANT');
     });
 
     // Verify large config loaded
@@ -118,7 +119,7 @@ describe('Edge Cases Integration Tests', () => {
 
     // Test performance: adding entity to large config
     const startTime = Date.now();
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({
           program_id: 'new-program',
@@ -132,8 +133,8 @@ describe('Edge Cases Integration Tests', () => {
     expect(endTime - startTime).toBeLessThan(100);
 
     // Test validation on large config
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Should complete validation
@@ -141,18 +142,18 @@ describe('Edge Cases Integration Tests', () => {
 
     // Test save large config
     await act(async () => {
-      await result.current.config.saveToS3();
+      await result.current.config.saveConfig();
     });
 
     // Verify save completed
     expect(mockS3.saveConfig).toHaveBeenCalled();
   });
 
-  it('should handle missing form reference in CTA', () => {
+  it('should handle missing form reference in CTA', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create CTA with missing form reference
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Orphan CTA',
@@ -166,21 +167,21 @@ describe('Edge Cases Integration Tests', () => {
     });
 
     // Run validation
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Should detect missing reference
     expect(result.current.validation.isValid).toBe(false);
-    const ctaResult = result.current.validation.ctaResults['orphan-cta'];
-    expect(ctaResult?.errors.length).toBeGreaterThan(0);
+    const ctaErrors = getEntityErrors(result.current.validation, 'orphan-cta');
+    expect(ctaErrors.length).toBeGreaterThan(0);
   });
 
-  it('should handle missing CTA reference in branch', () => {
+  it('should handle missing CTA reference in branch', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create branch with missing CTA reference
-    act(() => {
+    await act(async () => {
       result.current.branches.createBranch(
         {
           detection_keywords: ['test'],
@@ -194,21 +195,21 @@ describe('Edge Cases Integration Tests', () => {
     });
 
     // Run validation
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Should detect missing reference
     expect(result.current.validation.isValid).toBe(false);
-    const branchResult = result.current.validation.branchResults['orphan-branch'];
-    expect(branchResult?.errors.length).toBeGreaterThan(0);
+    const branchErrors = getEntityErrors(result.current.validation, 'orphan-branch');
+    expect(branchErrors.length).toBeGreaterThan(0);
   });
 
-  it('should handle malformed field data', () => {
+  it('should handle malformed field data', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create program and form with malformed field
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({ program_id: 'test-program' })
       );
@@ -233,22 +234,23 @@ describe('Edge Cases Integration Tests', () => {
     });
 
     // Run validation
-    act(() => {
-      result.current.validation.validateAll();
+    await act(async () => {
+      await result.current.validation.validateAll();
     });
 
     // Should detect issues with malformed field
-    const formResult = result.current.validation.formResults['malformed-form'];
-    expect(formResult).toBeDefined();
-    // May have errors or warnings depending on validation rules
+    const formErrors = getEntityErrors(result.current.validation, 'malformed-form');
+    const formWarnings = getEntityWarnings(result.current.validation, 'malformed-form');
+    // Should have errors or warnings depending on validation rules
+    expect(formErrors.length + formWarnings.length).toBeGreaterThan(0);
   });
 
-  it('should handle very long strings in config', () => {
+  it('should handle very long strings in config', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     const veryLongString = 'A'.repeat(10000);
 
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({
           program_id: 'test-program',
@@ -264,12 +266,12 @@ describe('Edge Cases Integration Tests', () => {
     expect(program?.program_name.length).toBe(10000);
   });
 
-  it('should handle special characters in IDs', () => {
+  it('should handle special characters in IDs', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     const specialId = 'test-program-with-special-chars-!@#$%^&*()';
 
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({
           program_id: specialId,
@@ -283,11 +285,11 @@ describe('Edge Cases Integration Tests', () => {
     expect(program).toBeDefined();
   });
 
-  it('should handle duplicate IDs gracefully', () => {
+  it('should handle duplicate IDs gracefully', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create first program
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({
           program_id: 'duplicate-id',
@@ -297,7 +299,7 @@ describe('Edge Cases Integration Tests', () => {
     });
 
     // Attempt to create second program with same ID
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({
           program_id: 'duplicate-id',
@@ -313,11 +315,11 @@ describe('Edge Cases Integration Tests', () => {
     expect(['First Program', 'Second Program']).toContain(program?.program_name);
   });
 
-  it('should handle rapid successive updates', () => {
+  it('should handle rapid successive updates', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create program
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({
           program_id: 'test-program',
@@ -327,7 +329,7 @@ describe('Edge Cases Integration Tests', () => {
     });
 
     // Rapid updates
-    act(() => {
+    await act(async () => {
       for (let i = 0; i < 100; i++) {
         result.current.programs.updateProgram('test-program', {
           program_name: `Updated Name ${i}`,
@@ -340,10 +342,10 @@ describe('Edge Cases Integration Tests', () => {
     expect(program?.program_name).toBe('Updated Name 99');
   });
 
-  it('should handle form with 100+ fields', () => {
+  it('should handle form with 100+ fields', async () => {
     const { result } = renderHook(() => useConfigStore());
 
-    act(() => {
+    await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
       result.current.programs.createProgram(program);
 
@@ -357,7 +359,7 @@ describe('Edge Cases Integration Tests', () => {
     expect(form?.fields.length).toBe(100);
 
     // Test field operations on large form
-    act(() => {
+    await act(async () => {
       result.current.forms.updateField('large-form', 50, {
         label: 'Updated Field',
       });
@@ -367,11 +369,11 @@ describe('Edge Cases Integration Tests', () => {
     expect(updatedForm?.fields[50].label).toBe('Updated Field');
   });
 
-  it('should handle branch with 50+ keywords', () => {
+  it('should handle branch with 50+ keywords', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create CTA
-    act(() => {
+    await act(async () => {
       result.current.ctas.createCTA(
         {
           label: 'Test CTA',
@@ -390,7 +392,7 @@ describe('Edge Cases Integration Tests', () => {
       keywords.push(`keyword-${i}`);
     }
 
-    act(() => {
+    await act(async () => {
       result.current.branches.createBranch(
         {
           detection_keywords: keywords,
@@ -429,13 +431,13 @@ describe('Edge Cases Integration Tests', () => {
     };
 
     mockS3._setMockConfig('MINIMAL_TENANT', minimalConfig);
-    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
+    (configOps.loadConfig as any).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
 
     // Load minimal config
     await act(async () => {
-      await result.current.config.loadFromS3('MINIMAL_TENANT');
+      await result.current.config.loadConfig('MINIMAL_TENANT');
     });
 
     // Verify config loaded with defaults for missing sections
@@ -446,11 +448,11 @@ describe('Edge Cases Integration Tests', () => {
     expect(Object.keys(result.current.branches.branches)).toHaveLength(0);
   });
 
-  it('should handle null and undefined values in config', () => {
+  it('should handle null and undefined values in config', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create entities with null/undefined optional fields
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram({
         program_id: 'test-program',
         program_name: 'Test Program',
@@ -471,10 +473,10 @@ describe('Edge Cases Integration Tests', () => {
     expect(Object.keys(result.current.forms.forms)).toHaveLength(1);
   });
 
-  it('should handle unicode and emoji in strings', () => {
+  it('should handle unicode and emoji in strings', async () => {
     const { result } = renderHook(() => useConfigStore());
 
-    act(() => {
+    await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({
           program_id: 'unicode-program',
@@ -490,10 +492,10 @@ describe('Edge Cases Integration Tests', () => {
     expect(program?.description).toContain('🎉');
   });
 
-  it('should handle zero-length arrays in config', () => {
+  it('should handle zero-length arrays in config', async () => {
     const { result } = renderHook(() => useConfigStore());
 
-    act(() => {
+    await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
       result.current.programs.createProgram(program);
 
@@ -515,11 +517,11 @@ describe('Edge Cases Integration Tests', () => {
     expect(form?.trigger_phrases).toHaveLength(0);
   });
 
-  it('should handle simultaneous create and delete operations', () => {
+  it('should handle simultaneous create and delete operations', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Create multiple programs
-    act(() => {
+    await act(async () => {
       for (let i = 0; i < 10; i++) {
         result.current.programs.createProgram(
           createTestProgram({
@@ -533,7 +535,7 @@ describe('Edge Cases Integration Tests', () => {
     expect(Object.keys(result.current.programs.programs)).toHaveLength(10);
 
     // Simultaneously delete some and create new ones
-    act(() => {
+    await act(async () => {
       result.current.programs.deleteProgram('program-0');
       result.current.programs.deleteProgram('program-1');
       result.current.programs.deleteProgram('program-2');

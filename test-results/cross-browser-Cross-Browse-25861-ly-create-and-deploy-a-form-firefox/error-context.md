@@ -1,0 +1,105 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - heading "🎨 Picasso Config Builder" [level=1] [ref=e7]:
+          - generic [ref=e8]: 🎨
+          - generic [ref=e9]: Picasso Config Builder
+        - generic [ref=e10]:
+          - generic [ref=e11]:
+            - img [ref=e12]
+            - generic [ref=e20]: Failed to load tenants
+          - generic [ref=e21]:
+            - button "Deploy" [disabled]:
+              - img
+              - text: Deploy
+    - generic [ref=e22]:
+      - complementary [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]: Navigation
+          - button "Collapse sidebar" [ref=e26] [cursor=pointer]:
+            - img [ref=e27]
+        - navigation [ref=e29]:
+          - link "Home" [ref=e30] [cursor=pointer]:
+            - /url: /
+            - img [ref=e31]
+            - generic [ref=e36]: Home
+          - link "Programs" [ref=e37] [cursor=pointer]:
+            - /url: /programs
+            - img [ref=e38]
+            - generic [ref=e44]: Programs
+          - link "Forms" [ref=e45] [cursor=pointer]:
+            - /url: /forms
+            - img [ref=e46]
+            - generic [ref=e52]: Forms
+          - link "CTAs" [ref=e53] [cursor=pointer]:
+            - /url: /ctas
+            - img [ref=e54]
+            - generic [ref=e60]: CTAs
+          - link "Branches" [ref=e61] [cursor=pointer]:
+            - /url: /branches
+            - img [ref=e62]
+            - generic [ref=e67]: Branches
+          - link "Showcase Items" [ref=e68] [cursor=pointer]:
+            - /url: /cards
+            - img [ref=e69]
+            - generic [ref=e75]: Showcase Items
+          - link "Settings" [ref=e76] [cursor=pointer]:
+            - /url: /settings
+            - img [ref=e77]
+            - generic [ref=e80]: Settings
+      - main [ref=e81]:
+        - generic [ref=e83]:
+          - heading "Welcome to Picasso Config Builder" [level=1] [ref=e85]
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - heading "Select a Tenant" [level=3] [ref=e88]
+              - paragraph [ref=e89]: Choose a tenant to load and edit its configuration
+            - generic [ref=e91]:
+              - img [ref=e92]
+              - generic [ref=e100]: Failed to load tenants
+          - generic [ref=e101]:
+            - heading "Quick Actions" [level=2] [ref=e102]
+            - generic [ref=e103]:
+              - generic [ref=e106] [cursor=pointer]:
+                - img [ref=e108]
+                - heading "Programs" [level=3] [ref=e114]
+                - paragraph [ref=e115]: Define and manage program eligibility
+                - button "Open" [ref=e116]:
+                  - text: Open
+                  - img [ref=e117]
+              - generic [ref=e122] [cursor=pointer]:
+                - img [ref=e124]
+                - heading "Forms" [level=3] [ref=e130]
+                - paragraph [ref=e131]: Configure multi-field conversational forms
+                - button "Open" [ref=e132]:
+                  - text: Open
+                  - img [ref=e133]
+              - generic [ref=e138] [cursor=pointer]:
+                - img [ref=e140]
+                - heading "CTAs" [level=3] [ref=e146]
+                - paragraph [ref=e147]: Create call-to-action buttons
+                - button "Open" [ref=e148]:
+                  - text: Open
+                  - img [ref=e149]
+              - generic [ref=e154] [cursor=pointer]:
+                - img [ref=e156]
+                - heading "Branches" [level=3] [ref=e161]
+                - paragraph [ref=e162]: Route conversations based on keywords
+                - button "Open" [ref=e163]:
+                  - text: Open
+                  - img [ref=e164]
+          - generic [ref=e168]:
+            - heading "Getting Started" [level=3] [ref=e169]
+            - list [ref=e170]:
+              - listitem [ref=e171]: Select a tenant from the dropdown above
+              - listitem [ref=e172]: Navigate to a section (Programs, Forms, CTAs, or Branches)
+              - listitem [ref=e173]: Create or edit configurations
+              - listitem [ref=e174]: Save your changes
+              - listitem [ref=e175]: Deploy to production when ready
+```

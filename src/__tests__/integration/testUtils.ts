@@ -361,28 +361,77 @@ export async function waitForStoreUpdate(checkFn: () => boolean, timeout: number
 export function extractValidationErrors(validationState: any): string[] {
   const errors: string[] = [];
 
-  const extractFromResult = (result: any) => {
-    if (result?.errors) {
-      result.errors.forEach((error: any) => {
-        errors.push(error.message);
-      });
-    }
-  };
-
-  if (validationState.programResults) {
-    Object.values(validationState.programResults).forEach(extractFromResult);
-  }
-  if (validationState.formResults) {
-    Object.values(validationState.formResults).forEach(extractFromResult);
-  }
-  if (validationState.ctaResults) {
-    Object.values(validationState.ctaResults).forEach(extractFromResult);
-  }
-  if (validationState.branchResults) {
-    Object.values(validationState.branchResults).forEach(extractFromResult);
+  // New validation structure uses errors and warnings objects keyed by entityId
+  if (validationState.errors) {
+    Object.values(validationState.errors).forEach((entityErrors: any) => {
+      if (Array.isArray(entityErrors)) {
+        entityErrors.forEach((error: any) => {
+          errors.push(error.message);
+        });
+      }
+    });
   }
 
   return errors;
+}
+
+/**
+ * Extract all validation warnings from store state
+ */
+export function extractValidationWarnings(validationState: any): string[] {
+  const warnings: string[] = [];
+
+  if (validationState.warnings) {
+    Object.values(validationState.warnings).forEach((entityWarnings: any) => {
+      if (Array.isArray(entityWarnings)) {
+        entityWarnings.forEach((warning: any) => {
+          warnings.push(warning.message);
+        });
+      }
+    });
+  }
+
+  return warnings;
+}
+
+/**
+ * Get validation errors for a specific entity
+ */
+export function getEntityErrors(validationState: any, entityId: string): any[] {
+  return validationState.errors?.[entityId] || [];
+}
+
+/**
+ * Get validation warnings for a specific entity
+ */
+export function getEntityWarnings(validationState: any, entityId: string): any[] {
+  return validationState.warnings?.[entityId] || [];
+}
+
+/**
+ * Calculate validation summary from errors and warnings
+ */
+export function getValidationSummary(validationState: any): { totalErrors: number; totalWarnings: number } {
+  let totalErrors = 0;
+  let totalWarnings = 0;
+
+  if (validationState.errors) {
+    Object.values(validationState.errors).forEach((entityErrors: any) => {
+      if (Array.isArray(entityErrors)) {
+        totalErrors += entityErrors.length;
+      }
+    });
+  }
+
+  if (validationState.warnings) {
+    Object.values(validationState.warnings).forEach((entityWarnings: any) => {
+      if (Array.isArray(entityWarnings)) {
+        totalWarnings += entityWarnings.length;
+      }
+    });
+  }
+
+  return { totalErrors, totalWarnings };
 }
 
 /**
@@ -390,25 +439,29 @@ export function extractValidationErrors(validationState: any): string[] {
  * Import useConfigStore in your test and call this in beforeEach
  */
 export function resetConfigStore(useConfigStore: any) {
-  useConfigStore.setState(
-    {
-      programs: { programs: {}, activeProgramId: null } as any,
-      forms: { forms: {}, activeFormId: null } as any,
-      ctas: { ctas: {}, activeCtaId: null } as any,
-      branches: { branches: {}, activeBranchId: null } as any,
-      contentShowcase: { content_showcase: [] } as any,
-      cardInventory: { cardInventory: null } as any,
-      validation: {
-        isValid: true,
-        programResults: {},
-        formResults: {},
-        ctaResults: {},
-        branchResults: {},
-        summary: { totalErrors: 0, totalWarnings: 0 },
-      } as any,
-      config: { tenantId: null, isDirty: false, baseConfig: null, lastSaved: null } as any,
-      ui: { toasts: [], loading: {}, activeTab: 'programs', modalStack: [] } as any,
-    },
-    true
-  );
+  useConfigStore.setState((state: any) => {
+    // Reset only data properties, preserve all action methods
+    state.programs.programs = {};
+    state.programs.activeProgramId = null;
+    state.forms.forms = {};
+    state.forms.activeFormId = null;
+    state.ctas.ctas = {};
+    state.ctas.activeCtaId = null;
+    state.branches.branches = {};
+    state.branches.activeBranchId = null;
+    state.contentShowcase = { content_showcase: [] };
+    state.cardInventory = { cardInventory: null };
+    state.validation.errors = {};
+    state.validation.warnings = {};
+    state.validation.isValid = true;
+    state.validation.lastValidated = null;
+    state.config.tenantId = null;
+    state.config.isDirty = false;
+    state.config.baseConfig = null;
+    state.config.lastSaved = null;
+    state.ui.toasts = [];
+    state.ui.loading = {};
+    state.ui.activeTab = 'programs';
+    state.ui.modalStack = [];
+  });
 }
