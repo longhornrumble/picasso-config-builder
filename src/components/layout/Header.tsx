@@ -4,10 +4,12 @@
  */
 
 import React, { useState } from 'react';
-import { Save, Upload, AlertCircle, Eye } from 'lucide-react';
+import { Save, Eye, Menu } from 'lucide-react';
 import { TenantSelector } from '../TenantSelector';
-import { Button, Badge, Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription, ModalFooter } from '../ui';
+import { Button, Badge } from '../ui';
 import { PreviewConfigModal } from '../preview/PreviewConfigModal';
+import { ValidationSummary } from './ValidationSummary';
+import { DeployButton } from '../deploy';
 import { useConfigStore } from '@/store';
 
 /**
@@ -18,7 +20,7 @@ import { useConfigStore } from '@/store';
  * - Tenant selector dropdown
  * - Deploy button (visible when dirty)
  * - Save button (visible when dirty)
- * - Validation error indicator
+ * - Validation summary indicator
  * - Confirmation modal before deploy
  *
  * @example
@@ -27,29 +29,16 @@ import { useConfigStore } from '@/store';
  * ```
  */
 export const Header: React.FC = () => {
-  const [showDeployModal, setShowDeployModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   const tenantId = useConfigStore((state) => state.config.tenantId);
   const isDirty = useConfigStore((state) => state.config.isDirty);
   const isValid = useConfigStore((state) => state.validation.isValid);
-  const hasErrors = useConfigStore((state) => state.validation.hasErrors);
-  const deployConfig = useConfigStore((state) => state.config.deployConfig);
   const saveConfig = useConfigStore((state) => state.config.saveConfig);
   const loading = useConfigStore((state) => state.ui.loading);
+  const toggleSidebar = useConfigStore((state) => state.ui.toggleSidebar);
 
-  const isDeploying = loading?.deploy || false;
   const isSaving = loading?.save || false;
-
-  const handleDeploy = async () => {
-    setShowDeployModal(false);
-    try {
-      await deployConfig();
-    } catch (err) {
-      // Error handling is done in the store
-      console.error('Deploy failed:', err);
-    }
-  };
 
   const handleSave = async () => {
     try {
@@ -62,30 +51,39 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="flex items-center justify-between px-6 h-16">
-          {/* Left: Logo and Title */}
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-green-600 flex items-center gap-2">
-              <span className="text-2xl">🎨</span>
-              Picasso Config Builder
+      <header className="app-header">
+        <div className="app-header-inner">
+          {/* Left: Hamburger Menu + Logo and Title */}
+          <div className="header-left-section">
+            {/* Hamburger Menu Button - Mobile Only */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSidebar}
+              className="hide-desktop flex-shrink-0"
+              aria-label="Toggle sidebar"
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+
+            <h1 className="text-lg sm:text-xl font-bold text-green-600 flex items-center gap-1 sm:gap-2 truncate">
+              <span className="text-xl sm:text-2xl flex-shrink-0">🎨</span>
+              <span className="hide-mobile">Picasso Config Builder</span>
+              <span className="hide-desktop">Picasso</span>
             </h1>
             {tenantId && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs show-tablet-up">
                 {tenantId}
               </Badge>
             )}
           </div>
 
           {/* Right: Tenant Selector and Actions */}
-          <div className="flex items-center gap-4">
-            {/* Validation Error Indicator */}
-            {hasErrors() && (
-              <div className="flex items-center gap-2 text-amber-600 text-sm">
-                <AlertCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Validation errors</span>
-              </div>
-            )}
+          <div className="header-right-section">
+            {/* Validation Summary Badge */}
+            <div className="hide-mobile">
+              <ValidationSummary showCounts />
+            </div>
 
             {/* Tenant Selector */}
             <TenantSelector />
@@ -95,10 +93,11 @@ export const Header: React.FC = () => {
               <Button
                 onClick={() => setShowPreviewModal(true)}
                 variant="outline"
-                className="flex items-center gap-2"
+                size="sm"
+                className="flex items-center gap-1 sm:gap-2"
               >
                 <Eye className="w-4 h-4" />
-                <span className="hidden sm:inline">Preview</span>
+                <span className="hidden lg:inline">Preview</span>
               </Button>
             )}
 
@@ -107,69 +106,22 @@ export const Header: React.FC = () => {
               <Button
                 onClick={handleSave}
                 variant="outline"
-                disabled={!isValid || isSaving || isDeploying}
-                className="flex items-center gap-2"
+                size="sm"
+                disabled={!isValid || isSaving}
+                className="flex items-center gap-1 sm:gap-2"
               >
                 <Save className="w-4 h-4" />
-                <span className="hidden sm:inline">
+                <span className="hidden lg:inline">
                   {isSaving ? 'Saving...' : 'Save'}
                 </span>
               </Button>
             )}
 
-            {/* Deploy Button */}
-            {isDirty && tenantId && (
-              <Button
-                onClick={() => setShowDeployModal(true)}
-                variant="primary"
-                disabled={!isValid || isDeploying || isSaving}
-                className="flex items-center gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                <span className="hidden sm:inline">
-                  {isDeploying ? 'Deploying...' : 'Deploy'}
-                </span>
-              </Button>
-            )}
+            {/* Deploy Button - New Component */}
+            <DeployButton />
           </div>
         </div>
       </header>
-
-      {/* Deploy Confirmation Modal */}
-      <Modal open={showDeployModal} onOpenChange={setShowDeployModal}>
-        <ModalContent>
-          <ModalHeader>
-            <ModalTitle>Deploy Configuration</ModalTitle>
-            <ModalDescription>
-              Are you sure you want to deploy the configuration for {tenantId}?
-            </ModalDescription>
-          </ModalHeader>
-
-          <div className="py-4">
-            <p className="text-sm text-gray-600">
-              This will save and publish your changes to the production environment.
-              The changes will be immediately available to end users.
-            </p>
-          </div>
-
-          <ModalFooter>
-            <Button
-              onClick={() => setShowDeployModal(false)}
-              variant="outline"
-              disabled={isDeploying}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDeploy}
-              variant="primary"
-              disabled={isDeploying}
-            >
-              {isDeploying ? 'Deploying...' : 'Deploy Now'}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
 
       {/* Preview Config Modal */}
       <PreviewConfigModal

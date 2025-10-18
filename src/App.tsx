@@ -18,6 +18,7 @@ import {
   SettingsPage,
   NotFoundPage,
 } from './pages';
+import { useAutoSave } from './hooks/useAutoSave';
 
 /**
  * Main Application Component
@@ -45,6 +46,9 @@ import {
  * ```
  */
 const App: React.FC = () => {
+  // Enable auto-save functionality
+  useAutoSave();
+
   return (
     <ErrorBoundary>
       <BrowserRouter>
