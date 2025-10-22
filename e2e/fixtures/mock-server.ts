@@ -5,6 +5,13 @@
 
 import express, { Express } from 'express';
 import { MOCK_TENANT_LIST, MOCK_TEST001_CONFIG } from './test-data';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const MYR_CONFIG = JSON.parse(readFileSync(join(__dirname, 'MYR384719-config.json'), 'utf-8'));
 
 let app: Express | null = null;
 let server: any = null;
@@ -14,6 +21,7 @@ let server: any = null;
  */
 const configStore = new Map<string, any>([
   ['TEST001', JSON.parse(JSON.stringify(MOCK_TEST001_CONFIG))],
+  ['MYR384719', JSON.parse(JSON.stringify(MYR_CONFIG))],
 ]);
 
 /**

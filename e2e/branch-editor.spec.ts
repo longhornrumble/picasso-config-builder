@@ -37,7 +37,7 @@ test.describe('CTA Creation & Branch Assignment', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
   });
 
   test('should create CTAs, assign to branch, validate and deploy', async ({ page }) => {

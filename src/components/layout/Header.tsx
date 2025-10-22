@@ -11,6 +11,7 @@ import { PreviewConfigModal } from '../preview/PreviewConfigModal';
 import { ValidationSummary } from './ValidationSummary';
 import { DeployButton } from '../deploy';
 import { useConfigStore } from '@/store';
+import { useSaveShortcut } from '@/hooks/useKeyboardShortcuts';
 
 /**
  * Application Header
@@ -49,6 +50,9 @@ export const Header: React.FC = () => {
     }
   };
 
+  // Register global save shortcut (Ctrl/Cmd+S)
+  useSaveShortcut(handleSave, { disabled: !isDirty || !isValid || isSaving || !tenantId });
+
   return (
     <>
       <header className="app-header">
@@ -85,6 +89,12 @@ export const Header: React.FC = () => {
               <ValidationSummary showCounts />
             </div>
 
+            {/* Keyboard Shortcuts Help */}
+            {/* Temporarily disabled due to TrustedHTML error */}
+            {/* <div className="hide-mobile">
+              <KeyboardShortcutsHelp />
+            </div> */}
+
             {/* Tenant Selector */}
             <TenantSelector />
 
@@ -109,6 +119,7 @@ export const Header: React.FC = () => {
                 size="sm"
                 disabled={!isValid || isSaving}
                 className="flex items-center gap-1 sm:gap-2"
+                title="Save changes (Ctrl/Cmd+S)"
               >
                 <Save className="w-4 h-4" />
                 <span className="hidden lg:inline">

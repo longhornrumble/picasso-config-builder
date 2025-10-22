@@ -38,6 +38,15 @@ export const formFieldSchema = z.object({
     });
   }
 
+  // Validate that eligibility gates are only used with select fields
+  if (data.eligibility_gate && data.type !== 'select') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['eligibility_gate'],
+      message: 'Eligibility gates are only available for select (dropdown) fields',
+    });
+  }
+
   // Validate that eligibility gates have failure messages
   if (data.eligibility_gate && !data.failure_message) {
     ctx.addIssue({
@@ -67,6 +76,7 @@ export const postSubmissionActionSchema = z.object({
   action: z.enum(['end_conversation', 'continue_conversation', 'start_form', 'external_link']),
   formId: z.string().optional(),
   url: z.string().url('Must be a valid URL').optional(),
+  prompt: z.string().max(200, 'Prompt must be 200 characters or less').optional(),
 }).superRefine((data, ctx) => {
   // Validate action-specific required fields
   if (data.action === 'start_form' && !data.formId) {

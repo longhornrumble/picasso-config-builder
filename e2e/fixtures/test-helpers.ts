@@ -53,27 +53,42 @@ export async function navigateToSection(page: Page, section: 'programs' | 'forms
 
 /**
  * Select a tenant from the homepage
+ * Supports both tenant IDs (e.g., MYR384719) and display names (e.g., Atlanta Angels)
  */
-export async function selectTenant(page: Page, tenantId: string) {
+export async function selectTenant(page: Page, tenantIdOrName: string) {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
 
-  // Look for tenant selector
-  const tenantSelector = page.locator(`[data-testid="tenant-${tenantId}"], button:has-text("${tenantId}"), select option:has-text("${tenantId}")`).first();
+  // Wait for tenant selector to load (Radix UI Select trigger button)
+  const selectTrigger = page.locator('button[role="combobox"]').first();
+  await selectTrigger.waitFor({ state: 'visible', timeout: 10000 });
 
-  // Check if it's a button or select
-  const tagName = await tenantSelector.evaluate(el => el.tagName.toLowerCase());
+  // Wait for tenants to actually load (button text should change from "Loading tenants...")
+  await page.waitForFunction(
+    () => {
+      const button = document.querySelector('button[role="combobox"]');
+      return button && !button.textContent?.includes('Loading');
+    },
+    { timeout: 15000 }
+  );
 
-  if (tagName === 'option') {
-    // It's a select dropdown
-    const select = page.locator('select').first();
-    await select.selectOption({ label: tenantId });
-  } else {
-    // It's a button or clickable element
-    await tenantSelector.click();
-  }
+  // Click to open dropdown
+  await selectTrigger.click();
 
+  // Wait for dropdown content to appear
+  await page.waitForSelector('[role="listbox"]', { timeout: 5000 });
+
+  // Click the tenant option by ID or display name
+  // Try exact match first, then partial match
+  let tenantOption = page.locator(`[role="option"]:has-text("${tenantIdOrName}")`).first();
+
+  // Wait for option to be visible
+  await tenantOption.waitFor({ state: 'visible', timeout: 5000 });
+  await tenantOption.click();
+
+  // Wait for config to load
   await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(2000); // Give time for config loading and store updates
 }
 
 /**
@@ -86,9 +101,20 @@ export async function fillFormField(page: Page, label: string, value: string) {
 
 /**
  * Click button by text or test ID
+ * Handles both "Create X" and "Create First X" button variants
  */
 export async function clickButton(page: Page, textOrTestId: string) {
-  const button = page.locator(`button:has-text("${textOrTestId}"), [data-testid="${textOrTestId}"]`).first();
+  // For Create buttons, try both regular and "First" variants
+  let selector = `button:has-text("${textOrTestId}"), [data-testid="${textOrTestId}"]`;
+
+  if (textOrTestId.startsWith('Create ') && !textOrTestId.includes('First')) {
+    const entityName = textOrTestId.replace('Create ', '');
+    const firstVariant = `Create First ${entityName}`;
+    selector = `button:has-text("${textOrTestId}"), button:has-text("${firstVariant}"), [data-testid="${textOrTestId}"]`;
+  }
+
+  const button = page.locator(selector).first();
+  await button.waitFor({ state: 'visible', timeout: 10000 });
   await button.click();
   await page.waitForLoadState('networkidle');
 }

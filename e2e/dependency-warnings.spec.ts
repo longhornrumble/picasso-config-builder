@@ -28,7 +28,7 @@ test.describe('Dependency Warning Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
   });
 
   test('should show dependency warning when deleting program used by form', async ({ page }) => {

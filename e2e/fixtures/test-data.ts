@@ -5,10 +5,14 @@
 
 /**
  * Test tenant configuration
+ * Using real tenant MYR384719 from S3 bucket
+ * NOTE: Tenant selector shows display names, not IDs
  */
 export const TEST_TENANT = {
-  id: 'TEST001',
-  name: 'Test Tenant 001',
+  id: 'MYR384719',
+  name: 'Atlanta Angels',
+  // Use display name for selector since dropdown shows names, not IDs
+  displayName: 'Atlanta Angels',
 };
 
 /**
@@ -206,6 +210,12 @@ export const MOCK_TENANT_LIST = [
     name: 'Test Tenant 001',
     lastModified: '2025-10-18T12:00:00Z',
     size: 5120,
+  },
+  {
+    tenantId: 'MYR384719',
+    name: 'Atlanta Angels',
+    lastModified: '2025-10-18T14:00:00Z',
+    size: 8192,
   },
   {
     tenantId: 'TEST002',

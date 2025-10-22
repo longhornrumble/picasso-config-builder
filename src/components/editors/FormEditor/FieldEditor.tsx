@@ -459,23 +459,34 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
                   type="checkbox"
                   id="eligibility_gate"
                   checked={fieldData.eligibility_gate ?? false}
-                  onChange={(e) => handleChange('eligibility_gate', e.target.checked)}
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  onChange={(e) => {
+                    if (fieldData.type === 'select') {
+                      handleChange('eligibility_gate', e.target.checked);
+                    }
+                  }}
+                  disabled={fieldData.type !== 'select'}
+                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 disabled:opacity-50"
                 />
                 <label
                   htmlFor="eligibility_gate"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className={`text-sm font-medium text-gray-700 dark:text-gray-300 ${fieldData.type !== 'select' ? 'opacity-60' : ''}`}
                 >
                   Eligibility Gate
                 </label>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
-                Mark this field as an eligibility requirement that can disqualify users
-              </p>
+              {fieldData.type === 'select' ? (
+                <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                  Stop form if user selects a disqualifying option (e.g., "No" for age confirmation)
+                </p>
+              ) : (
+                <p className="text-xs text-amber-600 dark:text-amber-400 ml-6">
+                  Eligibility gates are only available for Select (Dropdown) fields. Use a dropdown with Yes/No options for binary requirements.
+                </p>
+              )}
             </div>
 
             {/* Failure message for eligibility gates */}
-            {fieldData.eligibility_gate && (
+            {fieldData.eligibility_gate && fieldData.type === 'select' && (
               <Textarea
                 label="Failure Message"
                 id="failure_message"
@@ -484,7 +495,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
                 onChange={(e) => handleChange('failure_message', e.target.value)}
                 onBlur={() => handleBlur('failure_message')}
                 error={touched.failure_message ? errors.failure_message : undefined}
-                helperText="Message shown if user doesn't meet this requirement"
+                helperText="Message shown when user selects a disqualifying option"
                 rows={3}
                 required
               />

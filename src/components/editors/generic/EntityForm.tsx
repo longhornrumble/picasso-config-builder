@@ -14,7 +14,10 @@ import {
   Button,
   Alert,
   AlertDescription,
+  Badge,
+  Tooltip,
 } from '@/components/ui';
+import { useSaveShortcut, formatShortcut } from '@/hooks/useKeyboardShortcuts';
 import type {
   BaseEntity,
   FormFieldsProps,
@@ -138,19 +141,41 @@ export function EntityForm<T extends BaseEntity>({
   // Check if form is valid based on current errors state
   const isValid = Object.keys(errors).length === 0 || Object.keys(errors).every(key => !errors[key]);
 
+  // Register Ctrl/Cmd+S keyboard shortcut for save
+  useSaveShortcut(
+    () => {
+      if (isValid && !isSubmitting && open) {
+        handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+      }
+    },
+    { disabled: !isValid || isSubmitting || !open }
+  );
+
+  // Get the save shortcut display text
+  const saveShortcut = formatShortcut({ key: 'S', ctrl: true, meta: true, description: 'Save' });
+
   return (
     <Modal open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
       <ModalContent className="sm:max-w-[600px]">
         <form onSubmit={handleSubmit}>
           <ModalHeader>
-            <ModalTitle>
-              {isEditMode ? `Edit ${entityName}` : `Create ${entityName}`}
-            </ModalTitle>
-            <ModalDescription>
-              {isEditMode
-                ? `Update the ${entityName.toLowerCase()} details below.`
-                : `Define a new ${entityName.toLowerCase()}.`}
-            </ModalDescription>
+            <div className="flex items-start justify-between">
+              <div>
+                <ModalTitle>
+                  {isEditMode ? `Edit ${entityName}` : `Create ${entityName}`}
+                </ModalTitle>
+                <ModalDescription>
+                  {isEditMode
+                    ? `Update the ${entityName.toLowerCase()} details below.`
+                    : `Define a new ${entityName.toLowerCase()}.`}
+                </ModalDescription>
+              </div>
+              <Tooltip content={`Press ${saveShortcut} to save`}>
+                <Badge variant="secondary" className="font-mono text-xs">
+                  {saveShortcut}
+                </Badge>
+              </Tooltip>
+            </div>
           </ModalHeader>
 
           <div className="space-y-4 py-4">

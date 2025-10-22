@@ -9,6 +9,10 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
 
+  // NOTE: Removed global setup/teardown - using real S3 via local dev server instead of mock
+  // globalSetup: './playwright.global-setup.ts',
+  // globalTeardown: './playwright.global-teardown.ts',
+
   // Maximum time one test can run for
   timeout: 60 * 1000,
 
@@ -87,12 +91,24 @@ export default defineConfig({
   ],
 
   // Run your local dev server before starting the tests
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-    stdout: 'ignore',
-    stderr: 'pipe',
-  },
+  webServer: [
+    // Start local dev server with S3 access on port 3001
+    {
+      command: 'npm run server:dev',
+      url: 'http://localhost:3001/health',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
+    // Start frontend dev server on port 3000
+    {
+      command: 'npm run dev',
+      url: 'http://localhost:3000',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+      stdout: 'ignore',
+      stderr: 'pipe',
+    },
+  ],
 });

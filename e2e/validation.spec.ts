@@ -29,7 +29,7 @@ test.describe('Validation Error Blocking Deployment', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
   });
 
   test('should block deployment when CTA has start_form action without formId', async ({ page }) => {

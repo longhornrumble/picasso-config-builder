@@ -9,8 +9,10 @@
     "globalTimeout": 0,
     "grep": {},
     "grepInvert": null,
-    "maxFailures": 0,
-    "metadata": {},
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
     "preserveOutput": "always",
     "reporter": [
       [
@@ -40,7 +42,9 @@
         "outputDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "chromium",
         "name": "chromium",
         "testDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
@@ -54,7 +58,9 @@
         "outputDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "firefox",
         "name": "firefox",
         "testDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
@@ -68,7 +74,9 @@
         "outputDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "webkit",
         "name": "webkit",
         "testDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
@@ -82,7 +90,9 @@
         "outputDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "mobile-chrome",
         "name": "mobile-chrome",
         "testDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
@@ -96,7 +106,9 @@
         "outputDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "mobile-safari",
         "name": "mobile-safari",
         "testDir": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e",
@@ -112,28 +124,124 @@
     "updateSourceMethod": "patch",
     "version": "1.56.1",
     "workers": 5,
-    "webServer": {
-      "command": "npm run dev",
-      "url": "http://localhost:8080",
-      "reuseExistingServer": true,
-      "timeout": 120000,
-      "stdout": "ignore",
-      "stderr": "pipe"
-    }
+    "webServer": null
   },
-  "suites": [],
+  "suites": [
+    {
+      "title": "form-creation.spec.ts",
+      "file": "form-creation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Complete Form Creation Flow",
+          "file": "form-creation.spec.ts",
+          "line": 32,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should create a complete form with program, fields, triggers, and deploy",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 61099,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/form-creation.spec.ts",
+                            "column": 26,
+                            "line": 53
+                          },
+                          "message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Create\"), button:has-text(\"Add Program\"), button:has-text(\"New Program\")').first()\u001b[22m\n\n\n  51 |       // Click Create Program button\n  52 |       const createButton = page.locator('button:has-text(\"Create\"), button:has-text(\"Add Program\"), button:has-text(\"New Program\")').first();\n> 53 |       await createButton.click();\n     |                          ^\n  54 |       await waitForModal(page);\n  55 |\n  56 |       // Fill program form\n    at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/form-creation.spec.ts:53:26\n    at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/form-creation.spec.ts:47:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Select tenant",
+                          "duration": 3288
+                        },
+                        {
+                          "title": "Create program \"Love Box\"",
+                          "duration": 55017,
+                          "error": {
+                            "message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Create\"), button:has-text(\"Add Program\"), button:has-text(\"New Program\")').first()\u001b[22m\n",
+                            "stack": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Create\"), button:has-text(\"Add Program\"), button:has-text(\"New Program\")').first()\u001b[22m\n\n    at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/form-creation.spec.ts:53:26\n    at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/form-creation.spec.ts:47:5",
+                            "location": {
+                              "file": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/form-creation.spec.ts",
+                              "column": 26,
+                              "line": 53
+                            },
+                            "snippet": "  51 |       // Click Create Program button\n  52 |       const createButton = page.locator('button:has-text(\"Create\"), button:has-text(\"Add Program\"), button:has-text(\"New Program\")').first();\n> 53 |       await createButton.click();\n     |                          ^\n  54 |       await waitForModal(page);\n  55 |\n  56 |       // Fill program form"
+                          }
+                        }
+                      ],
+                      "startTime": "2025-10-19T06:19:19.855Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results/form-creation-Complete-For-478ec--fields-triggers-and-deploy-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results/form-creation-Complete-For-478ec--fields-triggers-and-deploy-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/test-results/form-creation-Complete-For-478ec--fields-triggers-and-deploy-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3099f80306fdfdaa6fb6-60edf40a8f382938e724",
+              "file": "form-creation.spec.ts",
+              "line": 39,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "errors": [
     {
-      "message": "Error: Timed out waiting 120000ms from config.webServer.",
-      "stack": "Error: Timed out waiting 120000ms from config.webServer."
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
     }
   ],
   "stats": {
-    "startTime": "2025-10-18T16:04:18.707Z",
-    "duration": 120322.94499999999,
+    "startTime": "2025-10-19T06:19:18.872Z",
+    "duration": 62343.052,
     "expected": 0,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 1,
     "flaky": 0
   }
 }

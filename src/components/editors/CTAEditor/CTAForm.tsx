@@ -175,6 +175,18 @@ export const CTAForm: React.FC<CTAFormProps> = ({
     label: form.title,
   }));
 
+  // Get the type option for the current action (only show the relevant type)
+  const currentTypeOption: SelectOption[] = formData.action
+    ? [
+        {
+          value: getTypeForAction(formData.action),
+          label:
+            typeOptions.find((opt) => opt.value === getTypeForAction(formData.action))?.label ||
+            getTypeForAction(formData.action),
+        },
+      ]
+    : typeOptions;
+
   // Reset form when CTA changes or modal opens
   useEffect(() => {
     if (open) {
@@ -509,7 +521,7 @@ export const CTAForm: React.FC<CTAFormProps> = ({
             <Select
               label="CTA Type"
               placeholder="Select type..."
-              options={typeOptions}
+              options={currentTypeOption}
               value={formData.type}
               onValueChange={(value) => handleChange('type', value as CTAType)}
               error={touched.type ? errors.type : undefined}

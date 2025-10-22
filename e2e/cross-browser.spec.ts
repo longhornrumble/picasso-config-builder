@@ -40,7 +40,7 @@ test.describe('Cross-Browser Compatibility', () => {
   test('should successfully create and deploy a form', async ({ page, browserName }) => {
     console.log(`Running form creation test in ${browserName}`);
 
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
     await navigateToSection(page, 'forms');
 
     // Measure forms page load time
@@ -77,7 +77,7 @@ test.describe('Cross-Browser Compatibility', () => {
   test('should successfully edit an existing form', async ({ page, browserName }) => {
     console.log(`Running form edit test in ${browserName}`);
 
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
 
     // First create a form
     await navigateToSection(page, 'forms');
@@ -118,7 +118,7 @@ test.describe('Cross-Browser Compatibility', () => {
   test('should successfully create and deploy a CTA', async ({ page, browserName }) => {
     console.log(`Running CTA creation test in ${browserName}`);
 
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
     await navigateToSection(page, 'ctas');
 
     // Measure CTAs page load time
@@ -158,7 +158,7 @@ test.describe('Cross-Browser Compatibility', () => {
   test('should render UI components correctly', async ({ page, browserName }) => {
     console.log(`Testing UI rendering in ${browserName}`);
 
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
 
     // Check navigation menu
     const navItems = ['programs', 'forms', 'ctas', 'branches'];
@@ -184,7 +184,7 @@ test.describe('Cross-Browser Compatibility', () => {
   test('should handle modals correctly', async ({ page, browserName }) => {
     console.log(`Testing modal behavior in ${browserName}`);
 
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
     await navigateToSection(page, 'programs');
 
     // Open modal
@@ -219,7 +219,7 @@ test.describe('Cross-Browser Compatibility', () => {
   test('should handle form validation consistently', async ({ page, browserName }) => {
     console.log(`Testing form validation in ${browserName}`);
 
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
     await navigateToSection(page, 'forms');
 
     const createButton = page.locator('button:has-text("Create")').first();
@@ -245,7 +245,7 @@ test.describe('Cross-Browser Compatibility', () => {
   test('should support keyboard navigation', async ({ page, browserName }) => {
     console.log(`Testing keyboard navigation in ${browserName}`);
 
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
     await navigateToSection(page, 'programs');
 
     // Open create modal
@@ -269,7 +269,7 @@ test.describe('Cross-Browser Compatibility', () => {
   test('should handle long content without layout issues', async ({ page, browserName }) => {
     console.log(`Testing long content handling in ${browserName}`);
 
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
     await navigateToSection(page, 'forms');
 
     const createButton = page.locator('button:has-text("Create")').first();
@@ -295,7 +295,7 @@ test.describe('Cross-Browser Compatibility', () => {
   test('should maintain state across navigation', async ({ page, browserName }) => {
     console.log(`Testing state persistence in ${browserName}`);
 
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
 
     // Create a program
     await navigateToSection(page, 'programs');
@@ -322,7 +322,7 @@ test.describe('Cross-Browser Compatibility', () => {
   test('should handle rapid clicks without errors', async ({ page, browserName }) => {
     console.log(`Testing rapid interaction handling in ${browserName}`);
 
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
     await navigateToSection(page, 'programs');
 
     // Rapid clicks on create button
@@ -345,7 +345,7 @@ test.describe('Cross-Browser Compatibility', () => {
 test.describe('Browser-Specific Features', () => {
   test('should work with browser back/forward buttons', async ({ page, browserName }) => {
     await page.goto('/');
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
 
     // Navigate to programs
     await navigateToSection(page, 'programs');
@@ -366,7 +366,7 @@ test.describe('Browser-Specific Features', () => {
 
   test('should handle page refresh without data loss', async ({ page, browserName }) => {
     await page.goto('/');
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
 
     // Create something
     await navigateToSection(page, 'programs');

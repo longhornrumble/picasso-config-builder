@@ -39,7 +39,7 @@ test.describe('Complete Form Creation Flow', () => {
   test('should create a complete form with program, fields, triggers, and deploy', async ({ page }) => {
     // Step 1: Select tenant
     await test.step('Select tenant', async () => {
-      await selectTenant(page, TEST_TENANT.id);
+      await selectTenant(page, TEST_TENANT.displayName);
       await expect(page).toHaveURL(/\//);
     });
 
@@ -48,9 +48,8 @@ test.describe('Complete Form Creation Flow', () => {
       await navigateToSection(page, 'programs');
       await expect(page).toHaveURL(/\/programs/);
 
-      // Click Create Program button
-      const createButton = page.locator('button:has-text("Create"), button:has-text("Add Program"), button:has-text("New Program")').first();
-      await createButton.click();
+      // Click Create Program button (handles both "Create Program" and "Create First Program")
+      await clickButton(page, 'Create Program');
       await waitForModal(page);
 
       // Fill program form
@@ -242,7 +241,7 @@ test.describe('Complete Form Creation Flow', () => {
 
   test('should persist form data across navigation', async ({ page }) => {
     // Create a simple form
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
     await navigateToSection(page, 'forms');
 
     const createButton = page.locator('button:has-text("Create"), button:has-text("Add Form")').first();
@@ -269,7 +268,7 @@ test.describe('Complete Form Creation Flow', () => {
   });
 
   test('should validate required fields before submission', async ({ page }) => {
-    await selectTenant(page, TEST_TENANT.id);
+    await selectTenant(page, TEST_TENANT.displayName);
     await navigateToSection(page, 'forms');
 
     const createButton = page.locator('button:has-text("Create"), button:has-text("Add Form")').first();

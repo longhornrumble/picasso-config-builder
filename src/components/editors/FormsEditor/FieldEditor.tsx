@@ -29,8 +29,6 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
   onMoveUp,
   onMoveDown,
 }) => {
-  const [newOption, setNewOption] = useState('');
-
   const fieldTypeOptions = [
     { value: 'text', label: 'Text' },
     { value: 'email', label: 'Email' },
@@ -41,24 +39,20 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
     { value: 'textarea', label: 'Textarea (Long Text)' },
   ];
 
-  const handleAddOption = () => {
-    if (!newOption.trim()) return;
-    const option: FormFieldOption = {
-      value: newOption.trim().toLowerCase().replace(/\s+/g, '_'),
-      label: newOption.trim(),
-    };
-    onChange({
-      ...field,
-      options: [...(field.options || []), option],
-    });
-    setNewOption('');
+  const handleOptionChange = (index: number, key: 'value' | 'label', value: string) => {
+    const updatedOptions = [...(field.options || [])];
+    updatedOptions[index] = { ...updatedOptions[index], [key]: value };
+    onChange({ ...field, options: updatedOptions });
   };
 
-  const handleRemoveOption = (optionValue: string) => {
-    onChange({
-      ...field,
-      options: (field.options || []).filter((opt) => opt.value !== optionValue),
-    });
+  const handleAddOption = () => {
+    const newOption: FormFieldOption = { value: '', label: '' };
+    onChange({ ...field, options: [...(field.options || []), newOption] });
+  };
+
+  const handleRemoveOption = (index: number) => {
+    const updatedOptions = (field.options || []).filter((_, i) => i !== index);
+    onChange({ ...field, options: updatedOptions });
   };
 
   return (
@@ -187,67 +181,87 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Dropdown Options <span className="text-red-600">*</span>
           </label>
-          <div className="flex gap-2 mb-2">
-            <Input
-              id={`field-${index}-new-option`}
-              value={newOption}
-              onChange={(e) => setNewOption(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddOption();
-                }
-              }}
-              placeholder="Add option..."
-            />
-            <Button type="button" onClick={handleAddOption} disabled={!newOption.trim()} size="sm">
-              <Plus className="w-4 h-4" />
-            </Button>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            Define value and label for each option. Value is used internally (e.g., "yes", "no"), Label is shown to users.
+          </p>
+
+          <div className="space-y-2">
+            {(field.options || []).map((option, optionIndex) => (
+              <div key={optionIndex} className="flex gap-2">
+                <Input
+                  placeholder="Value (e.g., yes)"
+                  value={option.value}
+                  onChange={(e) => handleOptionChange(optionIndex, 'value', e.target.value)}
+                  className="flex-1"
+                />
+                <Input
+                  placeholder="Label (e.g., Yes, I am 22 or older)"
+                  value={option.label}
+                  onChange={(e) => handleOptionChange(optionIndex, 'label', e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRemoveOption(optionIndex)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
           </div>
-          {field.options && field.options.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {field.options.map((option) => (
-                <Badge key={option.value} variant="secondary" className="gap-1">
-                  {option.label}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveOption(option.value)}
-                    className="ml-1 hover:text-red-600"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          )}
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleAddOption}
+            className="mt-2"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Add Option
+          </Button>
         </div>
       )}
 
       {/* Eligibility Gate */}
       <div className="border-t pt-4 space-y-3">
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label className={`flex items-center gap-2 ${field.type === 'select' ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
           <input
             type="checkbox"
             checked={field.eligibility_gate || false}
-            onChange={(e) => onChange({ ...field, eligibility_gate: e.target.checked })}
-            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            onChange={(e) => {
+              if (field.type === 'select') {
+                onChange({ ...field, eligibility_gate: e.target.checked });
+              }
+            }}
+            disabled={field.type !== 'select'}
+            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 disabled:opacity-50"
           />
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Use as Eligibility Gate
           </span>
         </label>
-        <p className="text-sm text-gray-500 dark:text-gray-400 ml-6">
-          Stop form if this field doesn't meet requirements
-        </p>
+        {field.type === 'select' ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400 ml-6">
+            Stop form if user selects a disqualifying option (e.g., "No" for age confirmation)
+          </p>
+        ) : (
+          <p className="text-sm text-amber-600 dark:text-amber-400 ml-6">
+            Eligibility gates are only available for Select (Dropdown) fields. Use a dropdown with Yes/No options for binary requirements.
+          </p>
+        )}
 
-        {field.eligibility_gate && (
+        {field.eligibility_gate && field.type === 'select' && (
           <Input
             label="Failure Message"
             id={`field-${index}-failure-message`}
             value={field.failure_message || ''}
             onChange={(e) => onChange({ ...field, failure_message: e.target.value })}
-            placeholder="e.g., Sorry, you don't meet the age requirement"
-            helperText="Message shown when eligibility check fails"
+            placeholder="e.g., Sorry, you must be 18 or older to apply"
+            helperText="Message shown when user selects a disqualifying option"
             required
           />
         )}
