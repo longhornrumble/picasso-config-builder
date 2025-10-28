@@ -7,29 +7,6 @@ import type { TenantConfig } from '@/types/config';
 import type { SliceCreator, ConfigSlice } from '../types';
 import * as configAPI from '@/lib/api/config-operations';
 
-/**
- * Filter config to only include fields that can be edited via the config builder.
- * The Lambda backend rejects configs that include read-only or system-managed fields.
- */
-function getEditableConfig(config: TenantConfig): Partial<TenantConfig> {
-  return {
-    // Core editable fields
-    tenant_id: config.tenant_id,
-    subscription_tier: config.subscription_tier,
-    chat_title: config.chat_title,
-    version: config.version,
-
-    // Editable domain sections
-    programs: config.programs,
-    conversational_forms: config.conversational_forms,
-    cta_definitions: config.cta_definitions,
-    conversation_branches: config.conversation_branches,
-
-    // Optional model override
-    ...(config.model_id && { model_id: config.model_id }),
-  };
-}
-
 export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
   // State
   tenantId: null,
@@ -187,10 +164,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         throw new Error('Failed to merge configuration');
       }
 
-      // Filter to only editable fields - Lambda rejects read-only fields
-      const editableConfig = getEditableConfig(mergedConfig);
-
-      await configAPI.deployConfig(state.config.tenantId, editableConfig as TenantConfig);
+      await configAPI.deployConfig(state.config.tenantId, mergedConfig);
 
       // Update base config and mark clean
       set((state) => {
