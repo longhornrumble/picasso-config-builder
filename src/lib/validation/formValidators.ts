@@ -193,13 +193,13 @@ export function validateBranch(
     // Validate with Zod schema (without branchId, since it's not in ConversationBranch)
     conversationBranchSchema.parse(cleanedData);
 
-    // Check for at least one keyword
-    if (!data.detection_keywords || data.detection_keywords.length === 0) {
+    // Check for at least one valid keyword (after filtering)
+    if (!cleanedData.detection_keywords || cleanedData.detection_keywords.length === 0) {
       errors.detection_keywords = 'At least one detection keyword is required';
     }
 
     // Check for primary CTA
-    if (!data.available_ctas?.primary) {
+    if (!cleanedData.available_ctas?.primary) {
       errors['available_ctas.primary'] = 'Primary CTA is required';
     }
   } catch (error) {
