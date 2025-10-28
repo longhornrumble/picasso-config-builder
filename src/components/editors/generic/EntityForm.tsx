@@ -109,11 +109,11 @@ export function EntityForm<T extends BaseEntity>({
   const handleBlur = useCallback(
     (field: string) => {
       setTouched((prev) => ({ ...prev, [field]: true }));
-      // Validate on blur to show field-specific errors
-      const fieldErrors = validate(formData);
-      setErrors(fieldErrors);
+      // Note: We don't validate here because handleChange already validates
+      // with the updated data. Validating here with formData would use stale data
+      // since React state updates are async.
     },
-    [formData, validate]
+    []
   );
 
   // Handle form submission
