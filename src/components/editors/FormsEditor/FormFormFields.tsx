@@ -135,7 +135,35 @@ export const FormFormFields: React.FC<FormFieldsProps<ConversationalForm>> = ({
         )}
         {!errors.description && (
           <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-            Description of form purpose
+            Internal description of what this form is for (not shown to users)
+          </p>
+        )}
+      </div>
+
+      {/* Introduction (user-facing) */}
+      <div className="w-full">
+        <label
+          htmlFor="introduction"
+          className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Form Introduction (Optional)
+        </label>
+        <Textarea
+          id="introduction"
+          placeholder="e.g., This form will help us learn more about your interest in becoming a Love Box sponsor. It should take about 5 minutes to complete. If you have questions, email sponsors@example.com"
+          value={value.introduction || ''}
+          onChange={(e) => onChange({ ...value, introduction: e.target.value })}
+          onBlur={() => onBlur('introduction')}
+          rows={4}
+        />
+        {touched.introduction && errors.introduction && (
+          <p className="mt-1.5 text-sm text-red-600 dark:text-red-400" role="alert">
+            {errors.introduction}
+          </p>
+        )}
+        {!errors.introduction && (
+          <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+            Introduction message shown to users before the form begins. Include time estimate, expectations, and contact info. URLs will be automatically linked.
           </p>
         )}
       </div>
