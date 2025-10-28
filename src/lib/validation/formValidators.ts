@@ -181,11 +181,17 @@ export function validateBranch(
       errors.branchId = 'A branch with this ID already exists';
     }
 
+    // Filter out null/undefined/empty keywords and secondary CTAs before validation
+    const cleanedData = {
+      detection_keywords: data.detection_keywords.filter((keyword) => keyword != null && keyword !== ''),
+      available_ctas: {
+        primary: data.available_ctas.primary,
+        secondary: data.available_ctas.secondary.filter((cta) => cta != null && cta !== ''),
+      },
+    };
+
     // Validate with Zod schema (without branchId, since it's not in ConversationBranch)
-    conversationBranchSchema.parse({
-      detection_keywords: data.detection_keywords,
-      available_ctas: data.available_ctas,
-    });
+    conversationBranchSchema.parse(cleanedData);
 
     // Check for at least one keyword
     if (!data.detection_keywords || data.detection_keywords.length === 0) {
