@@ -104,7 +104,7 @@ export function useEntityCRUD<T extends BaseEntity>(
   const openEditModal = useCallback((entity: T) => {
     setEditingEntity(entity);
     setIsFormOpen(true);
-  }, []);
+  }, [getId]);
 
   // Open delete modal
   const openDeleteModal = useCallback((entity: T) => {
@@ -130,7 +130,8 @@ export function useEntityCRUD<T extends BaseEntity>(
       try {
         if (isEditMode && editingEntity) {
           // Update existing entity
-          updateEntity(getId(editingEntity), entity);
+          const entityId = getId(editingEntity);
+          updateEntity(entityId, entity);
           addToast({
             message: messages.updated || `${entityName} updated successfully`,
             type: 'success',
@@ -147,6 +148,7 @@ export function useEntityCRUD<T extends BaseEntity>(
         // Close modal
         closeFormModal();
       } catch (error) {
+        console.error('[useEntityCRUD] handleSubmit error', error);
         addToast({
           message: error instanceof Error ? error.message : 'Operation failed',
           type: 'error',

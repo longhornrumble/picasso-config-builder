@@ -22,14 +22,29 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
       type: 'success',
       message: `Form "${form.title}" created successfully`,
     });
+
+    // Re-run validation after creating form
+    get().validation.validateAll();
   },
 
-  updateForm: (formId: string, updates: Partial<ConversationalForm>) => {
+  updateForm: (formId: string, updates: Partial<ConversationalForm> | ConversationalForm) => {
     set((state) => {
       const form = state.forms.forms[formId];
+
       if (form) {
-        state.forms.forms[formId] = { ...form, ...updates };
+        // If updates contains form_id, it's a full replacement, otherwise it's a partial update
+        const isFullReplacement = 'form_id' in updates;
+
+        state.forms.forms[formId] = isFullReplacement
+          ? (updates as ConversationalForm)
+          : { ...form, ...updates };
+
         state.config.markDirty();
+      } else {
+        console.error('[forms.ts] Form not found:', {
+          formId,
+          availableFormIds: Object.keys(state.forms.forms),
+        });
       }
     });
 
@@ -37,6 +52,9 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
       type: 'success',
       message: 'Form updated successfully',
     });
+
+    // Re-run validation after updating form
+    get().validation.validateAll();
   },
 
   deleteForm: (formId: string) => {
@@ -69,6 +87,9 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
         });
       }
     });
+
+    // Re-run validation after deleting form
+    get().validation.validateAll();
   },
 
   duplicateForm: (formId: string) => {
@@ -115,6 +136,9 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
       type: 'success',
       message: 'Field added successfully',
     });
+
+    // Re-run validation after adding field
+    get().validation.validateAll();
   },
 
   updateField: (formId: string, fieldIndex: number, updates: Partial<FormField>) => {
@@ -135,6 +159,9 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
       type: 'success',
       message: 'Field updated successfully',
     });
+
+    // Re-run validation after updating field
+    get().validation.validateAll();
   },
 
   deleteField: (formId: string, fieldIndex: number) => {
@@ -154,6 +181,9 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
       type: 'success',
       message: 'Field deleted successfully',
     });
+
+    // Re-run validation after deleting field
+    get().validation.validateAll();
   },
 
   reorderFields: (formId: string, fromIndex: number, toIndex: number) => {
@@ -171,6 +201,14 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
         state.config.markDirty();
       }
     });
+
+    get().ui.addToast({
+      type: 'success',
+      message: 'Fields reordered successfully',
+    });
+
+    // Re-run validation after reordering fields
+    get().validation.validateAll();
   },
 
   // Selectors

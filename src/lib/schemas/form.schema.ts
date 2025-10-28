@@ -146,6 +146,7 @@ export const conversationalFormSchema = z.object({
   program: z.string().min(1, 'Program is required (v1.3+)'),
   title: z.string().min(1, 'Title is required').max(100, 'Title must be 100 characters or less'),
   description: z.string().min(1, 'Description is required').max(500, 'Description must be 500 characters or less'),
+  introduction: z.string().max(1000, 'Introduction must be 1000 characters or less').optional(),
   cta_text: z.string().max(50, 'CTA text must be 50 characters or less').optional(),
   trigger_phrases: z
     .array(z.string().min(1, 'Trigger phrase cannot be empty').max(100, 'Trigger phrase must be 100 characters or less'))
@@ -165,16 +166,6 @@ export const conversationalFormSchema = z.object({
     }
     fieldIds.add(field.id);
   });
-
-  // Validate that form has at least one required field
-  const hasRequiredField = data.fields.some(field => field.required);
-  if (!hasRequiredField) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['fields'],
-      message: 'Form must have at least one required field',
-    });
-  }
 });
 
 // ============================================================================

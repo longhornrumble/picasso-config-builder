@@ -8,7 +8,6 @@ import type {
   ConversationalForm,
   CTADefinition,
   ConversationBranch,
-  CardInventory,
 } from '@/types/config';
 import type {
   ValidationError,
@@ -60,14 +59,12 @@ export function validateConfigFromStore(state: {
   forms: { forms: Record<string, ConversationalForm> };
   ctas: { ctas: Record<string, CTADefinition> };
   branches: { branches: Record<string, ConversationBranch> };
-  cardInventory: { cardInventory: CardInventory | null };
 }): ConfigValidationResult {
   return validateConfig(
     state.programs.programs,
     state.forms.forms,
     state.ctas.ctas,
-    state.branches.branches,
-    state.cardInventory.cardInventory
+    state.branches.branches
   );
 }
 
@@ -87,15 +84,13 @@ export function validateConfigFromStore(state: {
  * @param forms - All forms
  * @param ctas - All CTAs
  * @param branches - All branches
- * @param cardInventory - Card inventory (optional)
  * @returns Comprehensive validation result
  */
 export function validateConfig(
   programs: Record<string, Program>,
   forms: Record<string, ConversationalForm>,
   ctas: Record<string, CTADefinition>,
-  branches: Record<string, ConversationBranch>,
-  cardInventory?: CardInventory | null
+  branches: Record<string, ConversationBranch>
 ): ConfigValidationResult {
   const entityResults: EntityValidationResult[] = [];
   const allErrors: ValidationError[] = [];
@@ -153,7 +148,7 @@ export function validateConfig(
   allWarnings.push(...relationshipsResult.warnings);
 
   // Validate runtime behavior
-  const runtimeResult = validateRuntimeBehavior(programs, forms, ctas, branches, cardInventory);
+  const runtimeResult = validateRuntimeBehavior(programs, forms, ctas, branches);
   allErrors.push(...runtimeResult.errors);
   allWarnings.push(...runtimeResult.warnings);
 
@@ -200,18 +195,16 @@ export function validateConfig(
  * @param forms - All forms
  * @param ctas - All CTAs
  * @param branches - All branches
- * @param cardInventory - Card inventory (optional)
  * @returns Validation result (valid = can deploy)
  */
 export function validatePreDeployment(
   programs: Record<string, Program>,
   forms: Record<string, ConversationalForm>,
   ctas: Record<string, CTADefinition>,
-  branches: Record<string, ConversationBranch>,
-  cardInventory?: CardInventory | null
+  branches: Record<string, ConversationBranch>
 ): ConfigValidationResult {
   // Use the same validation as full config
-  const result = validateConfig(programs, forms, ctas, branches, cardInventory);
+  const result = validateConfig(programs, forms, ctas, branches);
 
   // Pre-deployment focuses on errors only
   // Warnings are informational and don't block deployment
@@ -227,14 +220,12 @@ export function validatePreDeploymentFromStore(state: {
   forms: { forms: Record<string, ConversationalForm> };
   ctas: { ctas: Record<string, CTADefinition> };
   branches: { branches: Record<string, ConversationBranch> };
-  cardInventory: { cardInventory: CardInventory | null };
 }): ConfigValidationResult {
   return validatePreDeployment(
     state.programs.programs,
     state.forms.forms,
     state.ctas.ctas,
-    state.branches.branches,
-    state.cardInventory.cardInventory
+    state.branches.branches
   );
 }
 

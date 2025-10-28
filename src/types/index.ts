@@ -27,15 +27,6 @@ export type {
   // Branches
   BranchAvailableCTAs,
   ConversationBranch,
-  // Card Inventory
-  CardStrategy,
-  RequirementType,
-  RequirementEmphasis,
-  PrimaryCTA,
-  Requirement,
-  ProgramCard,
-  ReadinessThresholds,
-  CardInventory,
   // Configuration Sections
   BrandingConfig,
   CalloutConfig,

@@ -18,6 +18,7 @@ import {
   Tooltip,
 } from '@/components/ui';
 import { useSaveShortcut, formatShortcut } from '@/hooks/useKeyboardShortcuts';
+import { ValidationAlert } from '@/components/validation/ValidationAlert';
 import type {
   BaseEntity,
   FormFieldsProps,
@@ -37,6 +38,10 @@ export interface EntityFormProps<T extends BaseEntity> {
   onCancel: () => void;
   initialValue?: Partial<T>;
   footerActions?: React.ReactNode | ((formData: T, onChange: (data: T) => void) => React.ReactNode);
+  /**
+   * Function to extract entity ID from entity (for inline validation display)
+   */
+  getId?: (entity: T) => string;
 }
 
 export function EntityForm<T extends BaseEntity>({
@@ -50,8 +55,12 @@ export function EntityForm<T extends BaseEntity>({
   onCancel,
   initialValue = {} as Partial<T>,
   footerActions,
+  getId,
 }: EntityFormProps<T>): React.ReactElement {
   const isEditMode = entity !== null;
+
+  // Get entity ID for inline validation display
+  const entityId = entity && getId ? getId(entity) : null;
 
   // Form state
   const [formData, setFormData] = useState<T>((entity || initialValue) as T);
@@ -131,6 +140,7 @@ export function EntityForm<T extends BaseEntity>({
     try {
       onSubmit(formData);
     } catch (error) {
+      console.error('[EntityForm] onSubmit error', error);
       setErrors({
         form: error instanceof Error ? error.message : 'An unexpected error occurred',
       });
@@ -179,6 +189,9 @@ export function EntityForm<T extends BaseEntity>({
           </ModalHeader>
 
           <div className="space-y-4 py-4">
+            {/* Inline validation from global validation store */}
+            {entityId && <ValidationAlert entityId={entityId} className="mb-4" />}
+
             {/* Form-level error */}
             {errors.form && (
               <Alert variant="error">

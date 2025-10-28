@@ -81,6 +81,7 @@ export interface ConversationalForm {
   program: string; // Required v1.3 - references a program ID
   title: string;
   description: string;
+  introduction?: string; // Optional user-facing introduction message
   cta_text?: string;
   trigger_phrases: string[];
   fields: FormField[];
@@ -168,59 +169,6 @@ export interface ShowcaseItem {
 
 export interface ContentShowcase {
   content_showcase: ShowcaseItem[];
-}
-
-// ============================================================================
-// CARD INVENTORY (DEPRECATED - Use ContentShowcase instead)
-// ============================================================================
-
-/** @deprecated Use ShowcaseItemType instead */
-export type CardStrategy = 'qualification_first' | 'exploration_first' | 'custom';
-/** @deprecated Use ContentShowcase instead */
-export type RequirementType = 'age' | 'commitment' | 'background_check' | 'location' | 'custom';
-/** @deprecated Use ContentShowcase instead */
-export type RequirementEmphasis = 'low' | 'medium' | 'high';
-
-/** @deprecated Use ContentShowcase instead */
-export interface PrimaryCTA {
-  type: string;
-  title: string;
-  url?: string;
-  trigger_phrases: string[];
-}
-
-/** @deprecated Use ContentShowcase instead */
-export interface Requirement {
-  type: RequirementType;
-  value: string;
-  critical: boolean;
-  emphasis: RequirementEmphasis;
-  display_text: string;
-}
-
-/** @deprecated Use ContentShowcase instead */
-export interface ProgramCard {
-  name: string;
-  description: string;
-  commitment: string;
-  url: string;
-}
-
-/** @deprecated Use ContentShowcase instead */
-export interface ReadinessThresholds {
-  show_requirements: number;
-  show_programs: number;
-  show_cta: number;
-  show_forms: number;
-}
-
-/** @deprecated Use ContentShowcase instead */
-export interface CardInventory {
-  strategy: CardStrategy;
-  primary_cta: PrimaryCTA;
-  requirements: Requirement[];
-  program_cards: ProgramCard[];
-  readiness_thresholds: ReadinessThresholds;
 }
 
 // ============================================================================
@@ -333,7 +281,7 @@ export interface TenantConfig {
   conversational_forms: Record<string, ConversationalForm>;
   cta_definitions: Record<string, CTADefinition>;
   conversation_branches: Record<string, ConversationBranch>;
-  card_inventory?: CardInventory;
+  content_showcase?: ShowcaseItem[];
 
   // Configuration sections
   branding: BrandingConfig;

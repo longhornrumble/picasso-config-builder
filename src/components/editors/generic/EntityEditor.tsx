@@ -24,6 +24,7 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 import { Button, Card, CardContent } from '@/components/ui';
 import { useEntityCRUD } from '@/hooks/crud/useEntityCRUD';
+import { useNavigateToEntity } from '@/hooks/useNavigateToEntity';
 import { EntityList } from './EntityList';
 import { EntityForm } from './EntityForm';
 import { DeleteModal } from './DeleteModal';
@@ -86,6 +87,14 @@ export function EntityEditor<T extends BaseEntity>({
     entityName: metadata.entityName,
   });
 
+  // Handle automatic modal opening from validation error navigation
+  useNavigateToEntity<T>({
+    entities: crud.entities,
+    getId,
+    openEditModal: crud.openEditModal,
+    isFormOpen: crud.isFormOpen,
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -140,6 +149,7 @@ export function EntityEditor<T extends BaseEntity>({
         onCancel={crud.closeFormModal}
         initialValue={initialValue}
         footerActions={footerActions}
+        getId={getId}
       />
 
       {/* Delete Confirmation Modal */}

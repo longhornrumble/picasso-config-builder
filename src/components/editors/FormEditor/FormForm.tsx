@@ -63,6 +63,7 @@ interface FormData {
   program: string;
   title: string;
   description: string;
+  introduction?: string;
   cta_text?: string;
   trigger_phrases: string[];
   fields: FormField[];
@@ -74,6 +75,7 @@ interface FormErrors {
   program?: string;
   title?: string;
   description?: string;
+  introduction?: string;
   cta_text?: string;
   trigger_phrases?: string;
   fields?: string;
@@ -128,6 +130,7 @@ export const FormForm: React.FC<FormFormProps> = ({
     program: form?.program || '',
     title: form?.title || '',
     description: form?.description || '',
+    introduction: form?.introduction || '',
     cta_text: form?.cta_text || '',
     trigger_phrases: form?.trigger_phrases || [],
     fields: form?.fields || [],
@@ -154,6 +157,7 @@ export const FormForm: React.FC<FormFormProps> = ({
         program: form?.program || '',
         title: form?.title || '',
         description: form?.description || '',
+        introduction: form?.introduction || '',
         cta_text: form?.cta_text || '',
         trigger_phrases: form?.trigger_phrases || [],
         fields: form?.fields || [],
@@ -204,7 +208,7 @@ export const FormForm: React.FC<FormFormProps> = ({
           title: data.title,
           description: data.description,
           cta_text: data.cta_text,
-          trigger_phrases: data.trigger_phrases,
+          trigger_phrases: data.trigger_phrases.filter((phrase) => phrase != null && phrase !== ''),
           fields: data.fields,
           post_submission: data.post_submission,
         });
@@ -335,7 +339,17 @@ export const FormForm: React.FC<FormFormProps> = ({
   };
 
   // Check if form is valid
-  const isValid = Object.keys(validate(formData)).length === 0;
+  const validationErrors = validate(formData);
+  const isValid = Object.keys(validationErrors).length === 0;
+
+  // Debug: Log validation errors
+  React.useEffect(() => {
+    if (Object.keys(validationErrors).length > 0) {
+      console.log('🔴 Form validation errors:', validationErrors);
+    } else {
+      console.log('✅ Form is valid');
+    }
+  }, [validationErrors]);
 
   return (
     <Modal open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
@@ -438,9 +452,22 @@ export const FormForm: React.FC<FormFormProps> = ({
               onChange={(e) => handleChange('description', e.target.value)}
               onBlur={() => handleBlur('description')}
               error={touched.description ? errors.description : undefined}
-              helperText="Brief description of what this form is for"
-              rows={3}
+              helperText="Internal description of what this form is for (not shown to users)"
+              rows={2}
               required
+            />
+
+            {/* Introduction (user-facing) */}
+            <Textarea
+              label="Form Introduction (Optional)"
+              id="introduction"
+              placeholder="e.g., This form will help us learn more about your interest in becoming a Love Box sponsor. It should take about 5 minutes to complete. If you have questions, email sponsors@example.com"
+              value={formData.introduction || ''}
+              onChange={(e) => handleChange('introduction', e.target.value)}
+              onBlur={() => handleBlur('introduction')}
+              error={touched.introduction ? errors.introduction : undefined}
+              helperText="Introduction message shown to users before the form begins. Include time estimate, expectations, and contact info. URLs will be automatically linked."
+              rows={4}
             />
 
             {/* CTA Text (optional) */}
@@ -468,7 +495,7 @@ export const FormForm: React.FC<FormFormProps> = ({
               {/* Phrases display */}
               {formData.trigger_phrases.length > 0 && (
                 <div className="mb-2 flex flex-wrap gap-1.5 p-2 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800">
-                  {formData.trigger_phrases.map((phrase, idx) => (
+                  {formData.trigger_phrases.filter((phrase) => phrase != null && phrase !== '').map((phrase, idx) => (
                     <Badge
                       key={idx}
                       variant="secondary"

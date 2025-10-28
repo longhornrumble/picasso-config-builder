@@ -3,7 +3,7 @@
  * Editor for individual form field with all properties
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Input, Textarea, Select, Button, Badge } from '@/components/ui';
 import { X, Plus, Trash2, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import type { FormField, FormFieldType, FormFieldOption } from '@/types/config';

@@ -8,7 +8,6 @@ import type {
   ConversationalForm,
   CTADefinition,
   ConversationBranch,
-  CardInventory,
 } from '@/types/config';
 import type { ValidationResult, ValidationError, ValidationWarning } from './types';
 import { messages, createWarning } from './validationMessages';
@@ -23,21 +22,18 @@ import { messages, createWarning } from './validationMessages';
  * Checks:
  * - Program-based filtering compatibility
  * - Max 3 CTAs per branch constraint
- * - Card inventory alignment with programs
  *
  * @param programs - All programs
  * @param forms - All forms
  * @param ctas - All CTAs
  * @param branches - All branches
- * @param cardInventory - Card inventory (optional)
  * @returns Validation result with warnings
  */
 export function validateRuntimeBehavior(
-  programs: Record<string, Program>,
+  _programs: Record<string, Program>,
   forms: Record<string, ConversationalForm>,
   _ctas: Record<string, CTADefinition>,
-  branches: Record<string, ConversationBranch>,
-  cardInventory?: CardInventory | null
+  branches: Record<string, ConversationBranch>
 ): ValidationResult {
   const errors: ValidationError[] = []; // Runtime validation typically only produces warnings
   const warnings: ValidationWarning[] = [];
@@ -47,11 +43,6 @@ export function validateRuntimeBehavior(
 
   // Validate max 3 CTAs constraint
   validateMaxCTAsConstraint(branches, warnings);
-
-  // Validate card inventory alignment
-  if (cardInventory) {
-    validateCardInventoryAlignment(forms, programs, cardInventory, warnings);
-  }
 
   return {
     valid: errors.length === 0,
@@ -111,54 +102,6 @@ function validateMaxCTAsConstraint(
       );
     }
   });
-}
-
-// ============================================================================
-// CARD INVENTORY ALIGNMENT VALIDATION
-// ============================================================================
-
-/**
- * Validate card inventory alignment with programs and forms
- */
-function validateCardInventoryAlignment(
-  forms: Record<string, ConversationalForm>,
-  _programs: Record<string, Program>,
-  cardInventory: CardInventory,
-  warnings: ValidationWarning[]
-): void {
-  // Check if card inventory program cards match form programs
-  const cardProgramIds = new Set(cardInventory.program_cards?.map((card) => card.name) || []);
-  const formProgramIds = new Set(
-    Object.values(forms)
-      .map((form) => form.program)
-      .filter(Boolean)
-  );
-
-  // Warn if forms reference programs not in card inventory
-  formProgramIds.forEach((formProgram) => {
-    if (!cardProgramIds.has(formProgram)) {
-      warnings.push(
-        createWarning(messages.runtime.cardInventoryMismatch(formProgram), 'runtime', {
-          field: 'program_cards',
-          suggestedFix: `Add a program card for "${formProgram}" in the card inventory, or update forms to use existing program cards`,
-          level: 'info',
-        })
-      );
-    }
-  });
-
-  // Check qualification_first strategy requirements
-  if (cardInventory.strategy === 'qualification_first') {
-    if (!cardInventory.requirements || cardInventory.requirements.length === 0) {
-      warnings.push(
-        createWarning(messages.runtime.qualificationFirstNoRequirements, 'runtime', {
-          field: 'requirements',
-          suggestedFix:
-            'Add requirements to card inventory or change strategy to "exploration_first"',
-        })
-      );
-    }
-  }
 }
 
 // ============================================================================

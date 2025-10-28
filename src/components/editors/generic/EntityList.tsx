@@ -7,6 +7,7 @@
 import React from 'react';
 import { Edit, Trash2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent as CardContentUI, CardFooter, Button } from '@/components/ui';
+import { ValidationSummaryBadge } from '@/components/validation/ValidationAlert';
 import type { BaseEntity, CardContentProps, IdExtractor, NameExtractor } from '@/lib/crud/types';
 
 export interface EntityListProps<T extends BaseEntity> {
@@ -31,12 +32,17 @@ export function EntityList<T extends BaseEntity>({
       {entities.map((entity) => (
         <Card key={getId(entity)} className="hover:shadow-md transition-shadow">
           <CardHeader>
-            <CardTitle className="text-lg">{getName(entity)}</CardTitle>
-            <CardDescription>
-              <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
-                {getId(entity)}
-              </code>
-            </CardDescription>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-lg">{getName(entity)}</CardTitle>
+                <CardDescription>
+                  <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
+                    {getId(entity)}
+                  </code>
+                </CardDescription>
+              </div>
+              <ValidationSummaryBadge entityId={getId(entity)} />
+            </div>
           </CardHeader>
 
           <CardContentUI>

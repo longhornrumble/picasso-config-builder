@@ -148,7 +148,7 @@ function validateFormFields(
 
   // Validate individual fields
   form.fields.forEach((field, index) => {
-    validateField(field, index, formId, errors, warnings);
+    validateField(field, index, formId, errors);
   });
 
   // Warn if no required fields
@@ -197,8 +197,7 @@ function validateField(
   field: FormField,
   index: number,
   formId: string,
-  errors: ValidationError[],
-  warnings: ValidationWarning[]
+  errors: ValidationError[]
 ): void {
   // Select fields must have options
   if (field.type === 'select' && (!field.options || field.options.length === 0)) {
@@ -222,29 +221,8 @@ function validateField(
     );
   }
 
-  // Quality checks for field types
-  if (field.type === 'email' && field.required) {
-    // Email validation is typically handled by Zod schema, but we can suggest it
-    warnings.push(
-      createWarning(messages.form.missingEmailValidation, 'form', {
-        field: `fields[${index}].type`,
-        entityId: formId,
-        level: 'info',
-        suggestedFix: 'Ensure email format validation is enabled for this field',
-      })
-    );
-  }
-
-  if (field.type === 'phone' && field.required) {
-    warnings.push(
-      createWarning(messages.form.missingPhoneValidation, 'form', {
-        field: `fields[${index}].type`,
-        entityId: formId,
-        level: 'info',
-        suggestedFix: 'Consider adding phone format validation for better data quality',
-      })
-    );
-  }
+  // Email and phone field types inherently provide format validation
+  // No additional warnings needed - the field type itself ensures proper validation
 }
 
 // ============================================================================

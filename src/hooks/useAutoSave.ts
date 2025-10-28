@@ -118,7 +118,13 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
           state.programs.programs = autoSaveData.programs;
         }
         if (autoSaveData.forms) {
-          state.forms.forms = autoSaveData.forms;
+          // Normalize forms: ensure form_id matches the dictionary key
+          state.forms.forms = Object.fromEntries(
+            Object.entries(autoSaveData.forms).map(([key, form]) => [
+              key,
+              { ...(form as any), form_id: key } // Override form_id to match the key
+            ])
+          );
         }
         if (autoSaveData.ctas) {
           state.ctas.ctas = autoSaveData.ctas;

@@ -39,17 +39,28 @@ export const ValidationItem: React.FC<ValidationItemProps> = ({
   const handleClick = () => {
     if (onClick) {
       onClick();
-    } else {
-      // Navigate to entity editor
-      const routes: Record<typeof entityType, string> = {
-        program: '/programs',
-        form: '/forms',
-        cta: '/ctas',
-        branch: '/branches',
-      };
-
-      navigate(`${routes[entityType]}?id=${entityId}`);
+      return;
     }
+
+    // Map entity type to route
+    const routes: Record<typeof entityType, string> = {
+      program: '/programs',
+      form: '/forms',
+      cta: '/ctas',
+      branch: '/branches',
+    };
+
+    const targetRoute = routes[entityType];
+
+    // Navigate to the entity page with the entity ID and field to scroll to
+    // The editor will automatically open the modal and scroll to the field
+    const params = new URLSearchParams();
+    params.set('editId', entityId);
+    if (issue.field) {
+      params.set('scrollTo', issue.field);
+    }
+
+    navigate(`${targetRoute}?${params.toString()}`);
   };
 
   const getIcon = () => {

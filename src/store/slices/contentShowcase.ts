@@ -21,6 +21,9 @@ export const createContentShowcaseSlice: SliceCreator<ContentShowcaseSlice> = (s
       type: 'success',
       message: `Showcase item "${item.name}" created successfully`,
     });
+
+    // Re-run validation after creating showcase item
+    get().validation.validateAll();
   },
 
   updateShowcaseItem: (id: string, updates: Partial<ShowcaseItem>) => {
@@ -41,6 +44,9 @@ export const createContentShowcaseSlice: SliceCreator<ContentShowcaseSlice> = (s
       type: 'success',
       message: 'Showcase item updated successfully',
     });
+
+    // Re-run validation after updating showcase item
+    get().validation.validateAll();
   },
 
   deleteShowcaseItem: (id: string) => {
@@ -59,6 +65,9 @@ export const createContentShowcaseSlice: SliceCreator<ContentShowcaseSlice> = (s
         });
       }
     });
+
+    // Re-run validation after deleting showcase item
+    get().validation.validateAll();
   },
 
   // Selectors

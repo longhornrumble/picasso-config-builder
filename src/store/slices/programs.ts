@@ -15,7 +15,7 @@ export const createProgramsSlice: SliceCreator<ProgramsSlice> = (set, get) => ({
   createProgram: (program: Program) => {
     set((state) => {
       state.programs.programs[program.program_id] = program;
-      state.config.isDirty = true;
+      state.config.markDirty();
     });
 
     // Show success toast
@@ -23,6 +23,9 @@ export const createProgramsSlice: SliceCreator<ProgramsSlice> = (set, get) => ({
       type: 'success',
       message: `Program "${program.program_name}" created successfully`,
     });
+
+    // Re-run validation after creating program
+    get().validation.validateAll();
   },
 
   updateProgram: (programId: string, updates: Partial<Program>) => {
@@ -30,7 +33,7 @@ export const createProgramsSlice: SliceCreator<ProgramsSlice> = (set, get) => ({
       const program = state.programs.programs[programId];
       if (program) {
         state.programs.programs[programId] = { ...program, ...updates };
-        state.config.isDirty = true;
+        state.config.markDirty();
       }
     });
 
@@ -38,6 +41,9 @@ export const createProgramsSlice: SliceCreator<ProgramsSlice> = (set, get) => ({
       type: 'success',
       message: 'Program updated successfully',
     });
+
+    // Re-run validation after updating program
+    get().validation.validateAll();
   },
 
   deleteProgram: (programId: string) => {
@@ -61,7 +67,7 @@ export const createProgramsSlice: SliceCreator<ProgramsSlice> = (set, get) => ({
         state.programs.activeProgramId = null;
       }
 
-      state.config.isDirty = true;
+      state.config.markDirty();
 
       // Show success toast
       if (programName) {
@@ -71,6 +77,9 @@ export const createProgramsSlice: SliceCreator<ProgramsSlice> = (set, get) => ({
         });
       }
     });
+
+    // Re-run validation after deleting program
+    get().validation.validateAll();
   },
 
   duplicateProgram: (programId: string) => {

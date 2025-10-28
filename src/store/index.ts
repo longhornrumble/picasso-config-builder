@@ -13,7 +13,6 @@ import { createFormsSlice } from './slices/forms';
 import { createCTAsSlice } from './slices/ctas';
 import { createBranchesSlice } from './slices/branches';
 import { createContentShowcaseSlice } from './slices/contentShowcase';
-import { createCardInventorySlice } from './slices/cardInventory';
 import { createUISlice } from './slices/ui';
 import { createValidationSlice } from './slices/validation';
 import { createConfigSlice } from './slices/config';
@@ -41,7 +40,6 @@ export const useConfigStore = create<ConfigBuilderState>()(
       ctas: createCTAsSlice(set, get, api),
       branches: createBranchesSlice(set, get, api),
       contentShowcase: createContentShowcaseSlice(set, get, api),
-      cardInventory: createCardInventorySlice(set, get, api),
 
       // Application state
       ui: createUISlice(set, get, api),
@@ -84,12 +82,6 @@ export const useBranches = () => useConfigStore((state) => state.branches);
  * Hook to access content showcase slice
  */
 export const useContentShowcase = () => useConfigStore((state) => state.contentShowcase);
-
-/**
- * Hook to access card inventory slice
- * @deprecated Use useContentShowcase instead
- */
-export const useCardInventory = () => useConfigStore((state) => state.cardInventory);
 
 /**
  * Hook to access UI slice
@@ -201,7 +193,6 @@ export type {
   CTAsSlice,
   BranchesSlice,
   ContentShowcaseSlice,
-  CardInventorySlice,
   UISlice,
   ValidationSlice,
   ConfigSlice,

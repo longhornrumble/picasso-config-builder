@@ -15,13 +15,16 @@ export const createCTAsSlice: SliceCreator<CTAsSlice> = (set, get) => ({
   createCTA: (cta: CTADefinition, ctaId: string) => {
     set((state) => {
       state.ctas.ctas[ctaId] = cta;
-      state.config.isDirty = true;
+      state.config.markDirty();
     });
 
     get().ui.addToast({
       type: 'success',
       message: `CTA "${cta.label}" created successfully`,
     });
+
+    // Re-run validation after creating CTA
+    get().validation.validateAll();
   },
 
   updateCTA: (ctaId: string, updates: Partial<CTADefinition>) => {
@@ -29,7 +32,7 @@ export const createCTAsSlice: SliceCreator<CTAsSlice> = (set, get) => ({
       const cta = state.ctas.ctas[ctaId];
       if (cta) {
         state.ctas.ctas[ctaId] = { ...cta, ...updates };
-        state.config.isDirty = true;
+        state.config.markDirty();
       }
     });
 
@@ -37,6 +40,9 @@ export const createCTAsSlice: SliceCreator<CTAsSlice> = (set, get) => ({
       type: 'success',
       message: 'CTA updated successfully',
     });
+
+    // Re-run validation after updating CTA
+    get().validation.validateAll();
   },
 
   deleteCTA: (ctaId: string) => {
@@ -69,6 +75,9 @@ export const createCTAsSlice: SliceCreator<CTAsSlice> = (set, get) => ({
         });
       }
     });
+
+    // Re-run validation after deleting CTA
+    get().validation.validateAll();
   },
 
   duplicateCTA: (ctaId: string) => {
@@ -146,61 +155,3 @@ export const createCTAsSlice: SliceCreator<CTAsSlice> = (set, get) => ({
 // VALIDATION HELPERS
 // ============================================================================
 
-interface ValidationResult {
-  isValid: boolean;
-  error?: string;
-}
-
-/**
- * Validate CTA action-specific requirements
- */
-function validateCTAAction(cta: CTADefinition): ValidationResult {
-  switch (cta.action) {
-    case 'start_form':
-      if (!cta.formId) {
-        return {
-          isValid: false,
-          error: 'Form ID is required for start_form action',
-        };
-      }
-      break;
-
-    case 'external_link':
-      if (!cta.url) {
-        return {
-          isValid: false,
-          error: 'URL is required for external_link action',
-        };
-      }
-      // Basic URL validation
-      try {
-        new URL(cta.url);
-      } catch {
-        return {
-          isValid: false,
-          error: 'Invalid URL format',
-        };
-      }
-      break;
-
-    case 'send_query':
-      if (!cta.query) {
-        return {
-          isValid: false,
-          error: 'Query is required for send_query action',
-        };
-      }
-      break;
-
-    case 'show_info':
-      if (!cta.prompt) {
-        return {
-          isValid: false,
-          error: 'Prompt is required for show_info action',
-        };
-      }
-      break;
-  }
-
-  return { isValid: true };
-}

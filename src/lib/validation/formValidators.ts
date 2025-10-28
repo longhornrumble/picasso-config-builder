@@ -242,15 +242,8 @@ export function validateForm(
       errors.form_id = 'A form with this ID already exists';
     }
 
-    // Check for at least one field
-    if (!data.fields || data.fields.length === 0) {
-      errors.fields = 'At least one field is required';
-    }
-
-    // Check for at least one trigger phrase
-    if (!data.trigger_phrases || data.trigger_phrases.length === 0) {
-      errors.trigger_phrases = 'At least one trigger phrase is required';
-    }
+    // Note: Field and trigger phrase validation is handled by Zod schema
+    // No need to duplicate validation logic here
 
     // Check that program exists (if programs are provided in context)
     // Note: Full cross-entity validation is handled by the main validation engine

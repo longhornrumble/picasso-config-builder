@@ -35,10 +35,19 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
 
         // Populate domain slices
         state.programs.programs = response.config.programs || {};
-        state.forms.forms = response.config.conversational_forms || {};
+
+        // Normalize forms: ensure form_id matches the dictionary key
+        const forms = response.config.conversational_forms || {};
+        state.forms.forms = Object.fromEntries(
+          Object.entries(forms).map(([key, form]) => [
+            key,
+            { ...form, form_id: key } // Override form_id to match the key
+          ])
+        );
+
         state.ctas.ctas = response.config.cta_definitions || {};
         state.branches.branches = response.config.conversation_branches || {};
-        state.cardInventory.cardInventory = response.config.card_inventory || null;
+        state.contentShowcase.content_showcase = response.config.content_showcase || [];
 
         // Clear any active selections
         state.programs.activeProgramId = null;
@@ -195,10 +204,19 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
     set((state) => {
       if (state.config.baseConfig) {
         state.programs.programs = state.config.baseConfig.programs || {};
-        state.forms.forms = state.config.baseConfig.conversational_forms || {};
+
+        // Normalize forms: ensure form_id matches the dictionary key
+        const forms = state.config.baseConfig.conversational_forms || {};
+        state.forms.forms = Object.fromEntries(
+          Object.entries(forms).map(([key, form]) => [
+            key,
+            { ...form, form_id: key } // Override form_id to match the key
+          ])
+        );
+
         state.ctas.ctas = state.config.baseConfig.cta_definitions || {};
         state.branches.branches = state.config.baseConfig.conversation_branches || {};
-        state.cardInventory.cardInventory = state.config.baseConfig.card_inventory || null;
+        state.contentShowcase.content_showcase = state.config.baseConfig.content_showcase || [];
 
         state.config.isDirty = false;
 
@@ -233,15 +251,37 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
     }
 
     // Merge all domain slices back into TenantConfig format
+    // IMPORTANT: We explicitly merge fields instead of spreading baseConfig
+    // to prevent deprecated/stale data from persisting
     const mergedConfig: TenantConfig = {
-      ...state.config.baseConfig,
+      // Core metadata from baseConfig
+      tenant_id: state.config.baseConfig.tenant_id,
+      tenant_hash: state.config.baseConfig.tenant_hash,
+      subscription_tier: state.config.baseConfig.subscription_tier,
+      chat_title: state.config.baseConfig.chat_title,
+      tone_prompt: state.config.baseConfig.tone_prompt,
+      welcome_message: state.config.baseConfig.welcome_message,
+      version: state.config.baseConfig.version,
+      generated_at: Date.now(),
+
+      // Domain slices from their respective stores
       programs: state.programs.programs,
       conversational_forms: state.forms.forms,
       cta_definitions: state.ctas.ctas,
       conversation_branches: state.branches.branches,
-      card_inventory: state.cardInventory.cardInventory || undefined,
-      // Update timestamp
-      generated_at: Date.now(),
+      content_showcase: state.contentShowcase.content_showcase,
+
+      // Preserve current configuration sections from baseConfig
+      branding: state.config.baseConfig.branding,
+      features: state.config.baseConfig.features,
+      aws: state.config.baseConfig.aws,
+
+      // Optional fields - only include if they exist
+      ...(state.config.baseConfig.callout_text && { callout_text: state.config.baseConfig.callout_text }),
+      ...(state.config.baseConfig.model_id && { model_id: state.config.baseConfig.model_id }),
+      ...(state.config.baseConfig.quick_help && { quick_help: state.config.baseConfig.quick_help }),
+      ...(state.config.baseConfig.action_chips && { action_chips: state.config.baseConfig.action_chips }),
+      ...(state.config.baseConfig.widget_behavior && { widget_behavior: state.config.baseConfig.widget_behavior }),
     };
 
     return mergedConfig;

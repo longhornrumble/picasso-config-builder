@@ -9,7 +9,6 @@ import type {
   FormField,
   CTADefinition,
   ConversationBranch,
-  CardInventory,
   ShowcaseItem,
   TenantConfig,
 } from '@/types/config';
@@ -168,23 +167,6 @@ export interface ContentShowcaseSlice {
 }
 
 // ============================================================================
-// CARD INVENTORY SLICE (DEPRECATED - Use ContentShowcaseSlice instead)
-// ============================================================================
-
-/** @deprecated Use ContentShowcaseSlice instead */
-export interface CardInventorySlice {
-  // State
-  cardInventory: CardInventory | null;
-
-  // Actions
-  updateCardInventory: (updates: Partial<CardInventory>) => void;
-  resetCardInventory: () => void;
-
-  // Selectors
-  getCardInventory: () => CardInventory | null;
-}
-
-// ============================================================================
 // UI SLICE
 // ============================================================================
 
@@ -291,7 +273,6 @@ export interface ConfigBuilderState {
   ctas: CTAsSlice;
   branches: BranchesSlice;
   contentShowcase: ContentShowcaseSlice;
-  cardInventory: CardInventorySlice;
   ui: UISlice;
   validation: ValidationSlice;
   config: ConfigSlice;

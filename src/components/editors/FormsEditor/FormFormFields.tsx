@@ -30,6 +30,7 @@ export const FormFormFields: React.FC<FormFieldsProps<ConversationalForm>> = ({
     label: p.program_name,
   }));
 
+
   // Add trigger phrase to array
   const handleAddTriggerPhrase = () => {
     const phrase = triggerPhraseInput.trim();
@@ -91,9 +92,9 @@ export const FormFormFields: React.FC<FormFieldsProps<ConversationalForm>> = ({
         <Select
           label="Program"
           value={value.program}
-          onValueChange={(newValue) =>
-            onChange({ ...value, program: newValue })
-          }
+          onValueChange={(newValue) => {
+            onChange({ ...value, program: newValue });
+          }}
           options={programOptions}
           error={touched.program ? errors.program : undefined}
           required

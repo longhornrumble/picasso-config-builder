@@ -22,6 +22,9 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
       type: 'success',
       message: `Branch "${branchId}" created successfully`,
     });
+
+    // Re-run validation after creating branch
+    get().validation.validateAll();
   },
 
   updateBranch: (branchId: string, updates: Partial<ConversationBranch>) => {
@@ -37,6 +40,9 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
       type: 'success',
       message: 'Branch updated successfully',
     });
+
+    // Re-run validation after updating branch
+    get().validation.validateAll();
   },
 
   deleteBranch: (branchId: string) => {
@@ -55,6 +61,9 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
       type: 'success',
       message: `Branch "${branchId}" deleted successfully`,
     });
+
+    // Re-run validation after deleting branch
+    get().validation.validateAll();
   },
 
   duplicateBranch: (branchId: string) => {

@@ -25,7 +25,6 @@ import type {
   ConversationalForm,
   CTADefinition,
   ConversationBranch,
-  CardInventory,
 } from '@/types/config';
 import type { ValidationError, ValidationWarning } from './types';
 import { validateConfig } from './index';
@@ -61,7 +60,6 @@ export interface DeploymentChecklist {
  * @param forms - All forms
  * @param ctas - All CTAs
  * @param branches - All branches
- * @param cardInventory - Card inventory (optional)
  * @returns Deployment checklist
  */
 export function generateDeploymentChecklist(
@@ -69,10 +67,9 @@ export function generateDeploymentChecklist(
   forms: Record<string, ConversationalForm>,
   ctas: Record<string, CTADefinition>,
   branches: Record<string, ConversationBranch>,
-  cardInventory?: CardInventory | null
 ): DeploymentChecklist {
   // Run full validation
-  const validationResult = validateConfig(programs, forms, ctas, branches, cardInventory);
+  const validationResult = validateConfig(programs, forms, ctas, branches);
 
   // Separate critical errors from warnings
   const criticalIssues = validationResult.errors.filter(isCriticalError);
@@ -245,9 +242,8 @@ export function isDeploymentReady(
   forms: Record<string, ConversationalForm>,
   ctas: Record<string, CTADefinition>,
   branches: Record<string, ConversationBranch>,
-  cardInventory?: CardInventory | null
 ): boolean {
-  const checklist = generateDeploymentChecklist(programs, forms, ctas, branches, cardInventory);
+  const checklist = generateDeploymentChecklist(programs, forms, ctas, branches);
   return checklist.canDeploy;
 }
 
@@ -259,9 +255,8 @@ export function getCriticalErrors(
   forms: Record<string, ConversationalForm>,
   ctas: Record<string, CTADefinition>,
   branches: Record<string, ConversationBranch>,
-  cardInventory?: CardInventory | null
 ): ValidationError[] {
-  const checklist = generateDeploymentChecklist(programs, forms, ctas, branches, cardInventory);
+  const checklist = generateDeploymentChecklist(programs, forms, ctas, branches);
   return checklist.criticalIssues;
 }
 
@@ -273,9 +268,8 @@ export function getDeploymentWarnings(
   forms: Record<string, ConversationalForm>,
   ctas: Record<string, CTADefinition>,
   branches: Record<string, ConversationBranch>,
-  cardInventory?: CardInventory | null
 ): ValidationWarning[] {
-  const checklist = generateDeploymentChecklist(programs, forms, ctas, branches, cardInventory);
+  const checklist = generateDeploymentChecklist(programs, forms, ctas, branches);
   return checklist.warnings;
 }
 
@@ -328,13 +322,11 @@ export function validateDeploymentFromStore(state: {
   forms: { forms: Record<string, ConversationalForm> };
   ctas: { ctas: Record<string, CTADefinition> };
   branches: { branches: Record<string, ConversationBranch> };
-  cardInventory: { cardInventory: CardInventory | null };
 }): DeploymentChecklist {
   return generateDeploymentChecklist(
     state.programs.programs,
     state.forms.forms,
     state.ctas.ctas,
     state.branches.branches,
-    state.cardInventory.cardInventory
   );
 }
