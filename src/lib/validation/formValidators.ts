@@ -231,8 +231,15 @@ export function validateForm(
   const errors: ValidationErrors = {};
 
   try {
+    // Filter out null/undefined/empty trigger phrases before validation
+    // This prevents validation errors from placeholder or deleted phrases
+    const cleanedData = {
+      ...data,
+      trigger_phrases: data.trigger_phrases.filter((phrase) => phrase != null && phrase !== ''),
+    };
+
     // Validate with Zod schema
-    conversationalFormSchema.parse(data);
+    conversationalFormSchema.parse(cleanedData);
 
     // Check for duplicate form_id (only in create mode or if ID changed)
     if (
