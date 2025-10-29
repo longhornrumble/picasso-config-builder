@@ -68,6 +68,7 @@ export const FormsEditor: React.FC = () => {
           createEntity: (form) => formsStore.createForm(form),
           updateEntity: (id, form) => formsStore.updateForm(id, form),
           deleteEntity: (id) => formsStore.deleteForm(id),
+          duplicateEntity: (id) => formsStore.duplicateForm(id),
           getDependencies: (id): EntityDependencies => {
             // Check if any CTAs reference this form
             const dependentCTAs = getCTAsByForm(id);

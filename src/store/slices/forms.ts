@@ -104,11 +104,13 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
 
     // Generate new ID
     const newId = `${formId}_copy_${Date.now()}`;
-    const newForm: ConversationalForm = {
+
+    // Deep clone the form to avoid reference issues
+    const newForm: ConversationalForm = JSON.parse(JSON.stringify({
       ...form,
       form_id: newId,
       title: `${form.title} (Copy)`,
-    };
+    }));
 
     get().forms.createForm(newForm);
   },

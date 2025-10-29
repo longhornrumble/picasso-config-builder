@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Copy } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent as CardContentUI, CardFooter, Button } from '@/components/ui';
 import { ValidationSummaryBadge } from '@/components/validation/ValidationAlert';
 import type { BaseEntity, CardContentProps, IdExtractor, NameExtractor } from '@/lib/crud/types';
@@ -17,6 +17,7 @@ export interface EntityListProps<T extends BaseEntity> {
   getName: NameExtractor<T>;
   onEdit?: (entity: T) => void;
   onDelete?: (entity: T) => void;
+  onDuplicate?: (entity: T) => void;
 }
 
 export function EntityList<T extends BaseEntity>({
@@ -26,6 +27,7 @@ export function EntityList<T extends BaseEntity>({
   getName,
   onEdit,
   onDelete,
+  onDuplicate,
 }: EntityListProps<T>): React.ReactElement {
   return (
     <div className="grid-responsive-1-2-3">
@@ -49,7 +51,7 @@ export function EntityList<T extends BaseEntity>({
             <CardContent entity={entity} />
           </CardContentUI>
 
-          {(onEdit || onDelete) && (
+          {(onEdit || onDuplicate || onDelete) && (
             <CardFooter className="flex gap-2 justify-end border-t pt-4">
               {onEdit && (
                 <Button
@@ -61,6 +63,19 @@ export function EntityList<T extends BaseEntity>({
                 >
                   <Edit className="w-3.5 h-3.5" />
                   Edit
+                </Button>
+              )}
+              {onDuplicate && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => onDuplicate(entity)}
+                  className="flex items-center gap-1.5"
+                  aria-label={`Duplicate ${getName(entity)}`}
+                  title="Create a copy of this entity"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  Copy
                 </Button>
               )}
               {onDelete && (

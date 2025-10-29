@@ -63,6 +63,7 @@ export interface EntityStore<T extends BaseEntity> {
   updateEntity: (id: string, entity: T) => void;
   deleteEntity: (id: string) => void;
   getDependencies: (id: string) => EntityDependencies;
+  duplicateEntity?: (id: string) => void;
 }
 
 /**
@@ -152,6 +153,7 @@ export interface EntityEditorConfig<T extends BaseEntity> {
   allowCreate?: boolean;
   allowEdit?: boolean;
   allowDelete?: boolean;
+  allowDuplicate?: boolean;
   gridColumns?: {
     mobile: number;
     tablet: number;

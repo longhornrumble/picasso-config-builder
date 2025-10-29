@@ -77,6 +77,7 @@ export function EntityEditor<T extends BaseEntity>({
     allowCreate = true,
     allowEdit = true,
     allowDelete = true,
+    allowDuplicate = true,
     footerActions,
   } = config;
 
@@ -86,6 +87,16 @@ export function EntityEditor<T extends BaseEntity>({
     useStore,
     entityName: metadata.entityName,
   });
+
+  // Get duplicate function from store
+  const { duplicateEntity } = useStore();
+
+  // Handle duplicate action
+  const handleDuplicate = (entity: T) => {
+    if (duplicateEntity) {
+      duplicateEntity(getId(entity));
+    }
+  };
 
   // Handle automatic modal opening from validation error navigation
   useNavigateToEntity<T>({
@@ -133,6 +144,7 @@ export function EntityEditor<T extends BaseEntity>({
           getId={getId}
           getName={getName}
           onEdit={allowEdit ? crud.openEditModal : undefined}
+          onDuplicate={allowDuplicate && duplicateEntity ? handleDuplicate : undefined}
           onDelete={allowDelete ? crud.openDeleteModal : undefined}
         />
       )}
