@@ -164,7 +164,26 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         throw new Error('Failed to merge configuration');
       }
 
-      await configAPI.deployConfig(state.config.tenantId, mergedConfig);
+      // Filter to only editable fields - Lambda only accepts these fields
+      // See lambda/mergeStrategy.mjs EDITABLE_SECTIONS for the definitive list
+      // Increment version by parsing and adding 0.1
+      const currentVersion = parseFloat(mergedConfig.version) || 1.0;
+      const newVersion = (currentVersion + 0.1).toFixed(1);
+
+      const editableConfig = {
+        version: newVersion,
+        programs: mergedConfig.programs,
+        conversational_forms: mergedConfig.conversational_forms,
+        cta_definitions: mergedConfig.cta_definitions,
+        conversation_branches: mergedConfig.conversation_branches,
+        content_showcase: mergedConfig.content_showcase,
+        cta_settings: mergedConfig.cta_settings,
+      };
+
+      console.log('[DEPLOY] Filtered config keys:', Object.keys(editableConfig));
+      console.log('[DEPLOY] Sending to API:', editableConfig);
+
+      await configAPI.deployConfig(state.config.tenantId, editableConfig as TenantConfig);
 
       // Update base config and mark clean
       set((state) => {
@@ -282,6 +301,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       ...(state.config.baseConfig.quick_help && { quick_help: state.config.baseConfig.quick_help }),
       ...(state.config.baseConfig.action_chips && { action_chips: state.config.baseConfig.action_chips }),
       ...(state.config.baseConfig.widget_behavior && { widget_behavior: state.config.baseConfig.widget_behavior }),
+      ...(state.config.baseConfig.cta_settings && { cta_settings: state.config.baseConfig.cta_settings }),
     };
 
     return mergedConfig;

@@ -23,6 +23,7 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
   isEditMode,
 }) => {
   const forms = useConfigStore((state) => state.forms.getAllForms());
+  const branches = useConfigStore((state) => state.branches.getAllBranches());
 
   // Options for dropdowns
   const actionOptions = [
@@ -228,6 +229,33 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
           {!errors.prompt && (
             <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
               Information shown when button is clicked
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Target Branch - Show for navigation CTAs */}
+      {(value.action === 'show_info' || value.action === 'send_query') && (
+        <div className="w-full">
+          <Select
+            label="Target Branch"
+            value={value.target_branch || '__auto__'}
+            onValueChange={(newValue) =>
+              onChange({ ...value, target_branch: newValue === '__auto__' ? undefined : newValue })
+            }
+            options={[
+              { value: '__auto__', label: 'Auto-detect from keywords' },
+              ...branches.map((b) => ({
+                value: b.id,
+                label: b.id,
+              })),
+            ]}
+            helperText="Branch to show after clicking this CTA (leave empty for auto-detect via keywords)"
+            disabled={branches.length === 0}
+          />
+          {branches.length === 0 && (
+            <p className="mt-1.5 text-sm text-amber-600 dark:text-amber-400">
+              No branches available. Branch routing will use keyword detection.
             </p>
           )}
         </div>
