@@ -102,15 +102,45 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
       return;
     }
 
-    // Generate new IDs with timestamp
+    // Prompt user for new form ID
+    const newFormId = window.prompt(
+      `Enter a new Form ID for the copy of "${form.title}":`,
+      `${formId}_copy`
+    );
+
+    // If user cancels or provides empty string, abort
+    if (!newFormId || newFormId.trim() === '') {
+      return;
+    }
+
+    const trimmedFormId = newFormId.trim();
+
+    // Check if form ID already exists
+    if (get().forms.forms[trimmedFormId]) {
+      get().ui.addToast({
+        type: 'error',
+        message: `Form ID "${trimmedFormId}" already exists. Please choose a different ID.`,
+      });
+      return;
+    }
+
+    // Validate form ID format (lowercase, numbers, hyphens, underscores)
+    if (!/^[a-z0-9_-]+$/.test(trimmedFormId)) {
+      get().ui.addToast({
+        type: 'error',
+        message: 'Form ID must contain only lowercase letters, numbers, hyphens, and underscores.',
+      });
+      return;
+    }
+
+    // Generate timestamp for field IDs
     const timestamp = Date.now();
-    const newFormId = `${formId}_copy_${timestamp}`;
 
     // Deep clone the form
     const clonedForm: ConversationalForm = JSON.parse(JSON.stringify(form));
 
     // Update form ID and title
-    clonedForm.form_id = newFormId;
+    clonedForm.form_id = trimmedFormId;
     clonedForm.title = `${form.title} (Copy)`;
 
     // Regenerate all field IDs to avoid conflicts

@@ -1,21 +1,36 @@
 /**
  * Forms Duplicate Feature Test
- * Tests the copy/duplicate functionality for forms
+ * Tests the copy/duplicate functionality for forms with user-provided form IDs
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useConfigStore } from '@/store';
 import type { ConversationalForm } from '@/types/config';
 
 describe('Forms Duplicate Feature', () => {
-  it('should duplicate a form with new ID and title', () => {
+  let promptMock: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    // Mock window.prompt to return a default value
+    promptMock = vi.spyOn(window, 'prompt');
+  });
+
+  afterEach(() => {
+    // Restore the original prompt
+    promptMock.mockRestore();
+  });
+
+  it('should duplicate a form with user-provided ID', () => {
     const { result } = renderHook(() => useConfigStore());
+
+    // Mock prompt to return user's desired form ID
+    promptMock.mockReturnValue('dare_to_dream');
 
     // Create original form
     const originalForm: ConversationalForm = {
-      form_id: 'test_duplicate_1',
-      title: 'Test Form',
+      form_id: 'love_box',
+      title: 'Love Box Form',
       description: 'A test form',
       program: 'test_program',
       enabled: true,
@@ -40,23 +55,26 @@ describe('Forms Duplicate Feature', () => {
 
     // Duplicate the form
     act(() => {
-      result.current.forms.duplicateForm('test_duplicate_1');
+      result.current.forms.duplicateForm('love_box');
     });
+
+    // Verify prompt was called with correct message
+    expect(promptMock).toHaveBeenCalledWith(
+      'Enter a new Form ID for the copy of "Love Box Form":',
+      'love_box_copy'
+    );
 
     // Get all forms after duplication
     const allForms = Object.values(result.current.forms.forms);
     expect(allForms.length).toBeGreaterThan(formsBeforeDuplicate);
 
-    // Find the copied form (it will have "_copy_" in the ID)
-    const copiedForm = allForms.find(
-      (f) => f.form_id !== 'test_duplicate_1' && f.form_id.startsWith('test_duplicate_1_copy_')
-    );
+    // Find the copied form (it will have the user-provided ID)
+    const copiedForm = allForms.find((f) => f.form_id === 'dare_to_dream');
 
-    // Verify copied form exists
+    // Verify copied form exists with correct ID
     expect(copiedForm).toBeDefined();
-    expect(copiedForm?.title).toBe('Test Form (Copy)');
-    expect(copiedForm?.form_id).toContain('test_duplicate_1_copy_');
-    expect(copiedForm?.form_id).not.toBe('test_duplicate_1');
+    expect(copiedForm?.title).toBe('Love Box Form (Copy)');
+    expect(copiedForm?.form_id).toBe('dare_to_dream');
 
     // Verify all fields are copied
     expect(copiedForm?.fields).toHaveLength(1);
@@ -73,6 +91,9 @@ describe('Forms Duplicate Feature', () => {
 
   it('should create independent copies that can be modified separately', () => {
     const { result } = renderHook(() => useConfigStore());
+
+    // Mock prompt
+    promptMock.mockReturnValue('independent_copy');
 
     // Create original form with unique ID
     const originalForm: ConversationalForm = {
@@ -102,16 +123,11 @@ describe('Forms Duplicate Feature', () => {
       result.current.forms.duplicateForm('independent_test_original');
     });
 
-    // Get the copied form ID
-    const allFormIds = Object.keys(result.current.forms.forms);
-    const copiedFormId = allFormIds.find(
-      (id) => id.startsWith('independent_test_original_copy_')
-    );
-    expect(copiedFormId).toBeDefined();
+    const copiedFormId = 'independent_copy';
 
     // Modify the copied form
     act(() => {
-      result.current.forms.updateForm(copiedFormId!, {
+      result.current.forms.updateForm(copiedFormId, {
         title: 'Modified Copy',
         description: 'Modified description',
       });
@@ -124,12 +140,15 @@ describe('Forms Duplicate Feature', () => {
     );
 
     // Verify copied form is modified
-    expect(result.current.forms.forms[copiedFormId!].title).toBe('Modified Copy');
-    expect(result.current.forms.forms[copiedFormId!].description).toBe('Modified description');
+    expect(result.current.forms.forms[copiedFormId].title).toBe('Modified Copy');
+    expect(result.current.forms.forms[copiedFormId].description).toBe('Modified description');
   });
 
   it('should copy complex forms with multiple fields and post-submission actions', () => {
     const { result } = renderHook(() => useConfigStore());
+
+    // Mock prompt
+    promptMock.mockReturnValue('complex_copy');
 
     // Create complex form with unique ID
     const complexForm: ConversationalForm = {
@@ -186,12 +205,8 @@ describe('Forms Duplicate Feature', () => {
       result.current.forms.duplicateForm('complex_test_form');
     });
 
-    // Get the copied form
-    const allFormIds = Object.keys(result.current.forms.forms);
-    const copiedFormId = allFormIds.find((id) => id.startsWith('complex_test_form_copy_'));
-    expect(copiedFormId).toBeDefined();
-
-    const copiedForm = result.current.forms.forms[copiedFormId!];
+    const copiedFormId = 'complex_copy';
+    const copiedForm = result.current.forms.forms[copiedFormId];
 
     // Verify all fields are copied
     expect(copiedForm.fields).toHaveLength(3);
@@ -209,15 +224,73 @@ describe('Forms Duplicate Feature', () => {
     expect(copiedForm.post_submission?.actions[0].action).toBe('redirect');
   });
 
-  it('should handle duplication of non-existent form gracefully', () => {
+  it('should handle duplication cancellation gracefully', () => {
     const { result } = renderHook(() => useConfigStore());
 
-    // Get forms count before attempting duplication
+    // Mock prompt to return null (user cancelled)
+    promptMock.mockReturnValue(null);
+
+    // Create form
+    const form: ConversationalForm = {
+      form_id: 'test_form',
+      title: 'Test Form',
+      description: '',
+      program: 'test',
+      enabled: true,
+      trigger_phrases: [],
+      fields: [],
+    };
+
+    act(() => {
+      result.current.forms.createForm(form);
+    });
+
     const formsCountBefore = Object.keys(result.current.forms.forms).length;
 
-    // Attempt to duplicate non-existent form
+    // Attempt to duplicate but user cancels
     act(() => {
-      result.current.forms.duplicateForm('non_existent_unique_form_id');
+      result.current.forms.duplicateForm('test_form');
+    });
+
+    // Verify no new forms were created
+    const formsCountAfter = Object.keys(result.current.forms.forms).length;
+    expect(formsCountAfter).toBe(formsCountBefore);
+  });
+
+  it('should prevent duplicate form IDs', () => {
+    const { result } = renderHook(() => useConfigStore());
+
+    // Create two forms
+    act(() => {
+      result.current.forms.createForm({
+        form_id: 'existing_form',
+        title: 'Existing Form',
+        description: '',
+        program: 'test',
+        enabled: true,
+        trigger_phrases: [],
+        fields: [],
+      });
+
+      result.current.forms.createForm({
+        form_id: 'form_to_copy',
+        title: 'Form to Copy',
+        description: '',
+        program: 'test',
+        enabled: true,
+        trigger_phrases: [],
+        fields: [],
+      });
+    });
+
+    // Mock prompt to return existing form ID
+    promptMock.mockReturnValue('existing_form');
+
+    const formsCountBefore = Object.keys(result.current.forms.forms).length;
+
+    // Attempt to duplicate with existing ID
+    act(() => {
+      result.current.forms.duplicateForm('form_to_copy');
     });
 
     // Verify no new forms were created
@@ -227,6 +300,9 @@ describe('Forms Duplicate Feature', () => {
 
   it('should regenerate all field IDs to avoid conflicts', () => {
     const { result } = renderHook(() => useConfigStore());
+
+    // Mock prompt
+    promptMock.mockReturnValue('field_id_copy');
 
     // Create form with explicit field id values
     const formWithFieldIds: ConversationalForm = {
@@ -270,13 +346,8 @@ describe('Forms Duplicate Feature', () => {
       result.current.forms.duplicateForm('field_id_test');
     });
 
-    // Get the copied form
-    const allFormIds = Object.keys(result.current.forms.forms);
-    const copiedFormId = allFormIds.find((id) => id.startsWith('field_id_test_copy_'));
-    expect(copiedFormId).toBeDefined();
-
     const originalForm = result.current.forms.forms['field_id_test'];
-    const copiedForm = result.current.forms.forms[copiedFormId!];
+    const copiedForm = result.current.forms.forms['field_id_copy'];
 
     // Verify all field IDs are different from original
     expect(copiedForm.fields).toHaveLength(3);
@@ -295,56 +366,34 @@ describe('Forms Duplicate Feature', () => {
     });
   });
 
-  it('should allow copying a copied form (copy of copy)', () => {
+  it('should validate form ID format', () => {
     const { result } = renderHook(() => useConfigStore());
 
-    // Create original form with unique ID
-    const originalForm: ConversationalForm = {
-      form_id: 'copy_of_copy_test',
-      title: 'Original',
-      description: '',
-      program: '',
-      enabled: true,
-      trigger_phrases: [],
-      fields: [],
-    };
-
+    // Create form
     act(() => {
-      result.current.forms.createForm(originalForm);
+      result.current.forms.createForm({
+        form_id: 'test_form',
+        title: 'Test Form',
+        description: '',
+        program: 'test',
+        enabled: true,
+        trigger_phrases: [],
+        fields: [],
+      });
     });
 
-    // First duplication
+    // Mock prompt to return invalid form ID (uppercase)
+    promptMock.mockReturnValue('Invalid_Form_ID');
+
+    const formsCountBefore = Object.keys(result.current.forms.forms).length;
+
+    // Attempt to duplicate with invalid ID
     act(() => {
-      result.current.forms.duplicateForm('copy_of_copy_test');
+      result.current.forms.duplicateForm('test_form');
     });
 
-    // Get first copy ID
-    const allFormIdsAfterFirst = Object.keys(result.current.forms.forms);
-    const firstCopyId = allFormIdsAfterFirst.find((id) =>
-      id.startsWith('copy_of_copy_test_copy_')
-    );
-    expect(firstCopyId).toBeDefined();
-
-    // Second duplication (copy of copy)
-    act(() => {
-      result.current.forms.duplicateForm(firstCopyId!);
-    });
-
-    // Verify we now have 3 forms total for this specific test pattern
-    const allFormIdsAfterSecond = Object.keys(result.current.forms.forms);
-    const testForms = allFormIdsAfterSecond.filter(
-      (id) => id === 'copy_of_copy_test' || id.startsWith('copy_of_copy_test_copy_')
-    );
-    expect(testForms.length).toBe(3); // original + first copy + second copy
-
-    // Verify the second copy has "(Copy)" in its title
-    const allForms = Object.values(result.current.forms.forms);
-    const secondCopy = allForms.find(
-      (f) =>
-        f.form_id !== 'copy_of_copy_test' &&
-        f.form_id !== firstCopyId &&
-        f.form_id.includes('copy_of_copy_test_copy_')
-    );
-    expect(secondCopy?.title).toBe('Original (Copy) (Copy)');
+    // Verify no new forms were created
+    const formsCountAfter = Object.keys(result.current.forms.forms).length;
+    expect(formsCountAfter).toBe(formsCountBefore);
   });
 });
