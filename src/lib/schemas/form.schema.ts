@@ -153,6 +153,12 @@ export const conversationalFormSchema = z.object({
     .min(1, 'At least one trigger phrase is required'),
   fields: z.array(formFieldSchema).min(1, 'At least one field is required'),
   post_submission: postSubmissionConfigSchema.optional(),
+  on_completion_branch: z
+    .string()
+    .min(1, 'Completion branch ID cannot be empty')
+    .max(100, 'Completion branch ID must be 100 characters or less')
+    .optional()
+    .describe('Branch ID to show after successful form submission'),
 }).superRefine((data, ctx) => {
   // Validate that field IDs are unique within the form
   const fieldIds = new Set<string>();

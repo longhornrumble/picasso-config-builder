@@ -24,6 +24,7 @@ export type {
   CTAType,
   CTAStyle,
   CTADefinition,
+  CTASettings,
   // Branches
   BranchAvailableCTAs,
   ConversationBranch,

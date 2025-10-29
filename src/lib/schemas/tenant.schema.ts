@@ -107,6 +107,26 @@ export const awsConfigSchema = z.object({
 });
 
 // ============================================================================
+// CTA SETTINGS SCHEMA
+// ============================================================================
+
+export const ctaSettingsSchema = z.object({
+  fallback_branch: z
+    .string()
+    .min(1, 'Fallback branch ID cannot be empty')
+    .max(100, 'Fallback branch ID must be 100 characters or less')
+    .optional()
+    .describe('Branch ID to show when no keyword match is found'),
+  max_ctas_per_response: z
+    .number()
+    .int('Must be an integer')
+    .min(1, 'Must display at least 1 CTA')
+    .max(10, 'Cannot display more than 10 CTAs')
+    .optional()
+    .describe('Maximum number of CTAs to display per response (default: 4)'),
+});
+
+// ============================================================================
 // CARD INVENTORY SCHEMA
 // ============================================================================
 
@@ -202,6 +222,7 @@ export const tenantConfigSchema = z.object({
   quick_help: quickHelpConfigSchema.optional(),
   action_chips: actionChipsConfigSchema.optional(),
   widget_behavior: widgetBehaviorConfigSchema.optional(),
+  cta_settings: ctaSettingsSchema.optional(),
   aws: awsConfigSchema,
 }).superRefine((data, ctx) => {
   // Validate feature dependencies
@@ -290,6 +311,7 @@ export type QuickHelpConfig = z.infer<typeof quickHelpConfigSchema>;
 export type ActionChip = z.infer<typeof actionChipSchema>;
 export type ActionChipsConfig = z.infer<typeof actionChipsConfigSchema>;
 export type WidgetBehaviorConfig = z.infer<typeof widgetBehaviorConfigSchema>;
+export type CTASettings = z.infer<typeof ctaSettingsSchema>;
 export type AWSConfig = z.infer<typeof awsConfigSchema>;
 export type PrimaryCTA = z.infer<typeof primaryCTASchema>;
 export type Requirement = z.infer<typeof requirementSchema>;

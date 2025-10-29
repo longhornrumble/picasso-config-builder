@@ -86,6 +86,13 @@ export interface ConversationalForm {
   trigger_phrases: string[];
   fields: FormField[];
   post_submission?: PostSubmissionConfig;
+
+  /**
+   * Branch ID to show after successful form submission.
+   * Enables routing to specific follow-up conversations based on form completion.
+   * This provides an alternative to post_submission actions for conversation flow control.
+   */
+  on_completion_branch?: string;
 }
 
 // ============================================================================
@@ -106,6 +113,42 @@ export interface CTADefinition {
   prompt?: string; // Required if action = 'show_info'
   type: CTAType;
   style: CTAStyle;
+
+  /**
+   * Branch ID to route to when this CTA is clicked.
+   * Used for navigation CTAs (e.g., "Learn about Love Box").
+   * Enables Lex-style explicit routing without keyword matching.
+   */
+  target_branch?: string;
+
+  /**
+   * Branch ID to show after form completes.
+   * Used for form trigger CTAs (e.g., "Enroll in Love Box").
+   * Allows routing to specific follow-up conversations after submission.
+   */
+  on_completion_branch?: string;
+}
+
+// ============================================================================
+// CTA SETTINGS
+// ============================================================================
+
+/**
+ * Global CTA behavior configuration.
+ * Controls CTA display and routing behavior across the application.
+ */
+export interface CTASettings {
+  /**
+   * Branch ID to show when no keyword match is found.
+   * Provides a fallback routing option when explicit branch routing is enabled.
+   */
+  fallback_branch?: string;
+
+  /**
+   * Maximum number of CTAs to display per response.
+   * Default: 4
+   */
+  max_ctas_per_response?: number;
 }
 
 // ============================================================================
@@ -289,5 +332,6 @@ export interface TenantConfig {
   quick_help?: QuickHelpConfig;
   action_chips?: ActionChipsConfig;
   widget_behavior?: WidgetBehaviorConfig;
+  cta_settings?: CTASettings;
   aws: AWSConfig;
 }

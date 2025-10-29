@@ -24,6 +24,18 @@ export const ctaDefinitionSchema = z.object({
   style: z.enum(['primary', 'secondary', 'info'], {
     errorMap: () => ({ message: 'Invalid style' }),
   }),
+  target_branch: z
+    .string()
+    .min(1, 'Target branch ID cannot be empty')
+    .max(100, 'Target branch ID must be 100 characters or less')
+    .optional()
+    .describe('Branch ID to route to when this CTA is clicked (for navigation CTAs)'),
+  on_completion_branch: z
+    .string()
+    .min(1, 'Completion branch ID cannot be empty')
+    .max(100, 'Completion branch ID must be 100 characters or less')
+    .optional()
+    .describe('Branch ID to show after form completes (for form CTAs)'),
 }).superRefine((data, ctx) => {
   // Validate action-specific required fields (v1.3+)
 
