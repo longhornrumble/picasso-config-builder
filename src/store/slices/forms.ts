@@ -102,17 +102,31 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
       return;
     }
 
-    // Generate new ID
-    const newId = `${formId}_copy_${Date.now()}`;
+    // Generate new IDs with timestamp
+    const timestamp = Date.now();
+    const newFormId = `${formId}_copy_${timestamp}`;
 
-    // Deep clone the form to avoid reference issues
-    const newForm: ConversationalForm = JSON.parse(JSON.stringify({
-      ...form,
-      form_id: newId,
-      title: `${form.title} (Copy)`,
-    }));
+    // Deep clone the form
+    const clonedForm: ConversationalForm = JSON.parse(JSON.stringify(form));
 
-    get().forms.createForm(newForm);
+    // Update form ID and title
+    clonedForm.form_id = newFormId;
+    clonedForm.title = `${form.title} (Copy)`;
+
+    // Regenerate all field IDs to avoid conflicts
+    if (clonedForm.fields && clonedForm.fields.length > 0) {
+      clonedForm.fields = clonedForm.fields.map((field, index) => {
+        const originalFieldId = field.id;
+        const newFieldId = `${originalFieldId}_copy_${timestamp}_${index}`;
+
+        return {
+          ...field,
+          id: newFieldId,
+        };
+      });
+    }
+
+    get().forms.createForm(clonedForm);
   },
 
   setActiveForm: (formId: string | null) => {

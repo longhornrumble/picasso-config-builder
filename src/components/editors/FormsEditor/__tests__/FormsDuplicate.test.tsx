@@ -225,6 +225,76 @@ describe('Forms Duplicate Feature', () => {
     expect(formsCountAfter).toBe(formsCountBefore);
   });
 
+  it('should regenerate all field IDs to avoid conflicts', () => {
+    const { result } = renderHook(() => useConfigStore());
+
+    // Create form with explicit field id values
+    const formWithFieldIds: ConversationalForm = {
+      form_id: 'field_id_test',
+      title: 'Field ID Test Form',
+      description: 'Testing field ID regeneration',
+      program: 'test',
+      enabled: true,
+      trigger_phrases: [],
+      fields: [
+        {
+          id: 'name_field',
+          type: 'text',
+          label: 'Name',
+          prompt: 'What is your name?',
+          required: true,
+        },
+        {
+          id: 'email_field',
+          type: 'email',
+          label: 'Email',
+          prompt: 'What is your email?',
+          required: true,
+        },
+        {
+          id: 'phone_field',
+          type: 'phone',
+          label: 'Phone',
+          prompt: 'What is your phone?',
+          required: false,
+        },
+      ],
+    };
+
+    act(() => {
+      result.current.forms.createForm(formWithFieldIds);
+    });
+
+    // Duplicate the form
+    act(() => {
+      result.current.forms.duplicateForm('field_id_test');
+    });
+
+    // Get the copied form
+    const allFormIds = Object.keys(result.current.forms.forms);
+    const copiedFormId = allFormIds.find((id) => id.startsWith('field_id_test_copy_'));
+    expect(copiedFormId).toBeDefined();
+
+    const originalForm = result.current.forms.forms['field_id_test'];
+    const copiedForm = result.current.forms.forms[copiedFormId!];
+
+    // Verify all field IDs are different from original
+    expect(copiedForm.fields).toHaveLength(3);
+    copiedForm.fields.forEach((copiedField, index) => {
+      const originalField = originalForm.fields[index];
+
+      // Field IDs should be different
+      expect(copiedField.id).not.toBe(originalField.id);
+      expect(copiedField.id).toContain('_copy_');
+
+      // But other properties should be the same
+      expect(copiedField.label).toBe(originalField.label);
+      expect(copiedField.type).toBe(originalField.type);
+      expect(copiedField.prompt).toBe(originalField.prompt);
+      expect(copiedField.required).toBe(originalField.required);
+    });
+  });
+
   it('should allow copying a copied form (copy of copy)', () => {
     const { result } = renderHook(() => useConfigStore());
 
