@@ -14,6 +14,7 @@ export const EDITABLE_SECTIONS = [
   'cta_definitions',
   'conversation_branches',
   'content_showcase',
+  'cta_settings',
 ] as const;
 
 /**
