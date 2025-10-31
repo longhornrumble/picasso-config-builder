@@ -4,6 +4,9 @@
  *
  * This component uses the same CSS classes as the actual Picasso widget
  * to provide an accurate representation of the final appearance.
+ *
+ * Note: CTA buttons display text-only. Users can add emojis by typing them
+ * directly into the label field (e.g., "🤝 Volunteer with us").
  */
 
 import React from 'react';
@@ -41,39 +44,6 @@ export const CTAPreview: React.FC<CTAPreviewProps> = ({ cta }) => {
     }
   };
 
-  // Get icon based on action type
-  const getActionIcon = () => {
-    switch (cta.action) {
-      case 'start_form':
-        return (
-          <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clipRule="evenodd" />
-          </svg>
-        );
-      case 'external_link':
-        return (
-          <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-            <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-          </svg>
-        );
-      case 'send_query':
-        return (
-          <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-          </svg>
-        );
-      case 'show_info':
-        return (
-          <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-          </svg>
-        );
-      default:
-        return null;
-    }
-  };
 
   return (
     <div className="rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-800/50 p-6">
@@ -109,11 +79,10 @@ export const CTAPreview: React.FC<CTAPreviewProps> = ({ cta }) => {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className={`action-chip ${getStyleClass()} inline-flex items-center gap-2 transition-all`}
+                className={`action-chip ${getStyleClass()} transition-all`}
                 disabled
               >
-                {getActionIcon()}
-                <span className="font-medium">{cta.label}</span>
+                {cta.label}
               </button>
             </div>
           </div>
