@@ -14,6 +14,7 @@ import {
   FormsPage,
   CTAsPage,
   BranchesPage,
+  ActionChipsPage,
   CardsPage,
   SettingsPage,
   NotFoundPage,
@@ -36,6 +37,7 @@ import { useAutoSave } from './hooks/useAutoSave';
  * - /forms - Forms editor page
  * - /ctas - CTAs editor page
  * - /branches - Branches editor page
+ * - /action-chips - Action Chips editor page
  * - /cards - Card inventory page
  * - /settings - Configuration settings
  * - * - 404 Not Found page
@@ -73,6 +75,9 @@ const App: React.FC = () => {
 
             {/* Branches section */}
             <Route path="branches" element={<BranchesPage />} />
+
+            {/* Action Chips section */}
+            <Route path="action-chips" element={<ActionChipsPage />} />
 
             {/* Card inventory section (optional) */}
             <Route path="cards" element={<CardsPage />} />

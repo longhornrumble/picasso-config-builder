@@ -11,6 +11,7 @@ import {
   FileText,
   MousePointerClick,
   GitBranch,
+  Zap,
   Sparkles,
   Settings,
   ChevronLeft,
@@ -76,6 +77,11 @@ export const Sidebar: React.FC = () => {
       to: '/branches',
       label: 'Branches',
       icon: <GitBranch className="w-5 h-5" />,
+    },
+    {
+      to: '/action-chips',
+      label: 'Action Chips',
+      icon: <Zap className="w-5 h-5" />,
     },
     {
       to: '/cards',

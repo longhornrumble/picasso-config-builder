@@ -16,6 +16,7 @@ import {
 import type { Program, ConversationalForm, CTADefinition } from '@/types/config';
 import type { BranchEntity } from '@/components/editors/BranchesEditor/types';
 import type { CTAEntity } from '@/components/editors/CTAsEditor/types';
+import type { ActionChipEntity } from '@/components/editors/ActionChipsEditor/types';
 import type { ValidationErrors } from '@/types/validation';
 import type { ValidationContext } from '@/lib/crud/types';
 
@@ -270,6 +271,64 @@ export function validateForm(
         }
       });
     }
+  }
+
+  return errors;
+}
+
+// ============================================================================
+// ACTION CHIP VALIDATION
+// ============================================================================
+
+/**
+ * Validate an action chip entity
+ *
+ * Checks:
+ * - Chip ID format validation
+ * - Required fields (label, value)
+ * - Duplicate chip ID check (only in create mode)
+ */
+export function validateActionChip(
+  data: ActionChipEntity,
+  context: ValidationContext<ActionChipEntity>
+): ValidationErrors {
+  const errors: ValidationErrors = {};
+
+  try {
+    // Validate chip ID format
+    if (!data.chipId || !data.chipId.trim()) {
+      errors.chipId = 'Chip ID is required';
+    } else if (!/^[a-zA-Z0-9_-]+$/.test(data.chipId)) {
+      errors.chipId = 'Chip ID can only contain letters, numbers, hyphens, and underscores';
+    }
+
+    // Check for duplicate chip ID (only in create mode or if ID changed)
+    if (
+      data.chipId &&
+      (!context.isEditMode || data.chipId !== context.originalEntity?.chipId) &&
+      context.existingIds.includes(data.chipId)
+    ) {
+      errors.chipId = 'An action chip with this ID already exists';
+    }
+
+    // Validate label
+    if (!data.label || !data.label.trim()) {
+      errors.label = 'Label is required';
+    } else if (data.label.length > 50) {
+      errors.label = 'Label must be 50 characters or less';
+    }
+
+    // Validate value/query
+    if (!data.value || !data.value.trim()) {
+      errors.value = 'Query is required';
+    } else if (data.value.length > 200) {
+      errors.value = 'Query must be 200 characters or less';
+    }
+
+    // target_branch is optional, no validation needed
+  } catch (error) {
+    // Handle any unexpected errors
+    console.error('Validation error:', error);
   }
 
   return errors;

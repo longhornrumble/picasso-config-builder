@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ListChecks, FileText, MousePointerClick, GitBranch, ArrowRight } from 'lucide-react';
+import { ListChecks, FileText, MousePointerClick, GitBranch, Zap, ArrowRight } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button } from '@/components/ui';
 import { TenantSelector } from '@/components/TenantSelector';
 import { useConfigStore } from '@/store';
@@ -39,6 +39,7 @@ export const HomePage: React.FC = () => {
   const forms = useConfigStore((state) => state.forms.forms);
   const ctas = useConfigStore((state) => state.ctas.ctas);
   const branches = useConfigStore((state) => state.branches.branches);
+  const actionChips = useConfigStore((state) => state.config.baseConfig?.action_chips?.default_chips || {});
 
   const quickActions: QuickAction[] = [
     {
@@ -68,6 +69,13 @@ export const HomePage: React.FC = () => {
       icon: <GitBranch className="w-8 h-8" />,
       path: '/branches',
       color: 'text-orange-600',
+    },
+    {
+      title: 'Action Chips',
+      description: 'Quick-access chips with explicit routing',
+      icon: <Zap className="w-8 h-8" />,
+      path: '/action-chips',
+      color: 'text-yellow-600',
     },
   ];
 
@@ -126,6 +134,12 @@ export const HomePage: React.FC = () => {
                 </div>
                 <div className="text-responsive-sm text-gray-600">Branches</div>
               </div>
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-yellow-600">
+                  {Object.keys(actionChips).length}
+                </div>
+                <div className="text-responsive-sm text-gray-600">Action Chips</div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -167,7 +181,7 @@ export const HomePage: React.FC = () => {
             </h3>
             <ol className="list-decimal list-inside space-y-4 text-responsive-sm text-blue-800">
               <li>Select a tenant from the dropdown above</li>
-              <li>Navigate to a section (Programs, Forms, CTAs, or Branches)</li>
+              <li>Navigate to a section (Programs, Forms, CTAs, Branches, or Action Chips)</li>
               <li>Create or edit configurations</li>
               <li>Save your changes</li>
               <li>Deploy to production when ready</li>

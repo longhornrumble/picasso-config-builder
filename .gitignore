@@ -51,3 +51,37 @@ lambda/deployment.zip
 # Mock S3 (keep sample configs, ignore backups and runtime data)
 mock-s3/backups/*
 !mock-s3/backups/.gitkeep
+
+# Temporary documentation (not part of project docs)
+AWS_DEPLOYMENT_PLAN.md
+CLEAN_SLATE_TEST_GUIDE.md
+CONFIG_AUDIT_SUMMARY.md
+CONFIG_MERGE_FIX.md
+CRITICAL_FIXES_COMPLETED.md
+DEPLOYMENT_QUICK_START.md
+VALIDATION_WORKFLOW_STATUS.md
+
+# Debug/test scripts
+debug-*.mjs
+test-*.mjs
+navigate-to-programs.mjs
+
+# Screenshots
+*.png
+
+# Test output and logs
+e2e/screenshots/
+e2e/test-output*.log
+e2e/*.log
+
+# Environment files (deployment-specific)
+.env.deployment
+.env.production
+
+# AWS policy files
+lambda/s3-policy.json
+lambda/trust-policy.json
+
+# Scripts (temporary/one-off)
+scripts/migrate-backups.sh
+deploy-to-aws.sh

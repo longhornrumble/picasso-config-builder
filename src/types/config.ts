@@ -24,11 +24,45 @@ export interface Program {
 // FORMS
 // ============================================================================
 
-export type FormFieldType = 'text' | 'email' | 'phone' | 'select' | 'textarea' | 'number' | 'date';
+export type FormFieldType =
+  | 'text'
+  | 'email'
+  | 'phone'
+  | 'select'
+  | 'textarea'
+  | 'number'
+  | 'date'
+  | 'name'      // Composite: first/middle/last name fields
+  | 'address';  // Composite: street/city/state/zip fields
 
 export interface FormFieldOption {
   value: string;
   label: string;
+}
+
+export interface FormFieldValidation {
+  pattern?: string;
+  message?: string;
+}
+
+/**
+ * Subfield definition for composite field types (name, address)
+ */
+export interface FormSubField {
+  id: string;
+  label: string;
+  placeholder?: string;
+  required: boolean;
+  validation?: FormFieldValidation;
+  type?: 'text' | 'select';
+  options?: FormFieldOption[];
+}
+
+/**
+ * Predefined subfield configurations for composite field types
+ */
+export interface CompositeFieldConfig {
+  subfields: FormSubField[];
 }
 
 export interface FormField {
@@ -38,7 +72,15 @@ export interface FormField {
   prompt: string;
   hint?: string;
   required: boolean;
+
+  // For simple field types
   options?: FormFieldOption[];
+  validation?: FormFieldValidation;
+
+  // For composite field types (name, address)
+  subfields?: FormSubField[];
+
+  // Eligibility gates
   eligibility_gate?: boolean;
   failure_message?: string;
 }
@@ -268,14 +310,24 @@ export interface QuickHelpConfig {
 export interface ActionChip {
   label: string;
   value: string;
+  /**
+   * Branch ID to route to when action chip is clicked (v1.4.1 Explicit Routing)
+   * If null/undefined, chip will use fallback routing
+   */
+  target_branch?: string | null;
 }
 
 export interface ActionChipsConfig {
   enabled: boolean;
-  max_display: number;
-  show_on_welcome: boolean;
-  short_text_threshold: number;
-  default_chips: ActionChip[];
+  max_display?: number;
+  show_on_welcome?: boolean;
+  short_text_threshold?: number;
+  /**
+   * Action chips in dictionary format (v1.4.1+)
+   * Key = chip ID (auto-generated from label)
+   * Value = ActionChip object with label, value, target_branch
+   */
+  default_chips: Record<string, ActionChip>;
 }
 
 // ============================================================================
