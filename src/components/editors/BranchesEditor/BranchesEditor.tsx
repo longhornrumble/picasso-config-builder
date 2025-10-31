@@ -51,7 +51,6 @@ export const BranchesEditor: React.FC = () => {
     <EntityEditor<BranchEntity>
       initialValue={{
         branchId: '',
-        detection_keywords: [],
         available_ctas: {
           primary: '',
           secondary: [],
@@ -63,7 +62,7 @@ export const BranchesEditor: React.FC = () => {
           entityType: 'branch',
           entityName: 'Conversation Branch',
           entityNamePlural: 'Conversation Branches',
-          description: 'Define conversation routing based on keywords and available CTAs',
+          description: 'Define available CTAs for different conversation contexts',
         },
 
         // Empty state configuration
@@ -71,7 +70,7 @@ export const BranchesEditor: React.FC = () => {
           icon: GitBranch,
           title: 'No Branches Defined',
           description:
-            'Conversation branches route users to relevant CTAs based on keywords detected in the conversation. Create your first branch to enable keyword-based routing.',
+            'Conversation branches route users to relevant CTAs based on explicit routing from action chips and CTAs. Create your first branch to define available CTAs for different conversation contexts.',
           actionText: 'Create First Branch',
         },
 
@@ -83,7 +82,6 @@ export const BranchesEditor: React.FC = () => {
           createEntity: (branchEntity: BranchEntity) => {
             const { branchId, ...branchData } = branchEntity;
             const branch: ConversationBranch = {
-              detection_keywords: branchData.detection_keywords,
               available_ctas: branchData.available_ctas,
             };
             createBranch(branch, branchId);
@@ -92,7 +90,6 @@ export const BranchesEditor: React.FC = () => {
           // Update: Extract branchId and pass updates
           updateEntity: (branchId: string, branchEntity: BranchEntity) => {
             const updates: Partial<ConversationBranch> = {
-              detection_keywords: branchEntity.detection_keywords,
               available_ctas: branchEntity.available_ctas,
             };
             updateBranch(branchId, updates);

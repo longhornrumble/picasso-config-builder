@@ -36,27 +36,35 @@ export async function listTenantConfigs() {
   try {
     const command = new ListObjectsV2Command({
       Bucket: BUCKET,
-      Prefix: '',
+      Prefix: 'tenants/',
       Delimiter: '/',
     });
 
     const response = await s3Client.send(command);
 
-    if (!response.Contents) {
+    if (!response.CommonPrefixes) {
       return [];
     }
 
-    const tenants = response.Contents
-      .filter(item => item.Key.endsWith('-config.json'))
-      .map(item => {
-        const tenantId = item.Key.replace('-config.json', '');
-        return {
+    // List all tenant folders
+    const tenantIds = response.CommonPrefixes.map(prefix => {
+      const match = prefix.Prefix.match(/^tenants\/([^/]+)\/$/);
+      return match ? match[1] : null;
+    }).filter(Boolean);
+
+    // Get metadata for each tenant
+    const tenants = [];
+    for (const tenantId of tenantIds) {
+      try {
+        const metadata = await getTenantMetadata(tenantId);
+        tenants.push({
           tenantId,
-          key: item.Key,
-          lastModified: item.LastModified,
-          size: item.Size,
-        };
-      });
+          ...metadata,
+        });
+      } catch (error) {
+        console.warn(`Could not load metadata for ${tenantId}:`, error.message);
+      }
+    }
 
     return tenants;
   } catch (error) {
@@ -72,7 +80,7 @@ export async function listTenantConfigs() {
  */
 export async function loadConfig(tenantId) {
   try {
-    const key = `${tenantId}-config.json`;
+    const key = `tenants/${tenantId}/${tenantId}-config.json`;
     const command = new GetObjectCommand({
       Bucket: BUCKET,
       Key: key,
@@ -145,7 +153,7 @@ export async function saveConfig(tenantId, config, createBackup = true) {
     config.tenant_id = tenantId;
 
     // Save to S3
-    const key = `${tenantId}-config.json`;
+    const key = `tenants/${tenantId}/${tenantId}-config.json`;
     const command = new PutObjectCommand({
       Bucket: BUCKET,
       Key: key,
@@ -169,6 +177,7 @@ export async function saveConfig(tenantId, config, createBackup = true) {
 
 /**
  * Create a backup of a tenant configuration
+ * Backups are now stored in the tenant's folder for better organization
  * @param {string} tenantId - The tenant ID
  * @param {Object} config - The configuration object
  * @returns {Promise<string>} The backup key
@@ -176,7 +185,8 @@ export async function saveConfig(tenantId, config, createBackup = true) {
 export async function createConfigBackup(tenantId, config) {
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupKey = `backups/${tenantId}-${timestamp}.json`;
+    // Store backup in tenant's folder instead of centralized backups/ folder
+    const backupKey = `tenants/${tenantId}/${tenantId}-${timestamp}.json`;
 
     const command = new PutObjectCommand({
       Bucket: BUCKET,
@@ -206,7 +216,7 @@ export async function deleteConfig(tenantId) {
     const backupKey = await createConfigBackup(tenantId, config);
 
     // Delete the config
-    const key = `${tenantId}-config.json`;
+    const key = `tenants/${tenantId}/${tenantId}-config.json`;
     const command = new DeleteObjectCommand({
       Bucket: BUCKET,
       Key: key,
@@ -228,6 +238,7 @@ export async function deleteConfig(tenantId) {
 
 /**
  * List backups for a tenant
+ * Reads backups from tenant's folder (new location)
  * @param {string} tenantId - The tenant ID
  * @returns {Promise<Array>} Array of backup metadata
  */
@@ -235,7 +246,7 @@ export async function listBackups(tenantId) {
   try {
     const command = new ListObjectsV2Command({
       Bucket: BUCKET,
-      Prefix: `backups/${tenantId}-`,
+      Prefix: `tenants/${tenantId}/`,
     });
 
     const response = await s3Client.send(command);
@@ -244,11 +255,20 @@ export async function listBackups(tenantId) {
       return [];
     }
 
-    return response.Contents.map(item => ({
-      key: item.Key,
-      lastModified: item.LastModified,
-      size: item.Size,
-    })).sort((a, b) => b.lastModified - a.lastModified);
+    // Filter to only backup files (exclude the main config file)
+    // Backup files have format: tenantId-YYYY-MM-DDTHH-MM-SS-MMMZ.json
+    // Main config has format: tenantId-config.json
+    return response.Contents
+      .filter(item => {
+        const key = item.Key;
+        return key.endsWith('.json') && !key.endsWith('-config.json');
+      })
+      .map(item => ({
+        key: item.Key,
+        lastModified: item.LastModified,
+        size: item.Size,
+      }))
+      .sort((a, b) => b.lastModified - a.lastModified);
   } catch (error) {
     console.error(`Error listing backups for ${tenantId}:`, error);
     throw new Error(`Failed to list backups: ${error.message}`);

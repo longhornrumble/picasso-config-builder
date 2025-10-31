@@ -6,9 +6,9 @@
  * state management, and form submission is handled by the generic EntityForm.
  */
 
-import React, { useState } from 'react';
-import { Input, Select, Badge, Button } from '@/components/ui';
-import { Plus, X, Tag } from 'lucide-react';
+import React from 'react';
+import { Input, Select, Badge } from '@/components/ui';
+import { X } from 'lucide-react';
 import { useConfigStore } from '@/store';
 import type { FormFieldsProps } from '@/lib/crud/types';
 import type { BranchEntity } from './types';
@@ -21,7 +21,6 @@ export const BranchFormFields: React.FC<FormFieldsProps<BranchEntity>> = ({
   onBlur,
   isEditMode,
 }) => {
-  const [keywordInput, setKeywordInput] = useState('');
   const ctas = useConfigStore((state) => Object.entries(state.ctas.ctas));
 
   // CTA options for dropdowns
@@ -29,27 +28,6 @@ export const BranchFormFields: React.FC<FormFieldsProps<BranchEntity>> = ({
     value: id,
     label: cta.label,
   }));
-
-  // Add keyword to array
-  const handleAddKeyword = () => {
-    const keyword = keywordInput.trim().toLowerCase();
-    if (keyword && !value.detection_keywords.includes(keyword)) {
-      onChange({
-        ...value,
-        detection_keywords: [...value.detection_keywords, keyword],
-      });
-      setKeywordInput('');
-      onBlur('detection_keywords');
-    }
-  };
-
-  // Remove keyword from array
-  const handleRemoveKeyword = (keyword: string) => {
-    onChange({
-      ...value,
-      detection_keywords: value.detection_keywords.filter((k) => k !== keyword),
-    });
-  };
 
   // Add secondary CTA
   const handleAddSecondaryCTA = (ctaId: string) => {
@@ -101,62 +79,6 @@ export const BranchFormFields: React.FC<FormFieldsProps<BranchEntity>> = ({
         required
         autoFocus={!isEditMode}
       />
-
-      {/* Detection Keywords */}
-      <div className="w-full">
-        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Detection Keywords <span className="text-red-600">*</span>
-        </label>
-        <div className="flex gap-2 mb-2">
-          <Input
-            id="keyword-input"
-            value={keywordInput}
-            onChange={(e) => setKeywordInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddKeyword();
-              }
-            }}
-            placeholder="Add keyword..."
-          />
-          <Button
-            type="button"
-            onClick={handleAddKeyword}
-            disabled={!keywordInput.trim()}
-            size="sm"
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
-        </div>
-        {value.detection_keywords.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-2">
-            {value.detection_keywords.map((keyword) => (
-              <Badge key={keyword} variant="secondary" className="gap-1">
-                <Tag className="w-3 h-3" />
-                {keyword}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveKeyword(keyword)}
-                  className="ml-1 hover:text-red-600"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
-        {touched.detection_keywords && errors.detection_keywords && (
-          <p className="mt-1.5 text-sm text-red-600 dark:text-red-400" role="alert">
-            {errors.detection_keywords}
-          </p>
-        )}
-        {!errors.detection_keywords && (
-          <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-            Keywords trigger this branch when detected in conversation. Use topic-based keywords, not full questions.
-          </p>
-        )}
-      </div>
 
       {/* Primary CTA */}
       <div className="w-full">

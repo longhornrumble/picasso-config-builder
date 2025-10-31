@@ -155,7 +155,6 @@ export function validateCTA(
  * Checks:
  * - Zod schema validation
  * - Branch ID format validation
- * - At least one detection keyword
  * - Primary CTA is set
  * - Duplicate branch ID check (only in create mode)
  */
@@ -182,9 +181,8 @@ export function validateBranch(
       errors.branchId = 'A branch with this ID already exists';
     }
 
-    // Filter out null/undefined/empty keywords and secondary CTAs before validation
+    // Filter out null/undefined/empty secondary CTAs before validation
     const cleanedData = {
-      detection_keywords: data.detection_keywords.filter((keyword) => keyword != null && keyword !== ''),
       available_ctas: {
         primary: data.available_ctas.primary,
         secondary: data.available_ctas.secondary.filter((cta) => cta != null && cta !== ''),
@@ -193,11 +191,6 @@ export function validateBranch(
 
     // Validate with Zod schema (without branchId, since it's not in ConversationBranch)
     conversationBranchSchema.parse(cleanedData);
-
-    // Check for at least one valid keyword (after filtering)
-    if (!cleanedData.detection_keywords || cleanedData.detection_keywords.length === 0) {
-      errors.detection_keywords = 'At least one detection keyword is required';
-    }
 
     // Check for primary CTA
     if (!cleanedData.available_ctas?.primary) {

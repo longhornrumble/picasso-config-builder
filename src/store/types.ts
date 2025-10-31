@@ -132,10 +132,6 @@ export interface BranchesSlice {
   duplicateBranch: (branchId: string) => void;
   setActiveBranch: (branchId: string | null) => void;
 
-  // Keyword management
-  addKeyword: (branchId: string, keyword: string) => void;
-  removeKeyword: (branchId: string, keyword: string) => void;
-
   // CTA management
   setPrimaryCTA: (branchId: string, ctaId: string) => void;
   addSecondaryCTA: (branchId: string, ctaId: string) => void;

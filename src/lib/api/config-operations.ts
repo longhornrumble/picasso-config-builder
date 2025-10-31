@@ -111,15 +111,9 @@ export async function deployConfig(tenantId: string, config: TenantConfig): Prom
       throw new ConfigAPIError('VALIDATION_ERROR', 'Config is required');
     }
 
-    // Update metadata for deployment
-    const updatedConfig: TenantConfig = {
-      ...config,
-      tenant_id: tenantId,
-      generated_at: Date.now(),
-      version: incrementVersion(config.version),
-    };
-
-    await configApiClient.deployConfig(tenantId, updatedConfig);
+    // Don't spread config - it's already been filtered to editable sections only
+    // The Lambda will add tenant_id, generated_at, etc. from the base config during merge
+    await configApiClient.deployConfig(tenantId, config);
   } catch (error) {
     throw handleAPIError(error);
   }

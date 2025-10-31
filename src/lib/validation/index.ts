@@ -132,7 +132,7 @@ export function validateConfig(
   allErrors.push(...branchesResult.errors);
   allWarnings.push(...branchesResult.warnings);
   Object.keys(branches).forEach((branchId) => {
-    const result = validateBranch(branches[branchId], branchId, ctas, branches);
+    const result = validateBranch(branches[branchId], branchId, ctas);
     if (result.errors.length > 0 || result.warnings.length > 0) {
       entityResults.push({
         entityId: branchId,

@@ -210,6 +210,21 @@ function validateField(
     );
   }
 
+  // Composite fields (name, address) must have subfields
+  if ((field.type === 'name' || field.type === 'address') && (!field.subfields || field.subfields.length === 0)) {
+    errors.push(
+      createError(
+        `Composite field "${field.id}" must have subfields defined`,
+        'form',
+        {
+          field: `fields[${index}].subfields`,
+          entityId: formId,
+          suggestedFix: 'Subfields should be automatically generated when you select the field type. Try changing the field type and selecting it again.',
+        }
+      )
+    );
+  }
+
   // Eligibility gates must have failure messages
   if (field.eligibility_gate && (!field.failure_message || field.failure_message.trim() === '')) {
     errors.push(

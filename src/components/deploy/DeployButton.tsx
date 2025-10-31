@@ -9,7 +9,7 @@ import { Button, Badge, Tooltip } from '@/components/ui';
 import { DeployDialog } from './DeployDialog';
 import { useConfigStore } from '@/store';
 import { prepareConfigForDeployment } from '@/lib/api/mergeStrategy';
-import { saveConfig } from '@/lib/api/config-operations';
+import { deployConfig } from '@/lib/api/config-operations';
 
 export interface DeployButtonProps {
   className?: string;
@@ -106,8 +106,8 @@ export const DeployButton: React.FC<DeployButtonProps> = ({ className = '' }) =>
         contentShowcase,
       });
 
-      // Save to S3 (or local dev server)
-      await saveConfig(tenantId, mergedConfig as any);
+      // Deploy to S3 (or local dev server) with merge=false for full replacement
+      await deployConfig(tenantId, mergedConfig as any);
 
       // Mark as not dirty
       markClean();

@@ -206,7 +206,7 @@ function detectCircularDependencies(
     if (!form.trigger_phrases || !form.post_submission?.confirmation_message) return;
 
     const confirmationWords = form.post_submission.confirmation_message.toLowerCase().split(/\s+/);
-    const triggerPhrases = form.trigger_phrases.map((p) => p.toLowerCase());
+    const triggerPhrases = form.trigger_phrases.filter((p) => p).map((p) => p.toLowerCase());
 
     triggerPhrases.forEach((trigger) => {
       const triggerWords = trigger.split(/\s+/);

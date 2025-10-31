@@ -13,12 +13,24 @@ export const formFieldOptionSchema = z.object({
   label: z.string().min(1, 'Option label is required'),
 });
 
+export const formFieldSubfieldSchema = z.object({
+  id: z.string().min(1, 'Subfield ID is required'),
+  label: z.string().min(1, 'Subfield label is required'),
+  placeholder: z.string().optional(),
+  required: z.boolean(),
+  type: z.string().min(1, 'Subfield type is required'),
+  validation: z.object({
+    pattern: z.string().optional(),
+    message: z.string().optional(),
+  }).optional(),
+});
+
 export const formFieldSchema = z.object({
   id: z
     .string()
     .min(1, 'Field ID is required')
     .regex(/^[a-z][a-z0-9_]*$/, 'Field ID must start with a letter and contain only lowercase letters, numbers, and underscores'),
-  type: z.enum(['text', 'email', 'phone', 'select', 'textarea', 'number', 'date'], {
+  type: z.enum(['text', 'email', 'phone', 'select', 'textarea', 'number', 'date', 'name', 'address'], {
     errorMap: () => ({ message: 'Invalid field type' }),
   }),
   label: z.string().min(1, 'Field label is required').max(100, 'Field label must be 100 characters or less'),
@@ -26,6 +38,7 @@ export const formFieldSchema = z.object({
   hint: z.string().max(200, 'Hint must be 200 characters or less').optional(),
   required: z.boolean(),
   options: z.array(formFieldOptionSchema).min(1, 'Select fields must have at least one option').optional(),
+  subfields: z.array(formFieldSubfieldSchema).optional(),
   eligibility_gate: z.boolean().optional(),
   failure_message: z.string().max(500, 'Failure message must be 500 characters or less').optional(),
 }).superRefine((data, ctx) => {
@@ -62,6 +75,24 @@ export const formFieldSchema = z.object({
       code: z.ZodIssueCode.custom,
       path: ['options'],
       message: 'Only select fields can have options',
+    });
+  }
+
+  // Validate that composite fields (name, address) have subfields
+  if ((data.type === 'name' || data.type === 'address') && (!data.subfields || data.subfields.length === 0)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['subfields'],
+      message: 'Composite fields (name, address) must have subfields',
+    });
+  }
+
+  // Validate that only composite fields have subfields
+  if (data.type !== 'name' && data.type !== 'address' && data.subfields && data.subfields.length > 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['subfields'],
+      message: 'Only composite fields (name, address) can have subfields',
     });
   }
 });

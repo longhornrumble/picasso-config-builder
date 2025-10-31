@@ -7,6 +7,7 @@ import React from 'react';
 import { Input, Textarea, Select, Button, Badge } from '@/components/ui';
 import { X, Plus, Trash2, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import type { FormField, FormFieldType, FormFieldOption } from '@/types/config';
+import { generateCompositeSubfields, isCompositeFieldType } from '@/lib/compositeFieldTemplates';
 
 export interface FieldEditorProps {
   field: FormField;
@@ -37,6 +38,8 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
     { value: 'date', label: 'Date' },
     { value: 'select', label: 'Select (Dropdown)' },
     { value: 'textarea', label: 'Textarea (Long Text)' },
+    { value: 'name', label: 'Name (Full Name Fields)' },
+    { value: 'address', label: 'Address (US Address)' },
   ];
 
   const handleOptionChange = (index: number, key: 'value' | 'label', value: string) => {
@@ -53,6 +56,38 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
   const handleRemoveOption = (index: number) => {
     const updatedOptions = (field.options || []).filter((_, i) => i !== index);
     onChange({ ...field, options: updatedOptions });
+  };
+
+  // Auto-generate subfields when composite field type is selected
+  const handleFieldTypeChange = (newType: FormFieldType) => {
+    const updatedField: FormField = { ...field, type: newType };
+
+    // If switching to a composite field type, generate default subfields
+    if (isCompositeFieldType(newType) && !field.subfields) {
+      updatedField.subfields = generateCompositeSubfields(field.id, newType);
+    }
+
+    // Clear subfields if switching away from composite types
+    if (!isCompositeFieldType(newType) && field.subfields) {
+      delete updatedField.subfields;
+    }
+
+    // Clear options if switching away from select type
+    if (newType !== 'select' && field.options) {
+      delete updatedField.options;
+    }
+
+    // Clear eligibility_gate and failure_message if switching away from select
+    if (newType !== 'select') {
+      if (field.eligibility_gate) {
+        delete updatedField.eligibility_gate;
+      }
+      if (field.failure_message) {
+        delete updatedField.failure_message;
+      }
+    }
+
+    onChange(updatedField);
   };
 
   return (
@@ -123,7 +158,7 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
         <Select
           label="Field Type"
           value={field.type}
-          onValueChange={(value) => onChange({ ...field, type: value as FormFieldType })}
+          onValueChange={(value) => handleFieldTypeChange(value as FormFieldType)}
           options={fieldTypeOptions}
           required
         />
@@ -174,6 +209,36 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
         placeholder="e.g., Enter your first and last name"
         helperText="Additional guidance for users"
       />
+
+      {/* Composite Field Subfields Display */}
+      {isCompositeFieldType(field.type) && field.subfields && (
+        <div className="border-t pt-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            {field.type === 'name' ? 'Name Fields' : 'Address Fields'}
+          </label>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            This composite field will collect the following information from users in a single step:
+          </p>
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-3 space-y-2">
+            {field.subfields.map((subfield, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-sm">
+                <Badge variant={subfield.required ? 'default' : 'secondary'} className="text-xs">
+                  {subfield.required ? 'Required' : 'Optional'}
+                </Badge>
+                <span className="text-gray-700 dark:text-gray-300">{subfield.label}</span>
+                {subfield.validation && (
+                  <Badge variant="outline" className="text-xs">
+                    Validated
+                  </Badge>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+            💡 Users will see all these fields together on one screen for faster data entry.
+          </p>
+        </div>
+      )}
 
       {/* Options for select field type */}
       {field.type === 'select' && (

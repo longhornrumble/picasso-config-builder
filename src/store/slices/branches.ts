@@ -1,6 +1,6 @@
 /**
  * Branches Slice
- * Manages conversation branches with keyword detection and CTA routing
+ * Manages conversation branches with explicit CTA routing
  */
 
 import type { ConversationBranch } from '@/types/config';
@@ -81,7 +81,6 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
     const newBranch: ConversationBranch = {
       ...branch,
       // Deep clone the arrays
-      detection_keywords: [...branch.detection_keywords],
       available_ctas: {
         primary: branch.available_ctas.primary,
         secondary: [...branch.available_ctas.secondary],
@@ -94,36 +93,6 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
   setActiveBranch: (branchId: string | null) => {
     set((state) => {
       state.branches.activeBranchId = branchId;
-    });
-  },
-
-  // Keyword management
-  addKeyword: (branchId: string, keyword: string) => {
-    set((state) => {
-      const branch = state.branches.branches[branchId];
-      if (branch) {
-        // Avoid duplicates
-        if (!branch.detection_keywords.includes(keyword)) {
-          state.branches.branches[branchId] = {
-            ...branch,
-            detection_keywords: [...branch.detection_keywords, keyword],
-          };
-          state.config.markDirty();
-        }
-      }
-    });
-  },
-
-  removeKeyword: (branchId: string, keyword: string) => {
-    set((state) => {
-      const branch = state.branches.branches[branchId];
-      if (branch) {
-        state.branches.branches[branchId] = {
-          ...branch,
-          detection_keywords: branch.detection_keywords.filter((k) => k !== keyword),
-        };
-        state.config.markDirty();
-      }
     });
   },
 

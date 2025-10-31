@@ -26,18 +26,28 @@ import {
 /**
  * Main Lambda handler
  * Routes requests to appropriate functions based on HTTP method and path
+ * Supports both API Gateway and Lambda Function URL event formats
  */
 export const handler = async (event) => {
   console.log('Event:', JSON.stringify(event, null, 2));
 
-  const { httpMethod, path, body, queryStringParameters } = event;
+  // Handle both API Gateway and Function URL event formats
+  const httpMethod = event.httpMethod || event.requestContext?.http?.method;
+  const path = event.path || event.rawPath || event.requestContext?.http?.path;
+  const body = event.body;
+  const queryStringParameters = event.queryStringParameters;
 
-  // CORS headers
+  // Check if this is a Function URL request (which handles CORS automatically)
+  const isFunctionUrl = event.requestContext?.http?.method !== undefined;
+
+  // Only add CORS headers for API Gateway (not Function URLs)
   const headers = {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    ...(!isFunctionUrl && {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    }),
   };
 
   try {
@@ -130,17 +140,20 @@ export const handler = async (event) => {
         validate_only = false,
       } = requestBody;
 
-      // Validate edited sections
-      const validation = validateEditedSections(editedConfig);
-      if (!validation.isValid) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({
-            error: 'Invalid edited sections',
-            details: validation.errors,
-          }),
-        };
+      // Only validate sections if merge=true (section-based editing)
+      // When merge=false, full config replacement is allowed
+      if (merge) {
+        const validation = validateEditedSections(editedConfig);
+        if (!validation.isValid) {
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({
+              error: 'Invalid edited sections',
+              details: validation.errors,
+            }),
+          };
+        }
       }
 
       // If validation only, return without saving

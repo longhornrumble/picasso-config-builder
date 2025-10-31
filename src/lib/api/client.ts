@@ -137,17 +137,22 @@ export class ConfigAPIClient {
       );
     }
 
+    console.log('[API CLIENT] saveConfig called with config keys:', Object.keys(config));
+
     return fetchWithRetry(
       async () => {
+        const requestBody = {
+          config,
+          createBackup: options.createBackup ?? true,
+        };
+        console.log('[API CLIENT] Request body config keys:', Object.keys(requestBody.config));
+
         const response = await fetch(`${this.baseUrl}/config/${tenantId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            config,
-            createBackup: options.createBackup ?? true,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -163,10 +168,41 @@ export class ConfigAPIClient {
   }
 
   /**
-   * Deploy configuration (same as save, but with validation enforcement)
+   * Deploy configuration - sends full config with merge=false to bypass section validation
    */
   async deployConfig(tenantId: string, config: TenantConfig): Promise<SaveConfigResponse> {
-    return this.saveConfig(tenantId, config, { createBackup: true });
+    if (!tenantId || tenantId.trim() === '') {
+      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
+    }
+
+    if (!config) {
+      throw new ConfigAPIError('VALIDATION_ERROR', 'Config cannot be null or undefined');
+    }
+
+    return fetchWithRetry(
+      async () => {
+        const response = await fetch(`${this.baseUrl}/config/${tenantId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            config,
+            merge: false,  // Skip validation and merge - save full config directly
+            createBackup: true,
+          }),
+        });
+
+        if (!response.ok) {
+          throw await parseHTTPError(response);
+        }
+
+        return response.json();
+      },
+      {
+        maxRetries: 2,
+      }
+    );
   }
 
   /**

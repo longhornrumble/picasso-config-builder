@@ -6,7 +6,7 @@
  * - Programs: Organizational programs/services
  * - Forms: Conversational forms for data collection
  * - CTAs: Call-to-action buttons with various action types
- * - Branches: Conversation routing based on keywords
+ * - Branches: Conversation routing based on explicit CTA assignments
  * - Card Inventory: Smart response cards and progressive disclosure
  */
 
@@ -203,7 +203,6 @@ export interface BranchAvailableCTAs {
 }
 
 export interface ConversationBranch {
-  detection_keywords: string[];
   available_ctas: BranchAvailableCTAs;
 }
 

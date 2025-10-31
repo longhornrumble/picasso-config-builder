@@ -168,8 +168,6 @@ export const isValidBranch = (branch: unknown): branch is ConversationBranch => 
   const b = branch as Partial<ConversationBranch>;
 
   return (
-    Array.isArray(b.detection_keywords) &&
-    b.detection_keywords.length > 0 &&
     typeof b.available_ctas === 'object' &&
     b.available_ctas !== null &&
     typeof b.available_ctas.primary === 'string' &&

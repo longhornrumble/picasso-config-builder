@@ -184,6 +184,7 @@ export function getQuestionWords(keywords: string[]): string[] {
 
   const found: string[] = [];
   keywords.forEach((keyword) => {
+    if (!keyword) return; // Skip null/undefined/empty keywords
     const lower = keyword.toLowerCase();
     questionWords.forEach((qWord) => {
       if (lower.includes(qWord) && !found.includes(qWord)) {
@@ -199,8 +200,8 @@ export function getQuestionWords(keywords: string[]): string[] {
  * Calculate keyword overlap between two sets
  */
 export function getKeywordOverlap(keywords1: string[], keywords2: string[]): string[] {
-  const set1 = new Set(keywords1.map((k) => k.toLowerCase()));
-  const set2 = new Set(keywords2.map((k) => k.toLowerCase()));
+  const set1 = new Set(keywords1.filter((k) => k).map((k) => k.toLowerCase()));
+  const set2 = new Set(keywords2.filter((k) => k).map((k) => k.toLowerCase()));
 
   const overlap: string[] = [];
   set1.forEach((k) => {
