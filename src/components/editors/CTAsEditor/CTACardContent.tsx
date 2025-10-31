@@ -38,7 +38,7 @@ export const CTACardContent: React.FC<CardContentProps<CTAEntity>> = ({
 
   return (
     <div className="space-y-3">
-      {/* Badges for action, type, style */}
+      {/* Badges for action and type */}
       <div className="flex flex-wrap gap-1.5">
         <Badge variant={getActionBadgeVariant(cta.action)} className="text-xs">
           {cta.action}
@@ -46,8 +46,8 @@ export const CTACardContent: React.FC<CardContentProps<CTAEntity>> = ({
         <Badge variant="outline" className="text-xs">
           {cta.type}
         </Badge>
-        <Badge variant="outline" className="text-xs">
-          {cta.style}
+        <Badge variant="secondary" className="text-xs italic">
+          Position: Auto
         </Badge>
       </div>
 

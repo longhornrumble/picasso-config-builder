@@ -12,7 +12,7 @@ import { useConfigStore } from '@/store';
 import { CTAPreview } from './CTAPreview';
 import type { FormFieldsProps } from '@/lib/crud/types';
 import type { CTAEntity } from './types';
-import type { CTAActionType, CTAType, CTAStyle } from '@/types/config';
+import type { CTAActionType, CTAType } from '@/types/config';
 
 export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
   value,
@@ -38,12 +38,6 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
     { value: 'external_link', label: 'External Link' },
     { value: 'bedrock_query', label: 'Bedrock Query' },
     { value: 'info_request', label: 'Info Request' },
-  ];
-
-  const styleOptions = [
-    { value: 'primary', label: 'Primary' },
-    { value: 'secondary', label: 'Secondary' },
-    { value: 'info', label: 'Info' },
   ];
 
   const formOptions = forms.map((f) => ({
@@ -86,8 +80,8 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
         autoFocus={isEditMode}
       />
 
-      {/* Action, Type, Style - Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+      {/* Action & Type - Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
         {/* Action */}
         <Select
           label="Action"
@@ -119,19 +113,10 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
           error={touched.type ? errors.type : undefined}
           required
         />
-
-        {/* Style */}
-        <Select
-          label="Style"
-          value={value.style}
-          onValueChange={(newValue) =>
-            onChange({ ...value, style: newValue as CTAStyle })
-          }
-          options={styleOptions}
-          error={touched.style ? errors.style : undefined}
-          required
-        />
       </div>
+
+      {/* Note: Style field removed - CTAs now use position-based styling */}
+      {/* Backend automatically assigns _position: 'primary' or 'secondary' based on CTA placement in branches */}
 
       {/* Conditional Fields Based on Action */}
 

@@ -55,7 +55,6 @@ export const CTAsEditor: React.FC = () => {
         label: '',
         action: 'start_form',
         type: 'form_trigger',
-        style: 'primary',
         formId: '',
         url: '',
         query: '',

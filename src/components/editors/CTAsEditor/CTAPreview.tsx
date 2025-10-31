@@ -30,18 +30,15 @@ export const CTAPreview: React.FC<CTAPreviewProps> = ({ cta }) => {
     );
   }
 
-  // Map style to CSS class modifiers
+  // Position-based styling - simulates backend behavior
+  // Primary: form triggers and important actions
+  // Secondary: informational and navigation actions
   const getStyleClass = () => {
-    switch (cta.style) {
-      case 'primary':
-        return 'action-chip-primary';
-      case 'secondary':
-        return 'action-chip-secondary';
-      case 'info':
-        return 'action-chip-info';
-      default:
-        return 'action-chip-primary';
+    // Simulate position-based styling logic
+    if (cta.action === 'start_form' || cta.type === 'form_trigger') {
+      return 'action-chip-primary';
     }
+    return 'action-chip-secondary';
   };
 
 
@@ -88,31 +85,29 @@ export const CTAPreview: React.FC<CTAPreviewProps> = ({ cta }) => {
           </div>
         </div>
 
-        {/* Info badge showing style */}
+        {/* Info badge showing action & type */}
         <div className="flex items-center gap-2 pt-2 border-t border-gray-200 dark:border-gray-600">
           <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-            Style:
-          </span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${
-            cta.style === 'primary'
-              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-              : cta.style === 'secondary'
-              ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-              : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-          }`}>
-            {cta.style || 'primary'}
-          </span>
-
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 ml-2">
             Action:
           </span>
           <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
             {cta.action?.replace('_', ' ') || 'none'}
           </span>
+
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-400 ml-2">
+            Type:
+          </span>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+            {cta.type?.replace('_', ' ') || 'none'}
+          </span>
+
+          <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto italic">
+            Position assigned by backend
+          </span>
         </div>
       </div>
 
-      {/* CSS Variables Note */}
+      {/* Position-Based Styling Preview */}
       <style>{`
         .action-chip {
           padding: 8px 16px;
@@ -134,12 +129,6 @@ export const CTAPreview: React.FC<CTAPreviewProps> = ({ cta }) => {
           background-color: white;
           color: rgb(59, 130, 246);
           border: 1px solid rgb(59, 130, 246);
-        }
-
-        .action-chip-info {
-          background-color: rgb(139, 92, 246);
-          color: white;
-          border: 1px solid rgb(139, 92, 246);
         }
 
         /* Dark mode adjustments */
