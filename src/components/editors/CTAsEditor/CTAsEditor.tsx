@@ -59,6 +59,8 @@ export const CTAsEditor: React.FC = () => {
         url: '',
         query: '',
         prompt: '',
+        target_branch: undefined,
+        // Note: 'style' field removed in v1.5 - position-based styling from branches
       }}
       config={{
         // Entity metadata
@@ -89,11 +91,11 @@ export const CTAsEditor: React.FC = () => {
               label: ctaData.label,
               action: ctaData.action,
               type: ctaData.type,
-              style: ctaData.style,
               ...(ctaData.formId && { formId: ctaData.formId }),
               ...(ctaData.url && { url: ctaData.url }),
               ...(ctaData.query && { query: ctaData.query }),
               ...(ctaData.prompt && { prompt: ctaData.prompt }),
+              ...(ctaData.target_branch && { target_branch: ctaData.target_branch }),
             };
             createCTA(cta, ctaId);
           },
@@ -104,12 +106,15 @@ export const CTAsEditor: React.FC = () => {
               label: ctaEntity.label,
               action: ctaEntity.action,
               type: ctaEntity.type,
-              style: ctaEntity.style,
               ...(ctaEntity.formId && { formId: ctaEntity.formId }),
               ...(ctaEntity.url && { url: ctaEntity.url }),
               ...(ctaEntity.query && { query: ctaEntity.query }),
               ...(ctaEntity.prompt && { prompt: ctaEntity.prompt }),
             };
+            // Handle target_branch: include if defined, or explicitly set to undefined to remove
+            if (ctaEntity.target_branch !== undefined) {
+              updates.target_branch = ctaEntity.target_branch || undefined;
+            }
             updateCTA(ctaId, updates);
           },
 
