@@ -7,7 +7,7 @@ import React from 'react';
 import { Workflow } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
 import { useConfigStore } from '@/store';
-import { FlowDiagram } from '@/components/dashboard';
+import { ConversationFlowDiagram } from '@/components/dashboard';
 
 /**
  * Dashboard Page
@@ -225,8 +225,8 @@ export const DashboardPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Flow Diagram (Phase 2) */}
-      <FlowDiagram />
+      {/* Conversation Flow Diagram */}
+      <ConversationFlowDiagram />
     </div>
   );
 };

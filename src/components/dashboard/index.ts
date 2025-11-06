@@ -3,8 +3,9 @@
  * Exports all dashboard-related components, types, and utilities
  */
 
-// Main component
+// Main components
 export { FlowDiagram } from './FlowDiagram';
+export { ConversationFlowDiagram } from './ConversationFlowDiagram';
 
 // Sub-components
 export { EntityNode } from './EntityNode';
