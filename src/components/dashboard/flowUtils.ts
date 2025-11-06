@@ -326,17 +326,17 @@ export function getLayoutedElements(
   dagreGraph.setGraph({
     rankdir: 'TB', // Top to bottom
     align: 'UL', // Upper left alignment
-    nodesep: 80, // Horizontal spacing between nodes
-    ranksep: 100, // Vertical spacing between ranks
-    marginx: 20,
-    marginy: 20,
+    nodesep: 200, // Horizontal spacing between nodes (increased for readability)
+    ranksep: 250, // Vertical spacing between ranks (increased for readability)
+    marginx: 50,
+    marginy: 50,
   });
 
   // Add nodes to dagre graph
   nodes.forEach((node) => {
-    // Node dimensions (approximate)
-    const width = 220;
-    const height = node.type === 'branch' ? 140 : 100;
+    // Node dimensions (increased for better readability)
+    const width = 300; // Increased from 220
+    const height = node.type === 'branch' ? 180 : 120; // Increased from 140/100
 
     dagreGraph.setNode(node.id, { width, height });
   });

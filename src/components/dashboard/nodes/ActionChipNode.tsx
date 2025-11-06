@@ -58,7 +58,7 @@ export const ActionChipNode = memo<ActionChipNodeProps>(({ data, selected }) => 
 
       <Card
         className={cn(
-          'min-w-[200px] max-w-[220px] border-l-4 transition-all',
+          'min-w-[280px] max-w-[300px] border-l-4 transition-all',
           // Base styling
           'bg-cyan-50 dark:bg-cyan-900/20',
           hasErrors ? 'border-red-500' : 'border-cyan-500',

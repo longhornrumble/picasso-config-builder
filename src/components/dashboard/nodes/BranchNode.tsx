@@ -59,7 +59,7 @@ export const BranchNode = memo<BranchNodeProps>(({ data, selected }) => {
 
       <Card
         className={cn(
-          'min-w-[200px] max-w-[220px] border-l-4 transition-all',
+          'min-w-[280px] max-w-[300px] border-l-4 transition-all',
           // Base styling
           'bg-orange-50 dark:bg-orange-900/20',
           hasErrors ? 'border-red-500' : 'border-orange-500',

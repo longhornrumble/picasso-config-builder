@@ -62,7 +62,7 @@ export const FormNode = memo<FormNodeProps>(({ data, selected }) => {
 
       <Card
         className={cn(
-          'min-w-[200px] max-w-[220px] border-l-4 transition-all',
+          'min-w-[280px] max-w-[300px] border-l-4 transition-all',
           // Base styling
           'bg-green-50 dark:bg-green-900/20',
           hasErrors ? 'border-red-500' : 'border-green-500',

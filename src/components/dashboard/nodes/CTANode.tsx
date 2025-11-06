@@ -118,7 +118,7 @@ export const CTANode = memo<CTANodeProps>(({ data, selected }) => {
 
       <Card
         className={cn(
-          'min-w-[200px] max-w-[220px] border-l-4 transition-all',
+          'min-w-[280px] max-w-[300px] border-l-4 transition-all',
           // Base styling
           'bg-purple-50 dark:bg-purple-900/20',
           hasErrors ? 'border-red-500' : 'border-purple-500',
