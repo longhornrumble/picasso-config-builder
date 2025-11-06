@@ -7,6 +7,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
+  Workflow,
   ListChecks,
   FileText,
   MousePointerClick,
@@ -57,6 +58,11 @@ export const Sidebar: React.FC = () => {
       to: '/',
       label: 'Home',
       icon: <LayoutDashboard className="w-5 h-5" />,
+    },
+    {
+      to: '/dashboard',
+      label: 'Dashboard',
+      icon: <Workflow className="w-5 h-5" />,
     },
     {
       to: '/programs',

@@ -10,6 +10,7 @@ import { ToastContainer } from './components/ToastContainer';
 import { Layout } from './components/layout';
 import {
   HomePage,
+  DashboardPage,
   ProgramsPage,
   FormsPage,
   CTAsPage,
@@ -33,6 +34,7 @@ import { useAutoSave } from './hooks/useAutoSave';
  *
  * Routes:
  * - / - Home page (tenant selector)
+ * - /dashboard - Configuration flow diagram
  * - /programs - Programs editor page
  * - /forms - Forms editor page
  * - /ctas - CTAs editor page
@@ -63,6 +65,9 @@ const App: React.FC = () => {
           <Route path="/" element={<Layout />}>
             {/* Home page */}
             <Route index element={<HomePage />} />
+
+            {/* Dashboard - Configuration flow diagram */}
+            <Route path="dashboard" element={<DashboardPage />} />
 
             {/* Programs section */}
             <Route path="programs" element={<ProgramsPage />} />

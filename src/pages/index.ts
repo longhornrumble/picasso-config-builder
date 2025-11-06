@@ -3,6 +3,7 @@
  */
 
 export { HomePage } from './HomePage';
+export { DashboardPage } from './DashboardPage';
 export { ProgramsPage } from './ProgramsPage';
 export { FormsPage } from './FormsPage';
 export { CTAsPage } from './CTAsPage';
