@@ -118,7 +118,7 @@ export const CTANode = memo<CTANodeProps>(({ data, selected }) => {
 
       <Card
         className={cn(
-          'min-w-[280px] max-w-[300px] border-l-4 transition-all',
+          'min-w-[480px] max-w-[500px] border-l-4 transition-all',
           // Base styling
           'bg-purple-50 dark:bg-purple-900/20',
           hasErrors ? 'border-red-500' : 'border-purple-500',
@@ -129,14 +129,14 @@ export const CTANode = memo<CTANodeProps>(({ data, selected }) => {
           'hover:shadow-md'
         )}
       >
-        <div className="p-3 space-y-2">
+        <div className="p-4 space-y-3">
           {/* Header with icon and validation */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded bg-purple-100 dark:bg-purple-800">
-                <MousePointerClick className="w-4 h-4 text-purple-600 dark:text-purple-300" />
+              <div className="p-2 rounded bg-purple-100 dark:bg-purple-800">
+                <MousePointerClick className="w-6 h-6 text-purple-600 dark:text-purple-300" />
               </div>
-              <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">
+              <span className="text-base font-semibold text-purple-700 dark:text-purple-300">
                 CTA
               </span>
             </div>
@@ -144,7 +144,7 @@ export const CTANode = memo<CTANodeProps>(({ data, selected }) => {
           </div>
 
           {/* Label */}
-          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+          <div className="text-lg font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
             {label}
           </div>
 
@@ -166,8 +166,8 @@ export const CTANode = memo<CTANodeProps>(({ data, selected }) => {
           {/* Broken references indicator */}
           {brokenReferences && brokenReferences.length > 0 && (
             <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
-              <div className="flex items-center gap-1 text-xs text-red-700 dark:text-red-300">
-                <AlertCircle className="w-3 h-3" />
+              <div className="flex items-center gap-1 text-sm text-red-700 dark:text-red-300">
+                <AlertCircle className="w-4 h-4" />
                 <span>{brokenReferences.length} broken reference(s)</span>
               </div>
             </div>
@@ -176,8 +176,8 @@ export const CTANode = memo<CTANodeProps>(({ data, selected }) => {
           {/* Orphaned indicator */}
           {isOrphaned && !brokenReferences?.length && (
             <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800">
-              <div className="flex items-center gap-1 text-xs text-yellow-700 dark:text-yellow-300">
-                <AlertTriangle className="w-3 h-3" />
+              <div className="flex items-center gap-1 text-sm text-yellow-700 dark:text-yellow-300">
+                <AlertTriangle className="w-4 h-4" />
                 <span>Orphaned - No incoming connections</span>
               </div>
             </div>

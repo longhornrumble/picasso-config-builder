@@ -62,7 +62,7 @@ export const FormNode = memo<FormNodeProps>(({ data, selected }) => {
 
       <Card
         className={cn(
-          'min-w-[280px] max-w-[300px] border-l-4 transition-all',
+          'min-w-[480px] max-w-[500px] border-l-4 transition-all',
           // Base styling
           'bg-green-50 dark:bg-green-900/20',
           hasErrors ? 'border-red-500' : 'border-green-500',
@@ -73,14 +73,14 @@ export const FormNode = memo<FormNodeProps>(({ data, selected }) => {
           'hover:shadow-md'
         )}
       >
-        <div className="p-3 space-y-2">
+        <div className="p-4 space-y-3">
           {/* Header with icon and validation */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded bg-green-100 dark:bg-green-800">
-                <ClipboardList className="w-4 h-4 text-green-600 dark:text-green-300" />
+              <div className="p-2 rounded bg-green-100 dark:bg-green-800">
+                <ClipboardList className="w-6 h-6 text-green-600 dark:text-green-300" />
               </div>
-              <span className="text-xs font-semibold text-green-700 dark:text-green-300">
+              <span className="text-base font-semibold text-green-700 dark:text-green-300">
                 Form
               </span>
             </div>
@@ -88,14 +88,14 @@ export const FormNode = memo<FormNodeProps>(({ data, selected }) => {
           </div>
 
           {/* Label */}
-          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+          <div className="text-lg font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
             {label}
           </div>
 
           {/* Metadata badges */}
           <div className="flex flex-wrap gap-1">
             {metadata?.fieldCount !== undefined && (
-              <Badge variant="secondary" size="sm" className="text-xs">
+              <Badge variant="secondary" size="sm" className="text-sm">
                 {metadata.fieldCount} fields
               </Badge>
             )}
@@ -103,8 +103,8 @@ export const FormNode = memo<FormNodeProps>(({ data, selected }) => {
 
           {/* Program reference */}
           {programId && (
-            <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-              <Tag className="w-3 h-3" />
+            <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+              <Tag className="w-4 h-4" />
               <span className="truncate">{programId}</span>
             </div>
           )}
@@ -112,7 +112,7 @@ export const FormNode = memo<FormNodeProps>(({ data, selected }) => {
           {/* Completion branch */}
           {metadata?.targetBranch && (
             <div className="flex flex-wrap gap-1">
-              <Badge variant="outline" size="sm" className="text-xs">
+              <Badge variant="outline" size="sm" className="text-sm">
                 → {metadata.targetBranch}
               </Badge>
             </div>
@@ -121,8 +121,8 @@ export const FormNode = memo<FormNodeProps>(({ data, selected }) => {
           {/* Broken references indicator */}
           {brokenReferences && brokenReferences.length > 0 && (
             <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
-              <div className="flex items-center gap-1 text-xs text-red-700 dark:text-red-300">
-                <AlertCircle className="w-3 h-3" />
+              <div className="flex items-center gap-1 text-sm text-red-700 dark:text-red-300">
+                <AlertCircle className="w-4 h-4" />
                 <span>{brokenReferences.length} broken reference(s)</span>
               </div>
             </div>
@@ -131,8 +131,8 @@ export const FormNode = memo<FormNodeProps>(({ data, selected }) => {
           {/* Orphaned indicator */}
           {isOrphaned && !brokenReferences?.length && (
             <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800">
-              <div className="flex items-center gap-1 text-xs text-yellow-700 dark:text-yellow-300">
-                <AlertTriangle className="w-3 h-3" />
+              <div className="flex items-center gap-1 text-sm text-yellow-700 dark:text-yellow-300">
+                <AlertTriangle className="w-4 h-4" />
                 <span>Orphaned - No incoming connections</span>
               </div>
             </div>
