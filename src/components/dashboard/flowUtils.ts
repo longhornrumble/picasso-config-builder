@@ -205,8 +205,12 @@ export function buildConversationFlow(
   Object.entries(branches).forEach(([branchId, branch]: [string, any]) => {
     const sourceId = `branch-${branchId}`;
 
-    // Primary CTAs
-    const primaryCtas = branch.available_ctas?.primary || [];
+    // Primary CTAs - Ensure it's an array
+    const primaryCtas = Array.isArray(branch.available_ctas?.primary)
+      ? branch.available_ctas.primary
+      : branch.available_ctas?.primary
+      ? [branch.available_ctas.primary]
+      : [];
     primaryCtas.forEach((ctaId: string) => {
       const targetId = `cta-${ctaId}`;
       if (nodeIds.has(targetId)) {
@@ -221,8 +225,12 @@ export function buildConversationFlow(
       }
     });
 
-    // Secondary CTAs
-    const secondaryCtas = branch.available_ctas?.secondary || [];
+    // Secondary CTAs - Ensure it's an array
+    const secondaryCtas = Array.isArray(branch.available_ctas?.secondary)
+      ? branch.available_ctas.secondary
+      : branch.available_ctas?.secondary
+      ? [branch.available_ctas.secondary]
+      : [];
     secondaryCtas.forEach((ctaId: string) => {
       const targetId = `cta-${ctaId}`;
       if (nodeIds.has(targetId)) {
@@ -463,8 +471,17 @@ export function detectBrokenReferences(
 
   // Check branches
   Object.entries(branches).forEach(([branchId, branch]: [string, any]) => {
-    const primaryCTAs = branch.available_ctas?.primary || [];
-    const secondaryCTAs = branch.available_ctas?.secondary || [];
+    // Ensure primary and secondary are arrays
+    const primaryCTAs = Array.isArray(branch.available_ctas?.primary)
+      ? branch.available_ctas.primary
+      : branch.available_ctas?.primary
+      ? [branch.available_ctas.primary]
+      : [];
+    const secondaryCTAs = Array.isArray(branch.available_ctas?.secondary)
+      ? branch.available_ctas.secondary
+      : branch.available_ctas?.secondary
+      ? [branch.available_ctas.secondary]
+      : [];
     const allCTAs = [...primaryCTAs, ...secondaryCTAs];
 
     allCTAs.forEach((ctaId: string) => {
