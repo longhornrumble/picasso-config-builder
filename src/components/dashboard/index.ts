@@ -16,13 +16,19 @@ export type {
   ConversationFlowDiagramProps,
   EntityTypeMetadata,
   ValidationStatusMetadata,
+  FlowStatistics,
 } from './types';
 
 export {
   buildTreeStructure,
+  buildProgramNodes,
+  buildFormNodes,
+  buildCTANodes,
+  buildBranchNodes,
   buildActionChipNodes,
   buildShowcaseNodes,
   calculateValidationStatus,
+  calculateFlowStatistics,
   getEntityNavigationUrl,
   getEntityMetadata,
   getValidationMetadata,

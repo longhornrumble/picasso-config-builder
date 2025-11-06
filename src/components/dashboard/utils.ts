@@ -18,6 +18,7 @@ import type {
   ValidationStatus,
   EntityTypeMetadata,
   ValidationStatusMetadata,
+  FlowStatistics,
 } from './types';
 
 // ============================================================================
@@ -157,98 +158,136 @@ export function calculateValidationStatus(
 // ============================================================================
 
 /**
- * Build hierarchical tree structure from config entities
+ * Build flat list of program nodes
  */
-export function buildTreeStructure(
+export function buildProgramNodes(
   programs: Record<string, Program>,
-  forms: Record<string, ConversationalForm>,
-  ctas: Record<string, CTADefinition>,
-  branches: Record<string, ConversationBranch>,
   errors: Record<string, ValidationError[]>,
   warnings: Record<string, ValidationError[]>
 ): TreeNode[] {
-  const tree: TreeNode[] = [];
+  return Object.entries(programs).map(([programId, program]) => {
+    const validation = calculateValidationStatus(programId, errors, warnings);
 
-  // Build programs with nested forms → CTAs → branches
-  Object.entries(programs).forEach(([programId, program]) => {
-    const programValidation = calculateValidationStatus(programId, errors, warnings);
-
-    // Find forms for this program
-    const programForms = Object.entries(forms)
-      .filter(([_, form]) => form.program === programId)
-      .map(([formId, form]) => {
-        const formValidation = calculateValidationStatus(formId, errors, warnings);
-
-        // Find CTAs that reference this form
-        const formCTAs = Object.entries(ctas)
-          .filter(([_, cta]) => cta.formId === formId)
-          .map(([ctaId, cta]) => {
-            const ctaValidation = calculateValidationStatus(ctaId, errors, warnings);
-
-            // Find branches that reference this CTA
-            const ctaBranches = Object.entries(branches)
-              .filter(([_, branch]) => {
-                return (
-                  branch.available_ctas.primary === ctaId ||
-                  branch.available_ctas.secondary.includes(ctaId)
-                );
-              })
-              .map(([branchId, branch]) => {
-                const branchValidation = calculateValidationStatus(branchId, errors, warnings);
-
-                return {
-                  id: branchId,
-                  type: 'branch' as EntityType,
-                  label: branchId,
-                  description: `Primary: ${branch.available_ctas.primary}, Secondary: ${branch.available_ctas.secondary.length}`,
-                  validationStatus: branchValidation.status,
-                  errorCount: branchValidation.errorCount,
-                  warningCount: branchValidation.warningCount,
-                  children: [],
-                  metadata: { branch },
-                };
-              });
-
-            return {
-              id: ctaId,
-              type: 'cta' as EntityType,
-              label: cta.label || cta.text || ctaId,
-              description: `Action: ${cta.action}`,
-              validationStatus: ctaValidation.status,
-              errorCount: ctaValidation.errorCount,
-              warningCount: ctaValidation.warningCount,
-              children: ctaBranches,
-              metadata: { cta },
-            };
-          });
-
-        return {
-          id: formId,
-          type: 'form' as EntityType,
-          label: form.title,
-          description: form.description,
-          validationStatus: formValidation.status,
-          errorCount: formValidation.errorCount,
-          warningCount: formValidation.warningCount,
-          children: formCTAs,
-          metadata: { form },
-        };
-      });
-
-    tree.push({
+    return {
       id: programId,
       type: 'program',
       label: program.program_name,
       description: program.description,
-      validationStatus: programValidation.status,
-      errorCount: programValidation.errorCount,
-      warningCount: programValidation.warningCount,
-      children: programForms,
+      validationStatus: validation.status,
+      errorCount: validation.errorCount,
+      warningCount: validation.warningCount,
+      children: [],
       metadata: { program },
-    });
+    };
   });
+}
 
-  return tree;
+/**
+ * Build flat list of form nodes
+ */
+export function buildFormNodes(
+  forms: Record<string, ConversationalForm>,
+  programs: Record<string, Program>,
+  errors: Record<string, ValidationError[]>,
+  warnings: Record<string, ValidationError[]>
+): TreeNode[] {
+  return Object.entries(forms).map(([formId, form]) => {
+    const validation = calculateValidationStatus(formId, errors, warnings);
+
+    // Get program name for display
+    const programName = form.program && programs[form.program]
+      ? programs[form.program].program_name
+      : 'No program';
+
+    return {
+      id: formId,
+      type: 'form',
+      label: form.title,
+      description: `${form.description || ''} → ${programName}`,
+      validationStatus: validation.status,
+      errorCount: validation.errorCount,
+      warningCount: validation.warningCount,
+      children: [],
+      metadata: { form },
+    };
+  });
+}
+
+/**
+ * Build flat list of CTA nodes
+ */
+export function buildCTANodes(
+  ctas: Record<string, CTADefinition>,
+  forms: Record<string, ConversationalForm>,
+  errors: Record<string, ValidationError[]>,
+  warnings: Record<string, ValidationError[]>
+): TreeNode[] {
+  return Object.entries(ctas).map(([ctaId, cta]) => {
+    const validation = calculateValidationStatus(ctaId, errors, warnings);
+
+    // Get form reference for display
+    const formRef = cta.formId && forms[cta.formId]
+      ? `→ ${forms[cta.formId].title}`
+      : '';
+
+    return {
+      id: ctaId,
+      type: 'cta',
+      label: cta.label || cta.text || ctaId,
+      description: `Action: ${cta.action}${formRef ? ' ' + formRef : ''}`,
+      validationStatus: validation.status,
+      errorCount: validation.errorCount,
+      warningCount: validation.warningCount,
+      children: [],
+      metadata: { cta },
+    };
+  });
+}
+
+/**
+ * Build flat list of branch nodes
+ */
+export function buildBranchNodes(
+  branches: Record<string, ConversationBranch>,
+  ctas: Record<string, CTADefinition>,
+  errors: Record<string, ValidationError[]>,
+  warnings: Record<string, ValidationError[]>
+): TreeNode[] {
+  return Object.entries(branches).map(([branchId, branch]) => {
+    const validation = calculateValidationStatus(branchId, errors, warnings);
+
+    const primaryCTA = branch.available_ctas.primary && ctas[branch.available_ctas.primary]
+      ? ctas[branch.available_ctas.primary].label || branch.available_ctas.primary
+      : 'None';
+
+    return {
+      id: branchId,
+      type: 'branch',
+      label: branchId,
+      description: `Primary: ${primaryCTA}, Secondary: ${branch.available_ctas.secondary.length}`,
+      validationStatus: validation.status,
+      errorCount: validation.errorCount,
+      warningCount: validation.warningCount,
+      children: [],
+      metadata: { branch },
+    };
+  });
+}
+
+/**
+ * Build hierarchical tree structure from config entities
+ * @deprecated Use individual buildXNodes functions for flat lists
+ */
+export function buildTreeStructure(
+  programs: Record<string, Program>,
+  _forms: Record<string, ConversationalForm>,
+  _ctas: Record<string, CTADefinition>,
+  _branches: Record<string, ConversationBranch>,
+  errors: Record<string, ValidationError[]>,
+  warnings: Record<string, ValidationError[]>
+): TreeNode[] {
+  // For backwards compatibility, return flat program list
+  return buildProgramNodes(programs, errors, warnings);
 }
 
 /**
@@ -325,4 +364,211 @@ export function getEntityMetadata(type: EntityType): EntityTypeMetadata {
  */
 export function getValidationMetadata(status: ValidationStatus): ValidationStatusMetadata {
   return VALIDATION_STATUS_METADATA[status];
+}
+
+// ============================================================================
+// FLOW STATISTICS CALCULATION
+// ============================================================================
+
+/**
+ * Calculate flow statistics for dashboard overview
+ */
+export function calculateFlowStatistics(
+  programs: Record<string, Program>,
+  forms: Record<string, ConversationalForm>,
+  ctas: Record<string, CTADefinition>,
+  branches: Record<string, ConversationBranch>,
+  actionChips: Record<string, ActionChip>,
+  showcaseItems: ShowcaseItem[],
+  errors: Record<string, ValidationError[]>,
+  warnings: Record<string, ValidationError[]>
+): FlowStatistics {
+  // Count total nodes
+  const totalNodes =
+    Object.keys(programs).length +
+    Object.keys(forms).length +
+    Object.keys(ctas).length +
+    Object.keys(branches).length +
+    Object.keys(actionChips).length +
+    showcaseItems.length;
+
+  // Count connections
+  const connections = countConnections(programs, forms, ctas, branches, actionChips, showcaseItems);
+
+  // Count validation statuses
+  const allEntityIds = [
+    ...Object.keys(programs),
+    ...Object.keys(forms),
+    ...Object.keys(ctas),
+    ...Object.keys(branches),
+    ...Object.keys(actionChips),
+    ...showcaseItems.map((item) => item.id),
+  ];
+
+  let errorCount = 0;
+  let warningCount = 0;
+  let validCount = 0;
+
+  allEntityIds.forEach((entityId) => {
+    const hasErrors = errors[entityId] && errors[entityId].length > 0;
+    const hasWarnings = warnings[entityId] && warnings[entityId].length > 0;
+
+    if (hasErrors) {
+      errorCount++;
+    } else if (hasWarnings) {
+      warningCount++;
+    } else if (entityId in errors || entityId in warnings) {
+      // Entity was validated but has no errors/warnings
+      validCount++;
+    }
+  });
+
+  // Count orphaned entities
+  const orphaned = findOrphanedEntities(programs, forms, ctas, branches, actionChips, showcaseItems);
+
+  // Count broken references
+  const brokenRefs = findBrokenReferences(programs, forms, ctas, branches, actionChips, showcaseItems);
+
+  return {
+    nodes: totalNodes,
+    connections,
+    errors: errorCount,
+    warnings: warningCount,
+    valid: validCount,
+    orphaned,
+    brokenRefs,
+  };
+}
+
+/**
+ * Count all connections/relationships between entities
+ */
+function countConnections(
+  _programs: Record<string, Program>,
+  forms: Record<string, ConversationalForm>,
+  ctas: Record<string, CTADefinition>,
+  branches: Record<string, ConversationBranch>,
+  actionChips: Record<string, ActionChip>,
+  showcaseItems: ShowcaseItem[]
+): number {
+  let count = 0;
+
+  // Forms → Programs
+  Object.values(forms).forEach((form) => {
+    if (form.program) count++;
+  });
+
+  // CTAs → Forms
+  Object.values(ctas).forEach((cta) => {
+    if (cta.formId) count++;
+  });
+
+  // Branches → CTAs (primary + secondary)
+  Object.values(branches).forEach((branch) => {
+    if (branch.available_ctas.primary) count++;
+    count += branch.available_ctas.secondary.length;
+  });
+
+  // Action Chips → Branches
+  Object.values(actionChips).forEach((chip) => {
+    if (chip.target_branch) count++;
+  });
+
+  // Showcase Items → CTAs (via action.cta_id)
+  showcaseItems.forEach((item) => {
+    if (item.action?.cta_id) count++;
+  });
+
+  return count;
+}
+
+/**
+ * Find orphaned entities (entities not connected to any parent)
+ */
+function findOrphanedEntities(
+  _programs: Record<string, Program>,
+  forms: Record<string, ConversationalForm>,
+  ctas: Record<string, CTADefinition>,
+  branches: Record<string, ConversationBranch>,
+  actionChips: Record<string, ActionChip>,
+  showcaseItems: ShowcaseItem[]
+): number {
+  let orphanCount = 0;
+
+  // Forms without program
+  Object.values(forms).forEach((form) => {
+    if (!form.program) orphanCount++;
+  });
+
+  // CTAs without form
+  Object.values(ctas).forEach((cta) => {
+    if (!cta.formId) orphanCount++;
+  });
+
+  // Branches with no CTAs
+  Object.values(branches).forEach((branch) => {
+    if (!branch.available_ctas.primary && branch.available_ctas.secondary.length === 0) {
+      orphanCount++;
+    }
+  });
+
+  // Action chips without routing
+  Object.values(actionChips).forEach((chip) => {
+    if (!chip.target_branch) orphanCount++;
+  });
+
+  // Showcase items without action
+  showcaseItems.forEach((item) => {
+    if (!item.action) orphanCount++;
+  });
+
+  return orphanCount;
+}
+
+/**
+ * Find broken references (references to non-existent entities)
+ */
+function findBrokenReferences(
+  programs: Record<string, Program>,
+  forms: Record<string, ConversationalForm>,
+  ctas: Record<string, CTADefinition>,
+  branches: Record<string, ConversationBranch>,
+  actionChips: Record<string, ActionChip>,
+  showcaseItems: ShowcaseItem[]
+): number {
+  let brokenCount = 0;
+
+  // Forms referencing non-existent programs
+  Object.values(forms).forEach((form) => {
+    if (form.program && !programs[form.program]) brokenCount++;
+  });
+
+  // CTAs referencing non-existent forms
+  Object.values(ctas).forEach((cta) => {
+    if (cta.formId && !forms[cta.formId]) brokenCount++;
+  });
+
+  // Branches referencing non-existent CTAs
+  Object.values(branches).forEach((branch) => {
+    if (branch.available_ctas.primary && !ctas[branch.available_ctas.primary]) {
+      brokenCount++;
+    }
+    branch.available_ctas.secondary.forEach((ctaId) => {
+      if (!ctas[ctaId]) brokenCount++;
+    });
+  });
+
+  // Action chips referencing non-existent branches
+  Object.values(actionChips).forEach((chip) => {
+    if (chip.target_branch && !branches[chip.target_branch]) brokenCount++;
+  });
+
+  // Showcase items referencing non-existent CTAs
+  showcaseItems.forEach((item) => {
+    if (item.action?.cta_id && !ctas[item.action.cta_id]) {
+      brokenCount++;
+    }
+  });
+
+  return brokenCount;
 }

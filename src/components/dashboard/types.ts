@@ -96,3 +96,20 @@ export interface ValidationStatusMetadata {
   bgColor: string;
   label: string;
 }
+
+// ============================================================================
+// FLOW STATISTICS
+// ============================================================================
+
+/**
+ * Flow statistics metrics for dashboard overview
+ */
+export interface FlowStatistics {
+  nodes: number;
+  connections: number;
+  errors: number;
+  warnings: number;
+  valid: number;
+  orphaned: number;
+  brokenRefs: number;
+}

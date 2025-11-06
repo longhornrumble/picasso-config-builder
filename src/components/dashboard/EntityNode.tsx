@@ -19,7 +19,8 @@ import {
   CheckCircle,
   MinusCircle,
 } from 'lucide-react';
-import { Badge } from '@/components/ui';
+import { Badge, TooltipProvider, Tooltip } from '@/components/ui';
+import { useConfigStore } from '@/store';
 import type { EntityNodeProps } from './types';
 import { getEntityMetadata, getValidationMetadata, getEntityNavigationUrl } from './utils';
 
@@ -73,6 +74,10 @@ export const EntityNode = React.memo<EntityNodeProps>(
     const validationMeta = getValidationMetadata(node.validationStatus);
     const hasChildren = node.children.length > 0;
 
+    // Get validation messages from store
+    const errors = useConfigStore((state) => state.validation.errors[node.id] || []);
+    const warnings = useConfigStore((state) => state.validation.warnings[node.id] || []);
+
     // Get icon components
     const EntityIcon = ICON_MAP[metadata.icon as keyof typeof ICON_MAP];
     const StatusIcon = STATUS_ICON_MAP[node.validationStatus];
@@ -92,6 +97,30 @@ export const EntityNode = React.memo<EntityNodeProps>(
     const handleToggle = (e: React.MouseEvent) => {
       e.stopPropagation();
       onToggle(node.id);
+    };
+
+    /**
+     * Build tooltip content for validation messages
+     */
+    const buildTooltipContent = () => {
+      const allMessages = [...errors, ...warnings];
+      if (allMessages.length === 0) return null;
+
+      const displayMessages = allMessages.slice(0, 3);
+      const remainingCount = allMessages.length - displayMessages.length;
+
+      return (
+        <div className="space-y-1 max-w-[300px]">
+          {displayMessages.map((msg, idx) => (
+            <div key={idx} className="text-xs">
+              • {msg.message}
+            </div>
+          ))}
+          {remainingCount > 0 && (
+            <div className="text-xs italic">...and {remainingCount} more</div>
+          )}
+        </div>
+      );
     };
 
     return (
@@ -156,18 +185,26 @@ export const EntityNode = React.memo<EntityNodeProps>(
 
         {/* Validation Status */}
         <div className="flex-shrink-0 flex items-center gap-2">
-          {/* Status Icon */}
-          <div
-            className={`
-              flex items-center gap-1 px-2 py-1 rounded-md
-              ${validationMeta.bgColor}
-            `}
-          >
-            <StatusIcon className={`w-4 h-4 ${validationMeta.color}`} />
-            <span className={`text-xs font-medium ${validationMeta.color}`}>
-              {validationMeta.label}
-            </span>
-          </div>
+          {/* Status Icon with Tooltip */}
+          <TooltipProvider>
+            <Tooltip
+              content={buildTooltipContent()}
+              disabled={node.errorCount === 0 && node.warningCount === 0}
+              side="top"
+            >
+              <div
+                className={`
+                  flex items-center gap-1 px-2 py-1 rounded-md
+                  ${validationMeta.bgColor}
+                `}
+              >
+                <StatusIcon className={`w-4 h-4 ${validationMeta.color}`} />
+                <span className={`text-xs font-medium ${validationMeta.color}`}>
+                  {validationMeta.label}
+                </span>
+              </div>
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Error/Warning Count Badges */}
           {node.errorCount > 0 && (
