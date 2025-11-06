@@ -6,7 +6,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, Zap, Layout } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
 import { useConfigStore } from '@/store';
 import { EntityList } from './EntityList';
 import { buildTreeStructure, countValidationIssues } from './utils';

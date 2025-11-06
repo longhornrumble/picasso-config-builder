@@ -5,7 +5,7 @@
 
 import React, { memo } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui';
 import { cn } from '@/lib/utils/cn';
 import type { EntityNodeProps } from './types';
 import {

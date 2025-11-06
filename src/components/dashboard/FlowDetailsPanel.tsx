@@ -18,9 +18,9 @@ import {
   AlertCircle,
   ClipboardList,
 } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { Button } from '@/components/ui';
+import { Badge } from '@/components/ui';
 import { cn } from '@/lib/utils/cn';
 import type { FlowNodeData } from './flowUtils';
 import { useConfigStore } from '@/store';

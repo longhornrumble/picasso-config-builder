@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Workflow } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
 import { useConfigStore } from '@/store';
 import { ConversationFlowDiagram } from '@/components/dashboard';
 

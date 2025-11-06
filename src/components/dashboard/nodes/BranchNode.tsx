@@ -6,7 +6,7 @@
 import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { GitBranch, AlertCircle, AlertTriangle, CheckCircle, Circle } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils/cn';
 import type { FlowNodeData } from '../flowUtils';
