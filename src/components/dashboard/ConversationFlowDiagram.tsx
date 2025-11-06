@@ -3,8 +3,8 @@
  * Main dashboard flow diagram with flat sections and Flow Statistics card
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Tooltip, TooltipProvider } from '@/components/ui';
 import { useConfigStore } from '@/store';
 import { EntityList } from './EntityList';
 import {
@@ -13,6 +13,8 @@ import {
   CheckCircle,
   MinusCircle,
   Users,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import type { TreeNode, ConversationFlowDiagramProps } from './types';
 import {
@@ -21,6 +23,7 @@ import {
   buildCTANodes,
   buildBranchNodes,
   buildActionChipNodes,
+  buildShowcaseNodes,
   calculateFlowStatistics,
 } from './utils';
 
@@ -63,6 +66,8 @@ export const ConversationFlowDiagram: React.FC<ConversationFlowDiagramProps> = (
   const showcaseItems = useConfigStore((state) => state.contentShowcase.content_showcase);
   const errors = useConfigStore((state) => state.validation.errors);
   const warnings = useConfigStore((state) => state.validation.warnings);
+  const lastValidated = useConfigStore((state) => state.validation.lastValidated);
+  const validateAll = useConfigStore((state) => state.validation.validateAll);
 
   // Expand/collapse state
   // Initial state: Only Programs expanded
@@ -70,12 +75,19 @@ export const ConversationFlowDiagram: React.FC<ConversationFlowDiagramProps> = (
     new Set(['programs'])
   );
 
+  // Trigger validation if not yet validated
+  useEffect(() => {
+    if (lastValidated === null) {
+      validateAll();
+    }
+  }, [lastValidated, validateAll]);
+
   /**
    * Build flat node lists (memoized for performance)
    */
   const programNodes = useMemo(
-    () => buildProgramNodes(programs, errors, warnings),
-    [programs, errors, warnings]
+    () => buildProgramNodes(programs, errors, warnings, forms),
+    [programs, errors, warnings, forms]
   );
 
   const formNodes = useMemo(
@@ -94,12 +106,14 @@ export const ConversationFlowDiagram: React.FC<ConversationFlowDiagramProps> = (
   );
 
   const actionChipNodes = useMemo(
-    () => buildActionChipNodes(actionChips, errors, warnings),
-    [actionChips, errors, warnings]
+    () => buildActionChipNodes(actionChips, errors, warnings, branches),
+    [actionChips, errors, warnings, branches]
   );
 
-  // Note: showcaseNodes not used in current flat list implementation
-  // Keeping build function in utils.ts for potential future use
+  const showcaseNodes = useMemo(
+    () => buildShowcaseNodes(showcaseItems, errors, warnings, ctas),
+    [showcaseItems, errors, warnings, ctas]
+  );
 
   /**
    * Calculate flow statistics
@@ -143,6 +157,29 @@ export const ConversationFlowDiagram: React.FC<ConversationFlowDiagramProps> = (
   }, []);
 
   /**
+   * Build tooltip content for metrics
+   */
+  const buildTooltipContent = useCallback((entities: any[], maxDisplay = 10) => {
+    if (!entities || entities.length === 0) return null;
+
+    const displayEntities = entities.slice(0, maxDisplay);
+    const remainingCount = entities.length - displayEntities.length;
+
+    return (
+      <div className="space-y-1 max-w-[300px]">
+        {displayEntities.map((entity, idx) => (
+          <div key={idx} className="text-xs">
+            • {entity.label} ({entity.type})
+          </div>
+        ))}
+        {remainingCount > 0 && (
+          <div className="text-xs italic">...and {remainingCount} more</div>
+        )}
+      </div>
+    );
+  }, []);
+
+  /**
    * Calculate total counts for each section
    */
   const counts = useMemo(() => {
@@ -156,47 +193,61 @@ export const ConversationFlowDiagram: React.FC<ConversationFlowDiagramProps> = (
     };
   }, [programs, forms, ctas, branches, actionChips, showcaseItems]);
 
-  // Section configuration
+  // Section configuration - reordered per requirements
   const sections = [
     {
       id: 'programs',
       title: 'Programs',
+      icon: '📦',
       description: 'Program definitions with metadata and relationships',
       nodes: programNodes,
       count: counts.programs,
       color: 'text-blue-600 dark:text-blue-400',
     },
     {
-      id: 'forms',
-      title: 'Forms',
-      description: 'Conversational forms with field definitions',
-      nodes: formNodes,
-      count: counts.forms,
-      color: 'text-green-600 dark:text-green-400',
-    },
-    {
-      id: 'ctas',
-      title: 'CTAs',
-      description: 'Call-to-action buttons with routing configuration',
-      nodes: ctaNodes,
-      count: counts.ctas,
-      color: 'text-purple-600 dark:text-purple-400',
+      id: 'actionChips',
+      title: 'Action Chips',
+      icon: '⚡',
+      description: 'Quick action buttons with explicit routing',
+      nodes: actionChipNodes,
+      count: counts.actionChips,
+      color: 'text-cyan-600 dark:text-cyan-400',
     },
     {
       id: 'branches',
-      title: 'Branches',
+      title: 'Conditional Branches',
+      icon: '🔀',
       description: 'Conversation flow with priority-based routing',
       nodes: branchNodes,
       count: counts.branches,
       color: 'text-orange-600 dark:text-orange-400',
     },
     {
-      id: 'actionChips',
-      title: 'Action Chips',
-      description: 'Quick action buttons with explicit routing',
-      nodes: actionChipNodes,
-      count: counts.actionChips,
-      color: 'text-cyan-600 dark:text-cyan-400',
+      id: 'showcase',
+      title: 'Showcase Items',
+      icon: '🎨',
+      description: 'Content showcase cards with rich media and CTAs',
+      nodes: showcaseNodes,
+      count: counts.showcase,
+      color: 'text-pink-600 dark:text-pink-400',
+    },
+    {
+      id: 'ctas',
+      title: 'CTAs',
+      icon: '🎯',
+      description: 'Call-to-action buttons with routing configuration',
+      nodes: ctaNodes,
+      count: counts.ctas,
+      color: 'text-purple-600 dark:text-purple-400',
+    },
+    {
+      id: 'forms',
+      title: 'Forms',
+      icon: '📝',
+      description: 'Conversational forms with field definitions',
+      nodes: formNodes,
+      count: counts.forms,
+      color: 'text-green-600 dark:text-green-400',
     },
   ];
 
@@ -247,26 +298,42 @@ export const ConversationFlowDiagram: React.FC<ConversationFlowDiagramProps> = (
             </div>
 
             {/* Errors */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
-              <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
-              <div>
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {statistics.errors}
+            <TooltipProvider>
+              <Tooltip
+                content={buildTooltipContent(statistics.errorEntities || [])}
+                disabled={!statistics.errorEntities || statistics.errorEntities.length === 0}
+                side="top"
+              >
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 cursor-help">
+                  <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+                  <div>
+                    <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                      {statistics.errors}
+                    </div>
+                    <div className="text-sm text-red-600 dark:text-red-400">Errors</div>
+                  </div>
                 </div>
-                <div className="text-sm text-red-600 dark:text-red-400">Errors</div>
-              </div>
-            </div>
+              </Tooltip>
+            </TooltipProvider>
 
             {/* Warnings */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
-              <AlertTriangle className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
-              <div>
-                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {statistics.warnings}
+            <TooltipProvider>
+              <Tooltip
+                content={buildTooltipContent(statistics.warningEntities || [])}
+                disabled={!statistics.warningEntities || statistics.warningEntities.length === 0}
+                side="top"
+              >
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 cursor-help">
+                  <AlertTriangle className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+                  <div>
+                    <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                      {statistics.warnings}
+                    </div>
+                    <div className="text-sm text-yellow-600 dark:text-yellow-400">Warnings</div>
+                  </div>
                 </div>
-                <div className="text-sm text-yellow-600 dark:text-yellow-400">Warnings</div>
-              </div>
-            </div>
+              </Tooltip>
+            </TooltipProvider>
 
             {/* Valid */}
             <div className="flex items-center gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
@@ -280,26 +347,42 @@ export const ConversationFlowDiagram: React.FC<ConversationFlowDiagramProps> = (
             </div>
 
             {/* Orphaned */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50">
-              <MinusCircle className="w-8 h-8 text-gray-600 dark:text-gray-400" />
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {statistics.orphaned}
+            <TooltipProvider>
+              <Tooltip
+                content={buildTooltipContent(statistics.orphanedEntities || [])}
+                disabled={!statistics.orphanedEntities || statistics.orphanedEntities.length === 0}
+                side="top"
+              >
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50 cursor-help">
+                  <MinusCircle className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      {statistics.orphaned}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Orphaned</div>
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Orphaned</div>
-              </div>
-            </div>
+              </Tooltip>
+            </TooltipProvider>
 
             {/* Broken Refs */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
-              <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
-              <div>
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {statistics.brokenRefs}
+            <TooltipProvider>
+              <Tooltip
+                content={buildTooltipContent(statistics.brokenRefEntities || [])}
+                disabled={!statistics.brokenRefEntities || statistics.brokenRefEntities.length === 0}
+                side="top"
+              >
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 cursor-help">
+                  <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+                  <div>
+                    <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                      {statistics.brokenRefs}
+                    </div>
+                    <div className="text-sm text-red-600 dark:text-red-400">Broken Refs</div>
+                  </div>
                 </div>
-                <div className="text-sm text-red-600 dark:text-red-400">Broken Refs</div>
-              </div>
-            </div>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </CardContent>
       </Card>
@@ -311,13 +394,19 @@ export const ConversationFlowDiagram: React.FC<ConversationFlowDiagramProps> = (
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3">
-                  <CardTitle>{section.title}</CardTitle>
                   <button
                     onClick={() => toggleSection(section.id)}
-                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                    className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all"
+                    aria-label={expandedSections.has(section.id) ? 'Collapse section' : 'Expand section'}
                   >
-                    {expandedSections.has(section.id) ? 'Collapse' : 'Expand'}
+                    {expandedSections.has(section.id) ? (
+                      <ChevronDown className="w-5 h-5 transition-transform duration-200" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5 transition-transform duration-200" />
+                    )}
+                    <span className="text-2xl">{section.icon}</span>
                   </button>
+                  <CardTitle>{section.title}</CardTitle>
                 </div>
                 <CardDescription>{section.description}</CardDescription>
               </div>

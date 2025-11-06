@@ -19,6 +19,16 @@ import type {
   EntityTypeMetadata,
   ValidationStatusMetadata,
   FlowStatistics,
+  BranchMetadata,
+  CTAMetadata,
+  FormMetadata,
+  ProgramMetadata,
+  ActionChipMetadata,
+  ShowcaseMetadata,
+  StatusIcon,
+  OrphanedEntity,
+  BrokenRefEntity,
+  EntityWithIssues,
 } from './types';
 
 // ============================================================================
@@ -154,19 +164,282 @@ export function calculateValidationStatus(
 }
 
 // ============================================================================
+// RICH METADATA EXTRACTION
+// ============================================================================
+
+/**
+ * Get action type for a CTA
+ */
+function getCTAActionType(cta: CTADefinition): 'form_trigger' | 'bedrock_query' | 'external_link' {
+  if (cta.action === 'start_form' || cta.formId) {
+    return 'form_trigger';
+  } else if (cta.action === 'external_link' || cta.url) {
+    return 'external_link';
+  } else {
+    return 'bedrock_query';
+  }
+}
+
+/**
+ * Extract rich metadata for branch nodes
+ */
+export function getBranchMetadata(
+  branch: ConversationBranch,
+  ctas: Record<string, CTADefinition>
+): BranchMetadata {
+  // Branches don't have keywords - using 0 as default
+  const keywordCount = 0;
+  const primaryCTAId = branch.available_ctas.primary;
+  const secondaryCTAIds = branch.available_ctas.secondary || [];
+
+  const primaryCTA = primaryCTAId && ctas[primaryCTAId]
+    ? {
+        id: primaryCTAId,
+        actionType: getCTAActionType(ctas[primaryCTAId]),
+        label: ctas[primaryCTAId].label || ctas[primaryCTAId].text || primaryCTAId,
+      }
+    : undefined;
+
+  const secondaryCTAs = secondaryCTAIds
+    .filter((id) => ctas[id])
+    .map((id) => ({
+      id,
+      actionType: getCTAActionType(ctas[id]),
+      label: ctas[id].label || ctas[id].text || id,
+    }));
+
+  return {
+    keywordCount,
+    ctaCount: (primaryCTA ? 1 : 0) + secondaryCTAs.length,
+    primaryCTA,
+    secondaryCTAs,
+  };
+}
+
+/**
+ * Extract rich metadata for CTA nodes
+ */
+export function getCTAMetadata(
+  cta: CTADefinition,
+  forms: Record<string, ConversationalForm>
+): CTAMetadata {
+  const actionType = getCTAActionType(cta);
+
+  let actionTypeLabel = '';
+  let target = '';
+  let targetLabel = '';
+  let additionalInfo = '';
+
+  switch (actionType) {
+    case 'form_trigger':
+      actionTypeLabel = 'Form Trigger';
+      if (cta.formId) {
+        target = cta.formId;
+        targetLabel = forms[cta.formId]?.title || cta.formId;
+      }
+      break;
+    case 'bedrock_query':
+      actionTypeLabel = 'Bedrock Query';
+      if (cta.query) {
+        additionalInfo = cta.query.substring(0, 50) + (cta.query.length > 50 ? '...' : '');
+      }
+      break;
+    case 'external_link':
+      actionTypeLabel = 'External Link';
+      if (cta.url) {
+        target = cta.url;
+        targetLabel = cta.url;
+      }
+      break;
+  }
+
+  return {
+    actionType,
+    actionTypeLabel,
+    target,
+    targetLabel,
+    additionalInfo,
+  };
+}
+
+/**
+ * Extract rich metadata for form nodes
+ */
+export function getFormMetadata(
+  form: ConversationalForm,
+  programs: Record<string, Program>
+): FormMetadata {
+  const fieldCount = form.fields?.length || 0;
+  const hasCompositeFields = form.fields?.some((f) =>
+    ['address', 'full_name', 'phone_and_email'].includes(f.type)
+  ) || false;
+
+  const programId = form.program;
+  const programName = programId && programs[programId]
+    ? programs[programId].program_name
+    : undefined;
+
+  return {
+    fieldCount,
+    programId,
+    programName,
+    hasCompositeFields,
+  };
+}
+
+/**
+ * Extract rich metadata for program nodes
+ */
+export function getProgramMetadata(
+  program: Program,
+  forms: Record<string, ConversationalForm>
+): ProgramMetadata {
+  const formIds = Object.entries(forms)
+    .filter(([_, form]) => form.program === program.program_id)
+    .map(([formId]) => formId);
+
+  return {
+    description: program.description,
+    formCount: formIds.length,
+    formIds,
+  };
+}
+
+/**
+ * Extract rich metadata for action chip nodes
+ */
+export function getActionChipMetadata(chip: ActionChip): ActionChipMetadata {
+  const routingType = chip.target_branch ? 'explicit_route' : 'smart_routing';
+  const routingTarget = chip.target_branch || undefined;
+
+  return {
+    routingType,
+    routingTarget,
+  };
+}
+
+/**
+ * Extract rich metadata for showcase nodes
+ */
+export function getShowcaseMetadata(
+  item: ShowcaseItem,
+  _ctas: Record<string, CTADefinition>
+): ShowcaseMetadata {
+  // ShowcaseItem uses 'type' instead of 'category'
+  const categoryTags = item.type ? [item.type] : [];
+  const ctaIds: string[] = [];
+
+  if (item.action?.cta_id) {
+    ctaIds.push(item.action.cta_id);
+  }
+
+  return {
+    categoryTags,
+    ctaCount: ctaIds.length,
+    ctaIds,
+  };
+}
+
+/**
+ * Get status icons for an entity
+ */
+export function getEntityStatusIcons(
+  entityId: string,
+  _entityType: EntityType,
+  validationStatus: ValidationStatus,
+  errorCount: number,
+  warningCount: number,
+  isOrphaned: boolean,
+  hasBrokenRefs: boolean,
+  errors: Record<string, ValidationError[]>,
+  warnings: Record<string, ValidationError[]>
+): StatusIcon[] {
+  const icons: StatusIcon[] = [];
+
+  // Error icon
+  if (errorCount > 0) {
+    const errorMessages = errors[entityId] || [];
+    const tooltip = `${errorCount} error${errorCount > 1 ? 's' : ''}:\n${errorMessages
+      .slice(0, 3)
+      .map((e) => `• ${e.message}`)
+      .join('\n')}${errorMessages.length > 3 ? `\n...and ${errorMessages.length - 3} more` : ''}`;
+
+    icons.push({
+      type: 'error',
+      icon: '❌',
+      tooltip,
+      color: 'text-red-600 dark:text-red-400',
+    });
+  }
+
+  // Warning icon
+  if (warningCount > 0) {
+    const warningMessages = warnings[entityId] || [];
+    const tooltip = `${warningCount} warning${warningCount > 1 ? 's' : ''}:\n${warningMessages
+      .slice(0, 3)
+      .map((w) => `• ${w.message}`)
+      .join('\n')}${warningMessages.length > 3 ? `\n...and ${warningMessages.length - 3} more` : ''}`;
+
+    icons.push({
+      type: 'warning',
+      icon: '⚠️',
+      tooltip,
+      color: 'text-yellow-600 dark:text-yellow-400',
+    });
+  }
+
+  // Orphaned icon
+  if (isOrphaned) {
+    icons.push({
+      type: 'orphaned',
+      icon: '🔗💔',
+      tooltip: 'Not connected to any parent entity',
+      color: 'text-purple-600 dark:text-purple-400',
+    });
+  }
+
+  // Broken refs icon
+  if (hasBrokenRefs) {
+    icons.push({
+      type: 'broken_ref',
+      icon: '🔗❌',
+      tooltip: 'References non-existent entities',
+      color: 'text-red-600 dark:text-red-400',
+    });
+  }
+
+  // Not validated icon
+  if (validationStatus === 'none' && errorCount === 0 && warningCount === 0) {
+    icons.push({
+      type: 'not_validated',
+      icon: '❓',
+      tooltip: 'Entity has not been validated yet',
+      color: 'text-gray-600 dark:text-gray-400',
+    });
+  }
+
+  return icons;
+}
+
+// ============================================================================
 // TREE BUILDING
 // ============================================================================
 
 /**
  * Build flat list of program nodes
+ * Note: Requires forms to be passed for rich metadata
  */
 export function buildProgramNodes(
   programs: Record<string, Program>,
   errors: Record<string, ValidationError[]>,
-  warnings: Record<string, ValidationError[]>
+  warnings: Record<string, ValidationError[]>,
+  forms?: Record<string, ConversationalForm>
 ): TreeNode[] {
   return Object.entries(programs).map(([programId, program]) => {
     const validation = calculateValidationStatus(programId, errors, warnings);
+
+    // Get rich metadata
+    const richMetadata = forms ? getProgramMetadata(program, forms) : undefined;
 
     return {
       id: programId,
@@ -178,6 +451,18 @@ export function buildProgramNodes(
       warningCount: validation.warningCount,
       children: [],
       metadata: { program },
+      richMetadata,
+      statusIcons: getEntityStatusIcons(
+        programId,
+        'program',
+        validation.status,
+        validation.errorCount,
+        validation.warningCount,
+        false, // Programs are never orphaned
+        false, // Programs don't have broken refs
+        errors,
+        warnings
+      ),
     };
   });
 }
@@ -199,6 +484,13 @@ export function buildFormNodes(
       ? programs[form.program].program_name
       : 'No program';
 
+    // Check if orphaned or has broken refs
+    const isOrphaned = !form.program;
+    const hasBrokenRefs = form.program !== undefined && !programs[form.program];
+
+    // Get rich metadata
+    const richMetadata = getFormMetadata(form, programs);
+
     return {
       id: formId,
       type: 'form',
@@ -209,6 +501,18 @@ export function buildFormNodes(
       warningCount: validation.warningCount,
       children: [],
       metadata: { form },
+      richMetadata,
+      statusIcons: getEntityStatusIcons(
+        formId,
+        'form',
+        validation.status,
+        validation.errorCount,
+        validation.warningCount,
+        isOrphaned,
+        hasBrokenRefs,
+        errors,
+        warnings
+      ),
     };
   });
 }
@@ -230,6 +534,13 @@ export function buildCTANodes(
       ? `→ ${forms[cta.formId].title}`
       : '';
 
+    // Check if orphaned or has broken refs
+    const isOrphaned = !cta.formId;
+    const hasBrokenRefs = cta.formId !== undefined && !forms[cta.formId];
+
+    // Get rich metadata
+    const richMetadata = getCTAMetadata(cta, forms);
+
     return {
       id: ctaId,
       type: 'cta',
@@ -240,6 +551,18 @@ export function buildCTANodes(
       warningCount: validation.warningCount,
       children: [],
       metadata: { cta },
+      richMetadata,
+      statusIcons: getEntityStatusIcons(
+        ctaId,
+        'cta',
+        validation.status,
+        validation.errorCount,
+        validation.warningCount,
+        isOrphaned,
+        hasBrokenRefs,
+        errors,
+        warnings
+      ),
     };
   });
 }
@@ -260,6 +583,15 @@ export function buildBranchNodes(
       ? ctas[branch.available_ctas.primary].label || branch.available_ctas.primary
       : 'None';
 
+    // Check if orphaned or has broken refs
+    const isOrphaned = !branch.available_ctas.primary && branch.available_ctas.secondary.length === 0;
+    const hasBrokenRefs =
+      (branch.available_ctas.primary !== undefined && !ctas[branch.available_ctas.primary]) ||
+      branch.available_ctas.secondary.some((ctaId) => !ctas[ctaId]);
+
+    // Get rich metadata
+    const richMetadata = getBranchMetadata(branch, ctas);
+
     return {
       id: branchId,
       type: 'branch',
@@ -270,6 +602,18 @@ export function buildBranchNodes(
       warningCount: validation.warningCount,
       children: [],
       metadata: { branch },
+      richMetadata,
+      statusIcons: getEntityStatusIcons(
+        branchId,
+        'branch',
+        validation.status,
+        validation.errorCount,
+        validation.warningCount,
+        isOrphaned,
+        hasBrokenRefs,
+        errors,
+        warnings
+      ),
     };
   });
 }
@@ -292,14 +636,23 @@ export function buildTreeStructure(
 
 /**
  * Build flat list of action chip nodes
+ * Note: Requires branches to be passed for broken ref checking
  */
 export function buildActionChipNodes(
   actionChips: Record<string, ActionChip>,
   errors: Record<string, ValidationError[]>,
-  warnings: Record<string, ValidationError[]>
+  warnings: Record<string, ValidationError[]>,
+  branches?: Record<string, ConversationBranch>
 ): TreeNode[] {
   return Object.entries(actionChips).map(([chipId, chip]) => {
     const validation = calculateValidationStatus(chipId, errors, warnings);
+
+    // Check if orphaned or has broken refs
+    const isOrphaned = !chip.target_branch;
+    const hasBrokenRefs = !!(chip.target_branch && branches && !branches[chip.target_branch]);
+
+    // Get rich metadata
+    const richMetadata = getActionChipMetadata(chip);
 
     return {
       id: chipId,
@@ -311,20 +664,41 @@ export function buildActionChipNodes(
       warningCount: validation.warningCount,
       children: [],
       metadata: { chip },
+      richMetadata,
+      statusIcons: getEntityStatusIcons(
+        chipId,
+        'actionChip',
+        validation.status,
+        validation.errorCount,
+        validation.warningCount,
+        isOrphaned,
+        hasBrokenRefs || false,
+        errors,
+        warnings
+      ),
     };
   });
 }
 
 /**
  * Build flat list of showcase item nodes
+ * Note: Requires CTAs to be passed for rich metadata and broken ref checking
  */
 export function buildShowcaseNodes(
   showcaseItems: ShowcaseItem[],
   errors: Record<string, ValidationError[]>,
-  warnings: Record<string, ValidationError[]>
+  warnings: Record<string, ValidationError[]>,
+  ctas?: Record<string, CTADefinition>
 ): TreeNode[] {
   return showcaseItems.map((item) => {
     const validation = calculateValidationStatus(item.id, errors, warnings);
+
+    // Check if orphaned or has broken refs
+    const isOrphaned = !item.action;
+    const hasBrokenRefs = item.action?.cta_id !== undefined && ctas && !ctas[item.action.cta_id];
+
+    // Get rich metadata
+    const richMetadata = ctas ? getShowcaseMetadata(item, ctas) : undefined;
 
     return {
       id: item.id,
@@ -336,6 +710,18 @@ export function buildShowcaseNodes(
       warningCount: validation.warningCount,
       children: [],
       metadata: { item },
+      richMetadata,
+      statusIcons: getEntityStatusIcons(
+        item.id,
+        'showcase',
+        validation.status,
+        validation.errorCount,
+        validation.warningCount,
+        isOrphaned,
+        hasBrokenRefs || false,
+        errors,
+        warnings
+      ),
     };
   });
 }
@@ -424,10 +810,93 @@ export function calculateFlowStatistics(
   });
 
   // Count orphaned entities
-  const orphaned = findOrphanedEntities(programs, forms, ctas, branches, actionChips, showcaseItems);
+  const orphanedResult = findOrphanedEntities(programs, forms, ctas, branches, actionChips, showcaseItems);
 
   // Count broken references
-  const brokenRefs = findBrokenReferences(programs, forms, ctas, branches, actionChips, showcaseItems);
+  const brokenRefsResult = findBrokenReferences(programs, forms, ctas, branches, actionChips, showcaseItems);
+
+  // Build error and warning entity lists
+  const errorEntities: EntityWithIssues[] = [];
+  const warningEntities: EntityWithIssues[] = [];
+
+  allEntityIds.forEach((entityId) => {
+    const entityErrors = errors[entityId] || [];
+    const entityWarnings = warnings[entityId] || [];
+
+    if (entityErrors.length > 0) {
+      // Find entity label
+      let label = entityId;
+      let type: EntityType = 'program';
+
+      if (programs[entityId]) {
+        label = programs[entityId].program_name;
+        type = 'program';
+      } else if (forms[entityId]) {
+        label = forms[entityId].title;
+        type = 'form';
+      } else if (ctas[entityId]) {
+        label = ctas[entityId].label || ctas[entityId].text || entityId;
+        type = 'cta';
+      } else if (branches[entityId]) {
+        label = entityId;
+        type = 'branch';
+      } else if (actionChips[entityId]) {
+        label = actionChips[entityId].label;
+        type = 'actionChip';
+      } else {
+        const showcase = showcaseItems.find((item) => item.id === entityId);
+        if (showcase) {
+          label = showcase.name;
+          type = 'showcase';
+        }
+      }
+
+      errorEntities.push({
+        id: entityId,
+        type,
+        label,
+        issueCount: entityErrors.length,
+        issues: entityErrors.slice(0, 3).map((e) => e.message),
+      });
+    }
+
+    if (entityWarnings.length > 0) {
+      // Find entity label
+      let label = entityId;
+      let type: EntityType = 'program';
+
+      if (programs[entityId]) {
+        label = programs[entityId].program_name;
+        type = 'program';
+      } else if (forms[entityId]) {
+        label = forms[entityId].title;
+        type = 'form';
+      } else if (ctas[entityId]) {
+        label = ctas[entityId].label || ctas[entityId].text || entityId;
+        type = 'cta';
+      } else if (branches[entityId]) {
+        label = entityId;
+        type = 'branch';
+      } else if (actionChips[entityId]) {
+        label = actionChips[entityId].label;
+        type = 'actionChip';
+      } else {
+        const showcase = showcaseItems.find((item) => item.id === entityId);
+        if (showcase) {
+          label = showcase.name;
+          type = 'showcase';
+        }
+      }
+
+      warningEntities.push({
+        id: entityId,
+        type,
+        label,
+        issueCount: entityWarnings.length,
+        issues: entityWarnings.slice(0, 3).map((w) => w.message),
+      });
+    }
+  });
 
   return {
     nodes: totalNodes,
@@ -435,8 +904,12 @@ export function calculateFlowStatistics(
     errors: errorCount,
     warnings: warningCount,
     valid: validCount,
-    orphaned,
-    brokenRefs,
+    orphaned: orphanedResult.count,
+    brokenRefs: brokenRefsResult.count,
+    orphanedEntities: orphanedResult.entities,
+    brokenRefEntities: brokenRefsResult.entities,
+    errorEntities,
+    warningEntities,
   };
 }
 
@@ -484,91 +957,158 @@ function countConnections(
 
 /**
  * Find orphaned entities (entities not connected to any parent)
+ * Returns both count and detailed entity list
  */
-function findOrphanedEntities(
+export function findOrphanedEntities(
   _programs: Record<string, Program>,
   forms: Record<string, ConversationalForm>,
   ctas: Record<string, CTADefinition>,
   branches: Record<string, ConversationBranch>,
   actionChips: Record<string, ActionChip>,
   showcaseItems: ShowcaseItem[]
-): number {
-  let orphanCount = 0;
+): { count: number; entities: OrphanedEntity[] } {
+  const entities: OrphanedEntity[] = [];
 
   // Forms without program
-  Object.values(forms).forEach((form) => {
-    if (!form.program) orphanCount++;
+  Object.entries(forms).forEach(([formId, form]) => {
+    if (!form.program) {
+      entities.push({
+        id: formId,
+        type: 'form',
+        label: form.title,
+      });
+    }
   });
 
   // CTAs without form
-  Object.values(ctas).forEach((cta) => {
-    if (!cta.formId) orphanCount++;
+  Object.entries(ctas).forEach(([ctaId, cta]) => {
+    if (!cta.formId) {
+      entities.push({
+        id: ctaId,
+        type: 'cta',
+        label: cta.label || cta.text || ctaId,
+      });
+    }
   });
 
   // Branches with no CTAs
-  Object.values(branches).forEach((branch) => {
+  Object.entries(branches).forEach(([branchId, branch]) => {
     if (!branch.available_ctas.primary && branch.available_ctas.secondary.length === 0) {
-      orphanCount++;
+      entities.push({
+        id: branchId,
+        type: 'branch',
+        label: branchId,
+      });
     }
   });
 
   // Action chips without routing
-  Object.values(actionChips).forEach((chip) => {
-    if (!chip.target_branch) orphanCount++;
+  Object.entries(actionChips).forEach(([chipId, chip]) => {
+    if (!chip.target_branch) {
+      entities.push({
+        id: chipId,
+        type: 'actionChip',
+        label: chip.label,
+      });
+    }
   });
 
   // Showcase items without action
   showcaseItems.forEach((item) => {
-    if (!item.action) orphanCount++;
+    if (!item.action) {
+      entities.push({
+        id: item.id,
+        type: 'showcase',
+        label: item.name,
+      });
+    }
   });
 
-  return orphanCount;
+  return { count: entities.length, entities };
 }
 
 /**
  * Find broken references (references to non-existent entities)
+ * Returns both count and detailed entity list
  */
-function findBrokenReferences(
+export function findBrokenReferences(
   programs: Record<string, Program>,
   forms: Record<string, ConversationalForm>,
   ctas: Record<string, CTADefinition>,
   branches: Record<string, ConversationBranch>,
   actionChips: Record<string, ActionChip>,
   showcaseItems: ShowcaseItem[]
-): number {
-  let brokenCount = 0;
+): { count: number; entities: BrokenRefEntity[] } {
+  const entities: BrokenRefEntity[] = [];
 
   // Forms referencing non-existent programs
-  Object.values(forms).forEach((form) => {
-    if (form.program && !programs[form.program]) brokenCount++;
+  Object.entries(forms).forEach(([formId, form]) => {
+    if (form.program && !programs[form.program]) {
+      entities.push({
+        id: formId,
+        type: 'form',
+        label: form.title,
+        brokenRefs: [form.program],
+      });
+    }
   });
 
   // CTAs referencing non-existent forms
-  Object.values(ctas).forEach((cta) => {
-    if (cta.formId && !forms[cta.formId]) brokenCount++;
+  Object.entries(ctas).forEach(([ctaId, cta]) => {
+    if (cta.formId && !forms[cta.formId]) {
+      entities.push({
+        id: ctaId,
+        type: 'cta',
+        label: cta.label || cta.text || ctaId,
+        brokenRefs: [cta.formId],
+      });
+    }
   });
 
   // Branches referencing non-existent CTAs
-  Object.values(branches).forEach((branch) => {
+  Object.entries(branches).forEach(([branchId, branch]) => {
+    const brokenRefs: string[] = [];
     if (branch.available_ctas.primary && !ctas[branch.available_ctas.primary]) {
-      brokenCount++;
+      brokenRefs.push(branch.available_ctas.primary);
     }
     branch.available_ctas.secondary.forEach((ctaId) => {
-      if (!ctas[ctaId]) brokenCount++;
+      if (!ctas[ctaId]) {
+        brokenRefs.push(ctaId);
+      }
     });
+    if (brokenRefs.length > 0) {
+      entities.push({
+        id: branchId,
+        type: 'branch',
+        label: branchId,
+        brokenRefs,
+      });
+    }
   });
 
   // Action chips referencing non-existent branches
-  Object.values(actionChips).forEach((chip) => {
-    if (chip.target_branch && !branches[chip.target_branch]) brokenCount++;
+  Object.entries(actionChips).forEach(([chipId, chip]) => {
+    if (chip.target_branch && !branches[chip.target_branch]) {
+      entities.push({
+        id: chipId,
+        type: 'actionChip',
+        label: chip.label,
+        brokenRefs: [chip.target_branch],
+      });
+    }
   });
 
   // Showcase items referencing non-existent CTAs
   showcaseItems.forEach((item) => {
     if (item.action?.cta_id && !ctas[item.action.cta_id]) {
-      brokenCount++;
+      entities.push({
+        id: item.id,
+        type: 'showcase',
+        label: item.name,
+        brokenRefs: [item.action.cta_id],
+      });
     }
   });
 
-  return brokenCount;
+  return { count: entities.length, entities };
 }
