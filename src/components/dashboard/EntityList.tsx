@@ -1,6 +1,6 @@
 /**
  * EntityList Component
- * Recursively renders a list of entity nodes with their children
+ * Recursive list renderer for tree structure of entities
  */
 
 import React from 'react';
@@ -10,34 +10,40 @@ import type { EntityListProps } from './types';
 /**
  * EntityList Component
  *
- * Renders a list of tree nodes at the same depth level,
- * managing the recursive rendering of nested children.
+ * Recursively renders a list of tree nodes with expand/collapse functionality.
+ * Handles nested entities (e.g., Programs → Forms → CTAs → Branches).
  *
  * Features:
- * - Renders each entity node
- * - Recursively renders expanded children
- * - Handles empty state
- * - Passes expand/navigate callbacks down the tree
+ * - Recursive rendering of nested children
+ * - Proper depth tracking for indentation
+ * - Expand/collapse state management
+ * - Click-to-navigate functionality
+ *
+ * @example
+ * ```tsx
+ * <EntityList
+ *   nodes={programNodes}
+ *   depth={0}
+ *   expandedIds={expandedSet}
+ *   onToggle={handleToggle}
+ *   onNavigate={handleNavigate}
+ * />
+ * ```
  */
 export const EntityList: React.FC<EntityListProps> = ({
-  entities,
-  depth,
+  nodes,
+  depth = 0,
   expandedIds,
-  onToggleExpand,
+  onToggle,
   onNavigate,
 }) => {
-  // Handle empty state
-  if (entities.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-        <p className="text-sm">No entities found</p>
-      </div>
-    );
+  if (nodes.length === 0) {
+    return null;
   }
 
   return (
-    <div className="space-y-0">
-      {entities.map((node) => {
+    <div className="space-y-2">
+      {nodes.map((node) => {
         const isExpanded = expandedIds.has(node.id);
         const hasChildren = node.children.length > 0;
 
@@ -48,19 +54,21 @@ export const EntityList: React.FC<EntityListProps> = ({
               node={node}
               depth={depth}
               isExpanded={isExpanded}
-              onToggleExpand={onToggleExpand}
+              onToggle={onToggle}
               onNavigate={onNavigate}
             />
 
             {/* Recursively render children if expanded */}
             {hasChildren && isExpanded && (
-              <EntityList
-                entities={node.children}
-                depth={depth + 1}
-                expandedIds={expandedIds}
-                onToggleExpand={onToggleExpand}
-                onNavigate={onNavigate}
-              />
+              <div className="mt-2">
+                <EntityList
+                  nodes={node.children}
+                  depth={depth + 1}
+                  expandedIds={expandedIds}
+                  onToggle={onToggle}
+                  onNavigate={onNavigate}
+                />
+              </div>
             )}
           </div>
         );
@@ -68,5 +76,3 @@ export const EntityList: React.FC<EntityListProps> = ({
     </div>
   );
 };
-
-EntityList.displayName = 'EntityList';

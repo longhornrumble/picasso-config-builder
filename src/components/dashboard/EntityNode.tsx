@@ -1,152 +1,190 @@
 /**
  * EntityNode Component
- * Renders a single entity node in the flow diagram tree
+ * Individual node in the flow diagram with expand/collapse, navigation, and validation indicators
  */
 
-import React, { memo } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
-import { Card } from '@/components/ui';
-import { cn } from '@/lib/utils/cn';
-import type { EntityNodeProps } from './types';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  getEntityIcon,
-  getEntityColor,
-  getValidationIcon,
-  getValidationColor,
-  ENTITY_TYPE_CONFIG,
-} from './utils';
+  ChevronRight,
+  ChevronDown,
+  Briefcase,
+  FileText,
+  MousePointerClick,
+  GitBranch,
+  Zap,
+  Layout,
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  MinusCircle,
+} from 'lucide-react';
+import { Badge } from '@/components/ui';
+import type { EntityNodeProps } from './types';
+import { getEntityMetadata, getValidationMetadata, getEntityNavigationUrl } from './utils';
+
+/**
+ * Icon mapping for entity types
+ */
+const ICON_MAP = {
+  Briefcase,
+  FileText,
+  MousePointerClick,
+  GitBranch,
+  Zap,
+  Layout,
+} as const;
+
+/**
+ * Icon mapping for validation status
+ */
+const STATUS_ICON_MAP = {
+  error: AlertCircle,
+  warning: AlertTriangle,
+  success: CheckCircle,
+  none: MinusCircle,
+} as const;
 
 /**
  * EntityNode Component
  *
- * Displays a single entity node with:
- * - Entity type icon and color
- * - Entity name
+ * Displays an individual entity node with:
+ * - Color-coded card based on entity type
+ * - Expand/collapse for nodes with children
  * - Validation status indicator with count badges
- * - Expand/collapse chevron (if has children)
- * - Click handler for navigation
+ * - Click-to-navigate functionality
+ * - Nested depth indication via left padding
  *
- * Uses React.memo for performance optimization
+ * @example
+ * ```tsx
+ * <EntityNode
+ *   node={programNode}
+ *   depth={0}
+ *   isExpanded={true}
+ *   onToggle={(id) => toggleNode(id)}
+ *   onNavigate={(node) => navigateToEntity(node)}
+ * />
+ * ```
  */
-export const EntityNode = memo<EntityNodeProps>(
-  ({ node, depth, isExpanded, onToggleExpand, onNavigate }) => {
+export const EntityNode = React.memo<EntityNodeProps>(
+  ({ node, depth, isExpanded, onToggle, onNavigate }) => {
+    const navigate = useNavigate();
+    const metadata = getEntityMetadata(node.type);
+    const validationMeta = getValidationMetadata(node.validationStatus);
     const hasChildren = node.children.length > 0;
-    const Icon = getEntityIcon(node.type);
-    const colorClasses = getEntityColor(node.type);
-    const ValidationIcon = getValidationIcon(node.validationStatus);
-    const validationColorClass = getValidationColor(node.validationStatus);
-    const config = ENTITY_TYPE_CONFIG[node.type];
 
-    // Calculate left margin based on depth (24px per level)
-    const marginLeft = depth * 24;
+    // Get icon components
+    const EntityIcon = ICON_MAP[metadata.icon as keyof typeof ICON_MAP];
+    const StatusIcon = STATUS_ICON_MAP[node.validationStatus];
 
-    // Handle expand/collapse toggle
-    const handleToggleExpand = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (hasChildren) {
-        onToggleExpand(node.id);
-      }
+    /**
+     * Handle node click - navigate to entity editor
+     */
+    const handleClick = () => {
+      const url = getEntityNavigationUrl(node);
+      navigate(url);
+      onNavigate(node);
     };
 
-    // Handle navigation click
-    const handleNavigate = () => {
-      onNavigate(node.type, node.id);
+    /**
+     * Handle expand/collapse toggle
+     */
+    const handleToggle = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onToggle(node.id);
     };
 
     return (
-      <Card
-        className={cn(
-          'mb-2 p-3 cursor-pointer transition-all duration-200 hover:shadow-md',
-          colorClasses,
-          'border-l-4'
-        )}
-        style={{ marginLeft: `${marginLeft}px` }}
-        onClick={handleNavigate}
+      <div
+        className={`
+          flex items-start gap-3 p-3 rounded-lg border cursor-pointer
+          transition-all duration-200 hover:shadow-md
+          ${metadata.color.bg} ${metadata.color.border}
+        `}
+        style={{ marginLeft: `${depth * 24}px` }}
+        onClick={handleClick}
       >
-        <div className="flex items-center gap-3">
-          {/* Expand/Collapse Chevron */}
+        {/* Expand/Collapse Button */}
+        {hasChildren && (
           <button
-            onClick={handleToggleExpand}
-            className={cn(
-              'flex-shrink-0 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors',
-              !hasChildren && 'invisible'
-            )}
+            onClick={handleToggle}
+            className={`
+              flex-shrink-0 mt-0.5 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700
+              transition-colors
+            `}
             aria-label={isExpanded ? 'Collapse' : 'Expand'}
           >
             {isExpanded ? (
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             ) : (
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             )}
           </button>
+        )}
 
-          {/* Entity Icon */}
-          <div className="flex-shrink-0">
-            <Icon className="w-5 h-5" />
-          </div>
+        {/* Spacer for nodes without children */}
+        {!hasChildren && <div className="w-6" />}
 
-          {/* Entity Name and Type */}
-          <div className="flex-1 min-w-0">
-            <div className="font-medium text-sm truncate">{node.name}</div>
-            <div className="text-xs opacity-75">{config.label}</div>
-          </div>
+        {/* Entity Icon */}
+        <div className="flex-shrink-0 mt-0.5">
+          <EntityIcon className={`w-5 h-5 ${metadata.color.text}`} />
+        </div>
 
-          {/* Validation Status */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Error Count Badge */}
-            {node.errorCount > 0 && (
-              <div className="flex items-center gap-1">
-                <ValidationIcon className={cn('w-4 h-4', validationColorClass)} />
-                <span
-                  className={cn(
-                    'text-xs font-semibold px-2 py-0.5 rounded-full',
-                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                  )}
-                >
-                  {node.errorCount}
-                </span>
-              </div>
-            )}
-
-            {/* Warning Count Badge */}
-            {node.warningCount > 0 && node.errorCount === 0 && (
-              <div className="flex items-center gap-1">
-                <ValidationIcon className={cn('w-4 h-4', validationColorClass)} />
-                <span
-                  className={cn(
-                    'text-xs font-semibold px-2 py-0.5 rounded-full',
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                  )}
-                >
-                  {node.warningCount}
-                </span>
-              </div>
-            )}
-
-            {/* Success Indicator (no errors or warnings) */}
-            {node.errorCount === 0 && node.warningCount === 0 && node.validationStatus === 'success' && (
-              <ValidationIcon className={cn('w-4 h-4', validationColorClass)} />
-            )}
-
-            {/* None/Not Validated Indicator */}
-            {node.validationStatus === 'none' && (
-              <ValidationIcon className={cn('w-4 h-4', validationColorClass)} />
+        {/* Entity Content */}
+        <div className="flex-1 min-w-0">
+          {/* Label and Type Badge */}
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className={`font-medium truncate ${metadata.color.text}`}>{node.label}</h4>
+            <Badge variant="secondary" className="flex-shrink-0 text-xs">
+              {metadata.label}
+            </Badge>
+            {hasChildren && (
+              <Badge variant="outline" className="flex-shrink-0 text-xs">
+                {node.children.length}
+              </Badge>
             )}
           </div>
 
-          {/* Children Count Badge */}
-          {hasChildren && (
-            <div
-              className={cn(
-                'text-xs font-semibold px-2 py-0.5 rounded-full',
-                'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-              )}
+          {/* Description */}
+          {node.description && (
+            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{node.description}</p>
+          )}
+
+          {/* Entity ID (subtle) */}
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 truncate">ID: {node.id}</p>
+        </div>
+
+        {/* Validation Status */}
+        <div className="flex-shrink-0 flex items-center gap-2">
+          {/* Status Icon */}
+          <div
+            className={`
+              flex items-center gap-1 px-2 py-1 rounded-md
+              ${validationMeta.bgColor}
+            `}
+          >
+            <StatusIcon className={`w-4 h-4 ${validationMeta.color}`} />
+            <span className={`text-xs font-medium ${validationMeta.color}`}>
+              {validationMeta.label}
+            </span>
+          </div>
+
+          {/* Error/Warning Count Badges */}
+          {node.errorCount > 0 && (
+            <Badge variant="error" className="flex-shrink-0">
+              {node.errorCount}
+            </Badge>
+          )}
+          {node.warningCount > 0 && (
+            <Badge
+              variant="warning"
+              className="flex-shrink-0 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-800"
             >
-              {node.children.length}
-            </div>
+              {node.warningCount}
+            </Badge>
           )}
         </div>
-      </Card>
+      </div>
     );
   }
 );
