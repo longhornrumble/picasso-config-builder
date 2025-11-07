@@ -24,6 +24,7 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
 }) => {
   const forms = useConfigStore((state) => state.forms.getAllForms());
   const branches = useConfigStore((state) => state.branches.getAllBranches());
+  const programs = useConfigStore((state) => state.programs.getAllPrograms());
 
   // Options for dropdowns
   const actionOptions = [
@@ -43,6 +44,11 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
   const formOptions = forms.map((f) => ({
     value: f.form_id,
     label: f.title,
+  }));
+
+  const programOptions = programs.map((p) => ({
+    value: p.program_id,
+    label: p.program_name || p.program_id,
   }));
 
   return (
@@ -88,8 +94,21 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
           value={value.action}
           onValueChange={(newValue) => {
             const newAction = newValue as CTAActionType;
-            // Clear conditional fields when action changes
-            const updated = { ...value, action: newAction };
+
+            // Map action to corresponding type
+            const actionToTypeMap: Record<CTAActionType, CTAType> = {
+              start_form: 'form_trigger',
+              external_link: 'external_link',
+              send_query: 'bedrock_query',
+              show_info: 'info_request',
+            };
+
+            // Update action, type, and clear conditional fields
+            const updated = {
+              ...value,
+              action: newAction,
+              type: actionToTypeMap[newAction], // Auto-update type to match action
+            };
             // Clear all conditional fields
             updated.formId = '';
             updated.url = '';
@@ -113,6 +132,26 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
           error={touched.type ? errors.type : undefined}
           required
         />
+      </div>
+
+      {/* Program */}
+      <div className="w-full">
+        <Select
+          label="Program"
+          value={value.program_id || ''}
+          onValueChange={(newValue) =>
+            onChange({ ...value, program_id: newValue || undefined })
+          }
+          options={programOptions}
+          placeholder="Select a program (optional)..."
+          helperText="Associate this CTA with a specific program"
+          disabled={programs.length === 0}
+        />
+        {programs.length === 0 && (
+          <p className="mt-1.5 text-sm text-amber-600 dark:text-amber-400">
+            No programs available. Create a program first.
+          </p>
+        )}
       </div>
 
       {/* Note: Style field removed - CTAs now use position-based styling */}
@@ -174,7 +213,8 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
             value={value.query || ''}
             onChange={(e) => onChange({ ...value, query: e.target.value })}
             onBlur={() => onBlur('query')}
-            rows={3}
+            rows={6}
+            className="min-h-[120px]"
           />
           {touched.query && errors.query && (
             <p className="mt-1.5 text-sm text-red-600 dark:text-red-400" role="alert">
@@ -183,7 +223,7 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
           )}
           {!errors.query && (
             <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-              Query sent to AI when button is clicked
+              Query sent to AI when button is clicked. Supports multiple paragraphs.
             </p>
           )}
         </div>
@@ -196,7 +236,7 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
             htmlFor="prompt"
             className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
           >
-            Prompt <span className="text-red-600">*</span>
+            Message <span className="text-red-600">*</span>
           </label>
           <Textarea
             id="prompt"
@@ -204,7 +244,8 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
             value={value.prompt || ''}
             onChange={(e) => onChange({ ...value, prompt: e.target.value })}
             onBlur={() => onBlur('prompt')}
-            rows={3}
+            rows={6}
+            className="min-h-[120px]"
           />
           {touched.prompt && errors.prompt && (
             <p className="mt-1.5 text-sm text-red-600 dark:text-red-400" role="alert">
@@ -213,7 +254,7 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
           )}
           {!errors.prompt && (
             <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-              Information shown when button is clicked
+              Static message displayed to user (no Bedrock call). Supports multiple paragraphs.
             </p>
           )}
         </div>

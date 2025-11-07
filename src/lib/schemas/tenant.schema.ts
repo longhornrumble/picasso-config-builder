@@ -68,7 +68,11 @@ export const quickHelpConfigSchema = z.object({
 
 export const actionChipSchema = z.object({
   label: z.string().min(1, 'Label is required').max(30, 'Label must be 30 characters or less'),
-  value: z.string().min(1, 'Value is required').max(200, 'Value must be 200 characters or less'),
+  action: z.enum(['send_query', 'show_info'], {
+    errorMap: () => ({ message: 'Action must be either send_query or show_info' }),
+  }).optional().default('send_query'),
+  value: z.string().min(1, 'Value/message is required'), // No max length - supports paragraphs
+  target_branch: z.string().min(1, 'Branch ID cannot be empty').max(100, 'Branch ID must be 100 characters or less').nullable().optional(),
 });
 
 export const actionChipsConfigSchema = z.object({

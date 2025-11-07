@@ -179,9 +179,7 @@ export const conversationalFormSchema = z.object({
   description: z.string().min(1, 'Description is required').max(500, 'Description must be 500 characters or less'),
   introduction: z.string().max(1000, 'Introduction must be 1000 characters or less').optional(),
   cta_text: z.string().max(50, 'CTA text must be 50 characters or less').optional(),
-  trigger_phrases: z
-    .array(z.string().min(1, 'Trigger phrase cannot be empty').max(100, 'Trigger phrase must be 100 characters or less'))
-    .min(1, 'At least one trigger phrase is required'),
+  // trigger_phrases removed - forms are now triggered via explicit CTA routing in conversational branches
   fields: z.array(formFieldSchema).min(1, 'At least one field is required'),
   post_submission: postSubmissionConfigSchema.optional(),
   on_completion_branch: z

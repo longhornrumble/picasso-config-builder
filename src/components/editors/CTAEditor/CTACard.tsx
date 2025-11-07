@@ -15,7 +15,8 @@ import {
   Button,
   Badge,
 } from '@/components/ui';
-import type { CTADefinition, CTAActionType, CTAStyle } from '@/types/config';
+import type { CTADefinition, CTAActionType } from '@/types/config';
+// Note: CTAStyle removed in v1.5 - this file is deprecated, use CTAsEditor instead
 
 export interface CTACardProps {
   /**
@@ -56,18 +57,11 @@ const getActionIcon = (action: CTAActionType) => {
 
 /**
  * Get the badge variant for a given style
+ * Deprecated: style field removed in v1.5
  */
-const getStyleVariant = (style: CTAStyle): 'success' | 'info' | 'secondary' => {
-  switch (style) {
-    case 'primary':
-      return 'success';
-    case 'secondary':
-      return 'info';
-    case 'info':
-      return 'secondary';
-    default:
-      return 'secondary';
-  }
+const getStyleVariant = (_style: string): 'success' | 'info' | 'secondary' => {
+  // Deprecated: position-based styling now used
+  return 'secondary';
 };
 
 /**
@@ -108,7 +102,7 @@ export const CTACard: React.FC<CTACardProps> = ({
   onDelete,
 }) => {
   const ActionIcon = getActionIcon(cta.action);
-  const styleVariant = getStyleVariant(cta.style);
+  const styleVariant = getStyleVariant(''); // style field removed in v1.5
 
   return (
     <Card className="hover:shadow-md transition-shadow flex flex-col">
@@ -126,7 +120,8 @@ export const CTACard: React.FC<CTACardProps> = ({
             </div>
           </div>
           <Badge variant={styleVariant} className="shrink-0">
-            {cta.style}
+            {/* style field deprecated in v1.5 - position-based */}
+            position-based
           </Badge>
         </div>
       </CardHeader>

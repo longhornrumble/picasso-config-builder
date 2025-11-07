@@ -125,7 +125,7 @@ export interface ConversationalForm {
   description: string;
   introduction?: string; // Optional user-facing introduction message
   cta_text?: string;
-  trigger_phrases: string[];
+  // trigger_phrases removed - forms are now triggered via explicit CTA routing in conversational branches
   fields: FormField[];
   post_submission?: PostSubmissionConfig;
 
@@ -143,7 +143,6 @@ export interface ConversationalForm {
 
 export type CTAActionType = 'start_form' | 'external_link' | 'send_query' | 'show_info';
 export type CTAType = 'form_trigger' | 'external_link' | 'bedrock_query' | 'info_request';
-export type CTAStyle = 'primary' | 'secondary' | 'info';
 
 export interface CTADefinition {
   text?: string; // Legacy field, use label instead
@@ -154,7 +153,7 @@ export interface CTADefinition {
   query?: string; // Required if action = 'send_query'
   prompt?: string; // Required if action = 'show_info'
   type: CTAType;
-  style: CTAStyle;
+  // Note: 'style' field removed in v1.5 - CTAs now use position-based styling from conversation branches
 
   /**
    * Branch ID to route to when this CTA is clicked.
@@ -169,6 +168,12 @@ export interface CTADefinition {
    * Allows routing to specific follow-up conversations after submission.
    */
   on_completion_branch?: string;
+
+  /**
+   * Program ID to associate this CTA with a specific program.
+   * Optional field for organizational purposes.
+   */
+  program_id?: string;
 }
 
 // ============================================================================
@@ -204,6 +209,12 @@ export interface BranchAvailableCTAs {
 
 export interface ConversationBranch {
   available_ctas: BranchAvailableCTAs;
+
+  /**
+   * Program ID to associate this branch with a specific program.
+   * Optional field for organizational purposes.
+   */
+  program_id?: string;
 }
 
 // ============================================================================
@@ -249,6 +260,12 @@ export interface ShowcaseItem {
 
   // Action configuration
   action?: ShowcaseItemAction;
+
+  /**
+   * Program ID to associate this showcase item with a specific program.
+   * Optional field for organizational purposes.
+   */
+  program_id?: string;
 }
 
 export interface ContentShowcase {
@@ -306,14 +323,32 @@ export interface QuickHelpConfig {
 // ACTION CHIPS
 // ============================================================================
 
+export type ActionChipActionType = 'send_query' | 'show_info';
+
 export interface ActionChip {
   label: string;
+  /**
+   * Action type determines chip behavior:
+   * - 'send_query': Sends value to Bedrock (default behavior)
+   * - 'show_info': Displays value as static message without Bedrock call
+   */
+  action?: ActionChipActionType;
+  /**
+   * For 'send_query': Query sent to Bedrock
+   * For 'show_info': Static message displayed to user
+   */
   value: string;
   /**
    * Branch ID to route to when action chip is clicked (v1.4.1 Explicit Routing)
    * If null/undefined, chip will use fallback routing
    */
   target_branch?: string | null;
+
+  /**
+   * Program ID to associate this action chip with a specific program.
+   * Optional field for organizational purposes.
+   */
+  program_id?: string;
 }
 
 export interface ActionChipsConfig {

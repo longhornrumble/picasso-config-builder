@@ -177,7 +177,8 @@ const buildOptions = {
     treeShaking: true,
     minifyWhitespace: true,
     minifyIdentifiers: true,
-    minifySyntax: true
+    minifySyntax: true,
+    keepNames: true  // Keep component names even in production to avoid breaking React components
   } : {
     keepNames: true
   }),

@@ -151,6 +151,15 @@ export function EntityForm<T extends BaseEntity>({
   // Check if form is valid based on current errors state
   const isValid = Object.keys(errors).length === 0 || Object.keys(errors).every(key => !errors[key]);
 
+  // Debug logging to see validation state
+  React.useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      console.log('🔍 Form validation errors:', errors);
+      console.log('✅ isValid:', isValid);
+      console.log('📝 Form data:', formData);
+    }
+  }, [errors, isValid, formData]);
+
   // Register Ctrl/Cmd+S keyboard shortcut for save
   useSaveShortcut(
     () => {
@@ -166,7 +175,7 @@ export function EntityForm<T extends BaseEntity>({
 
   return (
     <Modal open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
-      <ModalContent className="sm:max-w-[600px]">
+      <ModalContent className="sm:max-w-[600px]" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
         <form onSubmit={handleSubmit}>
           <ModalHeader>
             <div className="flex items-start justify-between">

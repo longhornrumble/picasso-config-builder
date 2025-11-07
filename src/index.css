@@ -2,27 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #111827;
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden; /* Prevent body scrolling - app handles its own scroll */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-}
 
-#root {
-  height: 100%;
-  min-height: 100vh;
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #111827;
+    }
+  }
+
+  #root {
+    height: 100%;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 /* ===================================
@@ -67,6 +74,29 @@ html, body {
   /* Sidebar widths */
   --sidebar-width-expanded: 16rem;  /* 256px */
   --sidebar-width-collapsed: 4rem;  /* 64px */
+
+  /* Border Radius - Aligned with Picasso theme */
+  --border-radius: 12px;
+  --border-radius-small: 8px;
+  --border-radius-large: 16px;
+  --button-radius: 12px; /* Unified button radius - matches action chips */
+
+  /* Primary Color - Base for gradients */
+  --primary-color: #047857; /* MyRecruiter green */
+  --primary-light: #10b981; /* Lighter version for gradient start */
+  --primary-dark: #065f46; /* Darker version for gradient end */
+
+  /* Button Styling */
+  --button-gap: 8px;
+  --button-padding-desktop: 10px 16px;
+  --button-padding-mobile: 12px 16px;
+  --button-min-height-desktop: 40px;
+  --button-min-height-mobile: 44px;
+
+  /* Button Gradients - Picasso formula: 135deg diagonal */
+  --button-gradient-primary: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-dark) 100%);
+  --button-shadow-primary: 0 4px 12px rgba(4, 120, 87, 0.25);
+  --button-shadow-primary-hover: 0 6px 16px rgba(4, 120, 87, 0.3);
 }
 
 /* ===================================
@@ -78,6 +108,9 @@ html, body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  min-height: 100vh;
+  width: 100%;
+  flex: 1;
   overflow: hidden;
   background-color: #f9fafb;
 }
@@ -88,21 +121,22 @@ html, body {
   }
 }
 
-/* Header Container - Sticky at top */
+/* Header Container - Sticky at top with gradient */
 .app-header {
   position: sticky;
   top: 0;
   z-index: 50;
   flex-shrink: 0;
   height: var(--header-height);
-  background-color: white;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--button-gradient-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--button-shadow-primary);
 }
 
 @media (prefers-color-scheme: dark) {
   .app-header {
-    background-color: #1f2937;
-    border-bottom-color: #4b5563;
+    background: var(--button-gradient-primary);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -673,6 +707,75 @@ html, body {
     max-width: none;
     padding: 0;
   }
+}
+
+/* ===================================
+   THEME-GOVERNED UI COMPONENTS
+   All border-radius values controlled by CSS custom properties
+   =================================== */
+
+/* Button Styles - Aligned with Picasso action chips */
+.button-base,
+.button-size-sm,
+.button-size-md,
+.button-size-lg,
+.button-size-icon {
+  border-radius: var(--button-radius);
+}
+
+/* Primary button gradient - uses Picasso 135deg formula */
+.bg-primary {
+  background: var(--button-gradient-primary);
+  box-shadow: var(--button-shadow-primary);
+  transition: all 0.2s ease;
+}
+
+.bg-primary:hover {
+  box-shadow: var(--button-shadow-primary-hover);
+  transform: translateY(-1px);
+}
+
+/* Input Fields */
+.input-base {
+  border-radius: var(--border-radius-small);
+}
+
+/* Select Dropdowns */
+.select-trigger {
+  border-radius: var(--border-radius-small);
+}
+
+.select-content {
+  border-radius: var(--border-radius-small);
+}
+
+.select-item {
+  border-radius: var(--border-radius-small);
+}
+
+/* Cards */
+.card-base {
+  border-radius: var(--border-radius);
+}
+
+/* Textarea */
+.textarea-base {
+  border-radius: var(--border-radius-small);
+}
+
+/* Modal */
+.modal-base {
+  border-radius: var(--border-radius);
+}
+
+/* Badge */
+.badge-base {
+  border-radius: var(--border-radius-small);
+}
+
+/* Alert */
+.alert-base {
+  border-radius: var(--border-radius-small);
 }
 
 /* ===================================

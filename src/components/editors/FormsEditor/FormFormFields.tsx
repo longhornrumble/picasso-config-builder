@@ -4,9 +4,8 @@
  * Includes form metadata and field collection management
  */
 
-import React, { useState } from 'react';
-import { Input, Textarea, Select, Button, Badge } from '@/components/ui';
-import { Plus, X, Tag } from 'lucide-react';
+import React from 'react';
+import { Input, Textarea, Select } from '@/components/ui';
 import { useConfigStore } from '@/store';
 import { FieldCollection } from './FieldCollection';
 import { PostSubmissionConfig } from './PostSubmissionConfig';
@@ -21,7 +20,6 @@ export const FormFormFields: React.FC<FormFieldsProps<ConversationalForm>> = ({
   onBlur,
   isEditMode,
 }) => {
-  const [triggerPhraseInput, setTriggerPhraseInput] = useState('');
   const programs = useConfigStore((state) => state.programs.getAllPrograms());
 
   // Program options for dropdown
@@ -29,28 +27,6 @@ export const FormFormFields: React.FC<FormFieldsProps<ConversationalForm>> = ({
     value: p.program_id,
     label: p.program_name,
   }));
-
-
-  // Add trigger phrase to array
-  const handleAddTriggerPhrase = () => {
-    const phrase = triggerPhraseInput.trim();
-    if (phrase && !value.trigger_phrases.includes(phrase)) {
-      onChange({
-        ...value,
-        trigger_phrases: [...value.trigger_phrases, phrase],
-      });
-      setTriggerPhraseInput('');
-      onBlur('trigger_phrases');
-    }
-  };
-
-  // Remove trigger phrase from array
-  const handleRemoveTriggerPhrase = (phrase: string) => {
-    onChange({
-      ...value,
-      trigger_phrases: value.trigger_phrases.filter((p) => p !== phrase),
-    });
-  };
 
   return (
     <>
@@ -168,61 +144,7 @@ export const FormFormFields: React.FC<FormFieldsProps<ConversationalForm>> = ({
         )}
       </div>
 
-      {/* Trigger Phrases */}
-      <div className="w-full">
-        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Trigger Phrases <span className="text-red-600">*</span>
-        </label>
-        <div className="flex gap-2 mb-2">
-          <Input
-            id="trigger-phrase-input"
-            value={triggerPhraseInput}
-            onChange={(e) => setTriggerPhraseInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddTriggerPhrase();
-              }
-            }}
-            placeholder="Add trigger phrase..."
-          />
-          <Button
-            type="button"
-            onClick={handleAddTriggerPhrase}
-            disabled={!triggerPhraseInput.trim()}
-            size="sm"
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
-        </div>
-        {value.trigger_phrases.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-2">
-            {value.trigger_phrases.map((phrase, idx) => (
-              <Badge key={idx} variant="secondary" className="gap-1">
-                <Tag className="w-3 h-3" />
-                {phrase}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveTriggerPhrase(phrase)}
-                  className="ml-1 hover:text-red-600"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
-        {touched.trigger_phrases && errors.trigger_phrases && (
-          <p className="mt-1.5 text-sm text-red-600 dark:text-red-400" role="alert">
-            {errors.trigger_phrases}
-          </p>
-        )}
-        {!errors.trigger_phrases && (
-          <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-            Phrases that will trigger this form in conversation
-          </p>
-        )}
-      </div>
+      {/* Note: Trigger phrases removed - forms are now triggered via explicit CTA routing in conversational branches */}
 
       {/* Enabled Toggle */}
       <div className="flex items-center gap-2">

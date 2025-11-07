@@ -535,7 +535,8 @@ export function buildCTANodes(
       : '';
 
     // Check if orphaned or has broken refs
-    const isOrphaned = !cta.formId;
+    // Only CTAs with 'start_form' action need a formId - others (external_link, send_query, show_info) don't
+    const isOrphaned = cta.action === 'start_form' && !cta.formId;
     const hasBrokenRefs = cta.formId !== undefined && !forms[cta.formId];
 
     // Get rich metadata
@@ -980,9 +981,10 @@ export function findOrphanedEntities(
     }
   });
 
-  // CTAs without form
+  // CTAs without form (only for start_form action type)
+  // Other action types (external_link, send_query, show_info) don't need a formId
   Object.entries(ctas).forEach(([ctaId, cta]) => {
-    if (!cta.formId) {
+    if (cta.action === 'start_form' && !cta.formId) {
       entities.push({
         id: ctaId,
         type: 'cta',

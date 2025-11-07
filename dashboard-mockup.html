@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Flow Tree - Mockup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #f1f5f9;
+        }
+
+        .header p {
+            color: #94a3b8;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.cyan { background: #0891b2; }
+        .stat-icon.orange { background: #ea580c; }
+        .stat-icon.purple { background: #9333ea; }
+        .stat-icon.green { background: #16a34a; }
+        .stat-icon.blue { background: #2563eb; }
+
+        .stat-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .stat-content p {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .flow-tree {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .section {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .section-header:hover {
+            background: #1e293b;
+            border-color: #475569;
+        }
+
+        .chevron {
+            font-size: 1.25rem;
+            transition: transform 0.2s;
+        }
+
+        .section-header.collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+
+        .section-icon {
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .section-badge {
+            background: #334155;
+            color: #cbd5e1;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .section-content {
+            margin-left: 1rem;
+            margin-top: 0.75rem;
+            padding-left: 1.5rem;
+            border-left: 2px solid #334155;
+        }
+
+        .section-content.hidden {
+            display: none;
+        }
+
+        .tree-node {
+            margin: 0.5rem 0;
+            padding: 0.75rem 1rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-left: 3px solid;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tree-node:hover {
+            background: #1e293b;
+            transform: translateX(4px);
+        }
+
+        .tree-node.actionchip { border-left-color: #06b6d4; background: rgba(6, 182, 212, 0.05); }
+        .tree-node.branch { border-left-color: #f97316; background: rgba(249, 115, 22, 0.05); }
+        .tree-node.cta { border-left-color: #a855f7; background: rgba(168, 85, 247, 0.05); }
+        .tree-node.form { border-left-color: #22c55e; background: rgba(34, 197, 94, 0.05); }
+        .tree-node.program { border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .node-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .node-icon.actionchip { background: #0891b2; }
+        .node-icon.branch { background: #ea580c; }
+        .node-icon.cta { background: #9333ea; }
+        .node-icon.form { background: #16a34a; }
+        .node-icon.program { background: #2563eb; }
+
+        .node-type {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .node-status {
+            margin-left: auto;
+            font-size: 1rem;
+        }
+
+        .node-status.success { color: #22c55e; }
+        .node-status.warning { color: #f59e0b; }
+        .node-status.error { color: #ef4444; }
+
+        .node-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+
+        .node-connection {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .node-connection-arrow {
+            color: #64748b;
+        }
+
+        .node-connection-target {
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        .nested-nodes {
+            margin-left: 1rem;
+            margin-top: 0.5rem;
+            padding-left: 1rem;
+            border-left: 2px solid #334155;
+        }
+
+        .cta-group {
+            margin: 0.5rem 0;
+        }
+
+        .cta-group-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .cta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            background: #334155;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin: 0.25rem 0.25rem 0.25rem 0;
+            color: #cbd5e1;
+        }
+
+        .cta-badge.form { background: #166534; color: #86efac; }
+        .cta-badge.query { background: #1e40af; color: #93c5fd; }
+        .cta-badge.external { background: #7c2d12; color: #fdba74; }
+
+        .expandable-toggle {
+            display: inline-block;
+            margin-right: 0.5rem;
+            font-size: 0.875rem;
+            color: #64748b;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .expandable-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Configuration Flow Diagram</h1>
+            <p>Tenant: AUS123957 - Austin Angels</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-icon cyan">🎯</div>
+                <div class="stat-content">
+                    <h3>5</h3>
+                    <p>Action Chips</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange">🌳</div>
+                <div class="stat-content">
+                    <h3>6</h3>
+                    <p>Branches</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple">🎫</div>
+                <div class="stat-content">
+                    <h3>15</h3>
+                    <p>CTAs</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">📋</div>
+                <div class="stat-content">
+                    <h3>5</h3>
+                    <p>Forms</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue">📦</div>
+                <div class="stat-content">
+                    <h3>6</h3>
+                    <p>Programs</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flow-tree">
+            <!-- TIER 1: ACTION CHIPS -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="chevron">▼</span>
+                    <span class="section-icon">🎯</span>
+                    <span class="section-title">Action Chips</span>
+                    <span class="section-badge">5 items</span>
+                </div>
+                <div class="section-content">
+                    <div class="tree-node actionchip">
+                        <div class="node-header">
+                            <div class="node-icon actionchip">⚡</div>
+                            <span class="node-type">Action Chip</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">Learn about Mentoring</div>
+                        <div class="node-connection">
+                            <span class="node-connection-arrow">→</span>
+                            <span class="node-connection-target">dare2dream branch</span>
+                        </div>
+                    </div>
+
+                    <div class="tree-node actionchip">
+                        <div class="node-header">
+                            <div class="node-icon actionchip">⚡</div>
+                            <span class="node-type">Action Chip</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">Sponsor a Family</div>
+                        <div class="node-connection">
+                            <span class="node-connection-arrow">→</span>
+                            <span class="node-connection-target">volunteer_lovebox branch</span>
+                        </div>
+                    </div>
+
+                    <div class="tree-node actionchip">
+                        <div class="node-header">
+                            <div class="node-icon actionchip">⚡</div>
+                            <span class="node-type">Action Chip</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">Request Support</div>
+                        <div class="node-connection">
+                            <span class="node-connection-arrow">→</span>
+                            <span class="node-connection-target">programs_generic branch</span>
+                        </div>
+                    </div>
+
+                    <div class="tree-node actionchip">
+                        <div class="node-header">
+                            <div class="node-icon actionchip">⚡</div>
+                            <span class="node-type">Action Chip</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">Make a Donation</div>
+                        <div class="node-connection">
+                            <span class="node-connection-arrow">→</span>
+                            <span class="node-connection-target">donate branch</span>
+                        </div>
+                    </div>
+
+                    <div class="tree-node actionchip">
+                        <div class="node-header">
+                            <div class="node-icon actionchip">⚡</div>
+                            <span class="node-type">Action Chip</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">Contact Us</div>
+                        <div class="node-connection">
+                            <span class="node-connection-arrow">→</span>
+                            <span class="node-connection-target">fallback branch</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIER 2: CONVERSATION BRANCHES -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="chevron">▼</span>
+                    <span class="section-icon">🌳</span>
+                    <span class="section-title">Conversation Branches</span>
+                    <span class="section-badge">6 items</span>
+                </div>
+                <div class="section-content">
+                    <div class="tree-node branch">
+                        <div class="node-header">
+                            <span class="expandable-toggle" onclick="event.stopPropagation(); toggleNested(this)">▼</span>
+                            <div class="node-icon branch">🌿</div>
+                            <span class="node-type">Branch</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">dare2dream</div>
+                        <div class="node-connection">
+                            <span style="color: #94a3b8;">3 keywords • 3 CTAs</span>
+                        </div>
+                        <div class="nested-nodes">
+                            <div class="cta-group">
+                                <div class="cta-group-label">Primary CTA</div>
+                                <span class="cta-badge form">📋 apply_dare2dream</span>
+                            </div>
+                            <div class="cta-group">
+                                <div class="cta-group-label">Secondary CTAs</div>
+                                <span class="cta-badge external">🔗 download_d2djr_manual</span>
+                                <span class="cta-badge external">🔗 download_d2d_manual</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tree-node branch">
+                        <div class="node-header">
+                            <span class="expandable-toggle" onclick="event.stopPropagation(); toggleNested(this)">▼</span>
+                            <div class="node-icon branch">🌿</div>
+                            <span class="node-type">Branch</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">volunteer_lovebox</div>
+                        <div class="node-connection">
+                            <span style="color: #94a3b8;">2 keywords • 3 CTAs</span>
+                        </div>
+                        <div class="nested-nodes">
+                            <div class="cta-group">
+                                <div class="cta-group-label">Primary CTA</div>
+                                <span class="cta-badge form">📋 apply_lovebox</span>
+                            </div>
+                            <div class="cta-group">
+                                <div class="cta-group-label">Secondary CTAs</div>
+                                <span class="cta-badge query">🤖 learn_dare_to_dream</span>
+                                <span class="cta-badge query">🤖 contact_us</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tree-node branch">
+                        <div class="node-header">
+                            <span class="expandable-toggle" onclick="event.stopPropagation(); toggleNested(this)">▼</span>
+                            <div class="node-icon branch">🌿</div>
+                            <span class="node-type">Branch</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">donate</div>
+                        <div class="node-connection">
+                            <span style="color: #94a3b8;">2 keywords • 3 CTAs</span>
+                        </div>
+                        <div class="nested-nodes">
+                            <div class="cta-group">
+                                <div class="cta-group-label">Primary CTA</div>
+                                <span class="cta-badge query">🤖 donate_individual</span>
+                            </div>
+                            <div class="cta-group">
+                                <div class="cta-group-label">Secondary CTAs</div>
+                                <span class="cta-badge form">📋 donate_group</span>
+                                <span class="cta-badge form">📋 donate_items</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tree-node branch">
+                        <div class="node-header">
+                            <span class="expandable-toggle collapsed" onclick="event.stopPropagation(); toggleNested(this)">▼</span>
+                            <div class="node-icon branch">🌿</div>
+                            <span class="node-type">Branch</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">programs_generic</div>
+                        <div class="node-connection">
+                            <span style="color: #94a3b8;">2 keywords • 3 CTAs</span>
+                        </div>
+                        <div class="nested-nodes" style="display: none;">
+                            <div class="cta-group">
+                                <div class="cta-group-label">Primary CTA</div>
+                                <span class="cta-badge query">🤖 aboutus</span>
+                            </div>
+                            <div class="cta-group">
+                                <div class="cta-group-label">Secondary CTAs</div>
+                                <span class="cta-badge form">📋 love_box_referral</span>
+                                <span class="cta-badge form">📋 request_dare2dream</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tree-node branch">
+                        <div class="node-header">
+                            <div class="node-icon branch">🌿</div>
+                            <span class="node-type">Branch</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">enroll_lovebox</div>
+                        <div class="node-connection">
+                            <span style="color: #94a3b8;">1 keyword • 0 CTAs</span>
+                        </div>
+                    </div>
+
+                    <div class="tree-node branch">
+                        <div class="node-header">
+                            <div class="node-icon branch">🌿</div>
+                            <span class="node-type">Branch</span>
+                            <span class="node-status warning">⚠</span>
+                        </div>
+                        <div class="node-title">fallback</div>
+                        <div class="node-connection">
+                            <span style="color: #94a3b8;">No keywords (default fallback)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIER 3: CTAs -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="chevron">▼</span>
+                    <span class="section-icon">🎫</span>
+                    <span class="section-title">Call-to-Actions (CTAs)</span>
+                    <span class="section-badge">15 items</span>
+                </div>
+                <div class="section-content">
+                    <div class="tree-node cta">
+                        <div class="node-header">
+                            <div class="node-icon cta">👆</div>
+                            <span class="node-type">CTA • Form Trigger</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">apply_dare2dream</div>
+                        <div class="node-connection">
+                            <span class="node-connection-arrow">→</span>
+                            <span class="node-connection-target">apply_dare2dream form</span>
+                        </div>
+                    </div>
+
+                    <div class="tree-node cta">
+                        <div class="node-header">
+                            <div class="node-icon cta">👆</div>
+                            <span class="node-type">CTA • Form Trigger</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">love_box_referral</div>
+                        <div class="node-connection">
+                            <span class="node-connection-arrow">→</span>
+                            <span class="node-connection-target">love_box_referral form</span>
+                        </div>
+                    </div>
+
+                    <div class="tree-node cta">
+                        <div class="node-header">
+                            <div class="node-icon cta">👆</div>
+                            <span class="node-type">CTA • Bedrock Query</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">donate_individual</div>
+                        <div class="node-connection">
+                            <span class="node-connection-arrow">→</span>
+                            <span class="node-connection-target">AI answers donation questions</span>
+                        </div>
+                    </div>
+
+                    <div class="tree-node cta">
+                        <div class="node-header">
+                            <div class="node-icon cta">👆</div>
+                            <span class="node-type">CTA • External Link</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">download_d2d_manual</div>
+                        <div class="node-connection">
+                            <span class="node-connection-arrow">→</span>
+                            <span class="node-connection-target">https://example.com/d2d-manual.pdf</span>
+                        </div>
+                    </div>
+
+                    <div style="color: #64748b; font-size: 0.875rem; padding: 0.5rem 1rem;">
+                        ... and 11 more CTAs
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIER 3: FORMS -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="chevron">▼</span>
+                    <span class="section-icon">📋</span>
+                    <span class="section-title">Forms</span>
+                    <span class="section-badge">5 items</span>
+                </div>
+                <div class="section-content">
+                    <div class="tree-node form">
+                        <div class="node-header">
+                            <div class="node-icon form">📝</div>
+                            <span class="node-type">Form</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">apply_dare2dream</div>
+                        <div class="node-connection">
+                            <span style="color: #94a3b8;">6 fields</span>
+                            <span class="node-connection-arrow" style="margin-left: 1rem;">→</span>
+                            <span class="node-connection-target">volunteer_daretodream program</span>
+                        </div>
+                    </div>
+
+                    <div class="tree-node form">
+                        <div class="node-header">
+                            <div class="node-icon form">📝</div>
+                            <span class="node-type">Form</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">love_box_referral</div>
+                        <div class="node-connection">
+                            <span style="color: #94a3b8;">8 fields</span>
+                            <span class="node-connection-arrow" style="margin-left: 1rem;">→</span>
+                            <span class="node-connection-target">love_box_application program</span>
+                        </div>
+                    </div>
+
+                    <div style="color: #64748b; font-size: 0.875rem; padding: 0.5rem 1rem;">
+                        ... and 3 more forms
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIER 3: PROGRAMS -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span class="chevron">▼</span>
+                    <span class="section-icon">📦</span>
+                    <span class="section-title">Programs</span>
+                    <span class="section-badge">6 items</span>
+                </div>
+                <div class="section-content">
+                    <div class="tree-node program">
+                        <div class="node-header">
+                            <div class="node-icon program">🎓</div>
+                            <span class="node-type">Program</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">Dare to Dream</div>
+                        <div class="node-connection">
+                            <span style="color: #94a3b8;">volunteer_daretodream</span>
+                        </div>
+                    </div>
+
+                    <div class="tree-node program">
+                        <div class="node-header">
+                            <div class="node-icon program">🎓</div>
+                            <span class="node-type">Program</span>
+                            <span class="node-status success">✓</span>
+                        </div>
+                        <div class="node-title">Love Box Referral</div>
+                        <div class="node-connection">
+                            <span style="color: #94a3b8;">love_box_application</span>
+                        </div>
+                    </div>
+
+                    <div style="color: #64748b; font-size: 0.875rem; padding: 0.5rem 1rem;">
+                        ... and 4 more programs
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('hidden');
+            header.classList.toggle('collapsed');
+        }
+
+        function toggleNested(toggle) {
+            const nested = toggle.closest('.tree-node').querySelector('.nested-nodes');
+            if (nested) {
+                nested.style.display = nested.style.display === 'none' ? 'block' : 'none';
+                toggle.classList.toggle('collapsed');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -23,6 +23,7 @@ export const ShowcaseItemFormFields: React.FC<FormFieldsProps<ShowcaseItemEntity
   const [keywordInput, setKeywordInput] = useState('');
   const [highlightInput, setHighlightInput] = useState('');
   const ctas = useConfigStore((state) => state.ctas.getAllCTAs());
+  const programs = useConfigStore((state) => state.programs.getAllPrograms());
 
   // Type options for dropdown
   const typeOptions = [
@@ -31,6 +32,12 @@ export const ShowcaseItemFormFields: React.FC<FormFieldsProps<ShowcaseItemEntity
     { value: 'initiative', label: 'Initiative' },
     { value: 'campaign', label: 'Campaign' },
   ];
+
+  // Program options for dropdown
+  const programOptions = programs.map((p) => ({
+    value: p.program_id,
+    label: p.program_name || p.program_id,
+  }));
 
   // CTA options for dropdown
   const ctaOptions = [
@@ -129,6 +136,26 @@ export const ShowcaseItemFormFields: React.FC<FormFieldsProps<ShowcaseItemEntity
             </span>
           </label>
         </div>
+      </div>
+
+      {/* Program */}
+      <div className="w-full">
+        <Select
+          label="Program"
+          value={value.program_id || ''}
+          onValueChange={(newValue) =>
+            onChange({ ...value, program_id: newValue || undefined })
+          }
+          options={programOptions}
+          placeholder="Select a program (optional)..."
+          helperText="Associate this showcase item with a specific program"
+          disabled={programs.length === 0}
+        />
+        {programs.length === 0 && (
+          <p className="mt-1.5 text-sm text-amber-600 dark:text-amber-400">
+            No programs available. Create a program first.
+          </p>
+        )}
       </div>
 
       {/* Name */}

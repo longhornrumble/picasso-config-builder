@@ -48,6 +48,7 @@ export interface ValidationContext<T extends BaseEntity> {
   // Optional fields for entity-specific validation
   availableCtaIds?: string[];  // For showcase items
   availableFormIds?: string[];  // For CTAs
+  maxCtasPerResponse?: number;  // For branches - global CTA limit setting
 }
 
 /**

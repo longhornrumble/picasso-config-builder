@@ -45,24 +45,7 @@ export const FormCardContent: React.FC<FormCardContentProps> = ({ entity }) => {
         </div>
       </div>
 
-      {/* Trigger Phrases */}
-      {entity.trigger_phrases && entity.trigger_phrases.length > 0 && (
-        <div>
-          <span className="text-sm text-gray-500 dark:text-gray-400">Trigger Phrases: </span>
-          <div className="flex flex-wrap gap-1 mt-1">
-            {entity.trigger_phrases.slice(0, 3).map((phrase, idx) => (
-              <Badge key={idx} variant="secondary" className="text-xs">
-                {phrase}
-              </Badge>
-            ))}
-            {entity.trigger_phrases.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
-                +{entity.trigger_phrases.length - 3} more
-              </Badge>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Trigger phrases removed - forms now use explicit CTA routing */}
 
       {/* Status */}
       <div>

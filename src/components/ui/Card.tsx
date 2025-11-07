@@ -46,7 +46,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'rounded-lg border border-gray-200 text-gray-950 dark:border-gray-600 dark:text-gray-50',
+          'card-base border border-gray-200 text-gray-950 dark:border-gray-600 dark:text-gray-50',
           variants[variant],
           className
         )}

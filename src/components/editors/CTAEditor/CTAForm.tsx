@@ -1,6 +1,9 @@
 /**
  * CTAForm Component
  * Modal form for creating and editing CTAs with conditional field rendering
+ *
+ * @deprecated This file is deprecated. Use CTAsEditor instead (generic framework version).
+ * This file is kept for reference only.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -19,9 +22,12 @@ import {
   AlertDescription,
 } from '@/components/ui';
 import { ctaDefinitionSchema } from '@/lib/schemas';
-import type { CTADefinition, CTAActionType, CTAType, CTAStyle } from '@/types/config';
+import type { CTADefinition, CTAActionType, CTAType } from '@/types/config';
 import type { SelectOption } from '@/components/ui/Select';
 import { ZodError } from 'zod';
+
+// Stub type for deprecated style field (removed in v1.5)
+type CTAStyle = 'primary' | 'secondary' | 'info';
 
 export interface CTAFormProps {
   /**
@@ -162,7 +168,7 @@ export const CTAForm: React.FC<CTAFormProps> = ({
     query: cta?.query || '',
     prompt: cta?.prompt || '',
     type: cta?.type || 'form_trigger',
-    style: cta?.style || 'primary',
+    style: (cta as any)?.style || 'primary', // style deprecated in v1.5
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -199,7 +205,7 @@ export const CTAForm: React.FC<CTAFormProps> = ({
         query: cta?.query || '',
         prompt: cta?.prompt || '',
         type: cta?.type || 'form_trigger',
-        style: cta?.style || 'primary',
+        style: (cta as any)?.style || 'primary', // style deprecated in v1.5
       });
       setErrors({});
       setTouched({});
@@ -248,11 +254,11 @@ export const CTAForm: React.FC<CTAFormProps> = ({
 
       // Validate with Zod schema
       try {
-        const ctaData: Partial<CTADefinition> = {
+        const ctaData: Partial<CTADefinition> & { style?: string } = {
           label: data.label,
           action: data.action,
           type: data.type,
-          style: data.style,
+          // style: data.style, // Removed in v1.5
         };
 
         // Add action-specific fields
@@ -337,11 +343,11 @@ export const CTAForm: React.FC<CTAFormProps> = ({
 
     try {
       // Create CTA object
-      const ctaData: CTADefinition = {
+      const ctaData: CTADefinition & { style?: string } = {
         label: formData.label,
         action: formData.action,
         type: formData.type,
-        style: formData.style,
+        // style field removed in v1.5 - position-based styling
       };
 
       // Add action-specific fields

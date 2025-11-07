@@ -6,10 +6,11 @@
  */
 
 import React from 'react';
-import { Input, Select } from '@/components/ui';
+import { Input, Textarea, Select } from '@/components/ui';
 import { useConfigStore } from '@/store';
 import type { FormFieldsProps } from '@/lib/crud/types';
 import type { ActionChipEntity } from './types';
+import type { ActionChipActionType } from '@/types/config';
 
 export const ActionChipFormFields: React.FC<FormFieldsProps<ActionChipEntity>> = ({
   value,
@@ -20,6 +21,19 @@ export const ActionChipFormFields: React.FC<FormFieldsProps<ActionChipEntity>> =
   isEditMode,
 }) => {
   const branches = useConfigStore((state) => state.branches.getAllBranches());
+  const programs = useConfigStore((state) => state.programs.getAllPrograms());
+
+  // Action options
+  const actionOptions = [
+    { value: 'send_query', label: 'Send Query (to Bedrock)' },
+    { value: 'show_info', label: 'Show Info (static message)' },
+  ];
+
+  // Program options for dropdown
+  const programOptions = programs.map((p) => ({
+    value: p.program_id,
+    label: p.program_name || p.program_id,
+  }));
 
   return (
     <>
@@ -56,18 +70,72 @@ export const ActionChipFormFields: React.FC<FormFieldsProps<ActionChipEntity>> =
         autoFocus={isEditMode}
       />
 
-      {/* Value/Query */}
-      <Input
-        label="Query"
-        id="value"
-        placeholder="e.g., Show me available resources"
-        value={value.value}
-        onChange={(e) => onChange({ ...value, value: e.target.value })}
-        onBlur={() => onBlur('value')}
-        error={touched.value ? errors.value : undefined}
-        helperText="Query sent to AI when chip is clicked"
+      {/* Action */}
+      <Select
+        label="Action"
+        value={value.action || 'send_query'}
+        onValueChange={(newValue) => {
+          onChange({ ...value, action: newValue as ActionChipActionType });
+        }}
+        options={actionOptions}
+        helperText="Determines how the chip behaves when clicked"
         required
       />
+
+      {/* Program */}
+      <div className="w-full">
+        <Select
+          label="Program"
+          value={value.program_id || ''}
+          onValueChange={(newValue) =>
+            onChange({ ...value, program_id: newValue || undefined })
+          }
+          options={programOptions}
+          placeholder="Select a program (optional)..."
+          helperText="Associate this action chip with a specific program"
+          disabled={programs.length === 0}
+        />
+        {programs.length === 0 && (
+          <p className="mt-1.5 text-sm text-amber-600 dark:text-amber-400">
+            No programs available. Create a program first.
+          </p>
+        )}
+      </div>
+
+      {/* Value/Query - Label changes based on action - Multiline for paragraphs */}
+      <div className="w-full">
+        <label
+          htmlFor="value"
+          className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          {value.action === 'show_info' ? 'Message' : 'Query'} <span className="text-red-600">*</span>
+        </label>
+        <Textarea
+          id="value"
+          placeholder={
+            value.action === 'show_info'
+              ? 'e.g., We have two programs available...'
+              : 'e.g., Show me available resources'
+          }
+          value={value.value}
+          onChange={(e) => onChange({ ...value, value: e.target.value })}
+          onBlur={() => onBlur('value')}
+          rows={6}
+          className="min-h-[120px]"
+        />
+        {touched.value && errors.value && (
+          <p className="mt-1.5 text-sm text-red-600 dark:text-red-400" role="alert">
+            {errors.value}
+          </p>
+        )}
+        {!errors.value && (
+          <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+            {value.action === 'show_info'
+              ? 'Static message displayed to user (no Bedrock call). Supports multiple paragraphs.'
+              : 'Query sent to AI when chip is clicked. Supports multiple paragraphs.'}
+          </p>
+        )}
+      </div>
 
       {/* Target Branch - EDITABLE */}
       <div className="w-full">

@@ -46,6 +46,9 @@ export const formatShortcut = (shortcut: Omit<KeyboardShortcut, 'callback'>): st
  * Check if event matches shortcut
  */
 const matchesShortcut = (event: KeyboardEvent, shortcut: KeyboardShortcut): boolean => {
+  // Safety check for undefined key
+  if (!event.key || !shortcut.key) return false;
+
   const key = event.key.toLowerCase();
   const shortcutKey = shortcut.key.toLowerCase();
 

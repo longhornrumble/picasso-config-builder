@@ -16,13 +16,10 @@ export const ctaDefinitionSchema = z.object({
   }),
   formId: z.string().optional(),
   url: z.string().url('Must be a valid URL').optional(),
-  query: z.string().max(500, 'Query must be 500 characters or less').optional(),
-  prompt: z.string().max(1000, 'Prompt must be 1000 characters or less').optional(),
+  query: z.string().optional(), // No max length - supports paragraphs
+  prompt: z.string().optional(), // No max length - supports paragraphs
   type: z.enum(['form_trigger', 'external_link', 'bedrock_query', 'info_request'], {
     errorMap: () => ({ message: 'Invalid CTA type' }),
-  }),
-  style: z.enum(['primary', 'secondary', 'info'], {
-    errorMap: () => ({ message: 'Invalid style' }),
   }),
   target_branch: z
     .string()

@@ -196,41 +196,13 @@ function validateBranchCTAReferences(
  * - Branch keywords trigger infinite loops
  */
 function detectCircularDependencies(
-  forms: Record<string, ConversationalForm>,
+  _forms: Record<string, ConversationalForm>,
   _ctas: Record<string, CTADefinition>,
   _branches: Record<string, ConversationBranch>,
-  warnings: ValidationWarning[]
+  _warnings: ValidationWarning[]
 ): void {
-  // Check for form trigger phrases that match confirmation messages
-  Object.entries(forms).forEach(([formId, form]) => {
-    if (!form.trigger_phrases || !form.post_submission?.confirmation_message) return;
-
-    const confirmationWords = form.post_submission.confirmation_message.toLowerCase().split(/\s+/);
-    const triggerPhrases = form.trigger_phrases.filter((p) => p).map((p) => p.toLowerCase());
-
-    triggerPhrases.forEach((trigger) => {
-      const triggerWords = trigger.split(/\s+/);
-      const hasOverlap = triggerWords.some((word) => confirmationWords.includes(word));
-
-      if (hasOverlap && triggerWords.length > 2) {
-        warnings.push(
-          createWarning(
-            messages.relationship.circularDependency([
-              `form "${formId}" trigger phrase`,
-              'confirmation message',
-            ]),
-            'relationship',
-            {
-              field: 'trigger_phrases',
-              entityId: `form-${formId}`,
-              suggestedFix:
-                'Ensure trigger phrases do not match words in the confirmation message to avoid re-triggering the form',
-            }
-          )
-        );
-      }
-    });
-  });
+  // Trigger phrases removed - forms now use explicit CTA routing
+  // No validation needed for trigger phrase overlaps
 }
 
 // ============================================================================

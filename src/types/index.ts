@@ -22,7 +22,7 @@ export type {
   // CTAs
   CTAActionType,
   CTAType,
-  CTAStyle,
+  // Note: CTAStyle removed in v1.5 - position-based styling
   CTADefinition,
   CTASettings,
   // Branches

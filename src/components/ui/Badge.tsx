@@ -29,7 +29,7 @@ const badgeVariants = cva(
         info:
           'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900 dark:text-blue-100',
         outline:
-          'border-gray-300 bg-transparent text-gray-900 dark:border-gray-700 dark:text-gray-50',
+          'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
       },
       size: {
         sm: 'px-2 py-0.5 text-xs',

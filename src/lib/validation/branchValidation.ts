@@ -21,18 +21,20 @@ import {
  * @param branch - The branch to validate
  * @param branchId - The branch identifier
  * @param allCTAs - All CTAs in the config (for reference validation)
+ * @param maxCtasPerResponse - Maximum CTAs allowed per response (from global settings)
  * @returns Validation result with errors and warnings
  */
 export function validateBranch(
   branch: ConversationBranch,
   branchId: string,
-  allCTAs: Record<string, CTADefinition>
+  allCTAs: Record<string, CTADefinition>,
+  maxCtasPerResponse: number = 4
 ): ValidationResult {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];
 
   // Validate CTA references
-  validateCTAReferences(branch, branchId, allCTAs, errors, warnings);
+  validateCTAReferences(branch, branchId, allCTAs, errors, warnings, maxCtasPerResponse);
 
   return {
     valid: errors.length === 0,
@@ -52,17 +54,19 @@ export function validateBranch(
  *
  * @param branches - Record of all branches
  * @param ctas - Record of all CTAs
+ * @param maxCtasPerResponse - Maximum CTAs allowed per response (from global settings)
  * @returns Validation result
  */
 export function validateBranches(
   branches: Record<string, ConversationBranch>,
-  ctas: Record<string, CTADefinition>
+  ctas: Record<string, CTADefinition>,
+  maxCtasPerResponse: number = 4
 ): ValidationResult {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];
 
   Object.entries(branches).forEach(([branchId, branch]) => {
-    const result = validateBranch(branch, branchId, ctas);
+    const result = validateBranch(branch, branchId, ctas, maxCtasPerResponse);
     errors.push(...result.errors);
     warnings.push(...result.warnings);
   });
@@ -87,7 +91,8 @@ function validateCTAReferences(
   branchId: string,
   allCTAs: Record<string, CTADefinition>,
   errors: ValidationError[],
-  warnings: ValidationWarning[]
+  warnings: ValidationWarning[],
+  maxCtasPerResponse: number
 ): void {
   // Must have primary CTA
   if (!branch.available_ctas.primary || branch.available_ctas.primary.trim() === '') {
@@ -128,14 +133,14 @@ function validateCTAReferences(
     });
   }
 
-  // Warn if more than 3 total CTAs (1 primary + 2 secondary)
+  // Warn if more than max total CTAs
   const totalCTAs = 1 + (branch.available_ctas.secondary?.length || 0);
-  if (totalCTAs > 3) {
+  if (totalCTAs > maxCtasPerResponse) {
     warnings.push(
-      createWarning(messages.branch.tooManyCTAs(totalCTAs), 'branch', {
+      createWarning(messages.branch.tooManyCTAs(totalCTAs, maxCtasPerResponse), 'branch', {
         field: 'available_ctas.secondary',
         entityId: branchId,
-        suggestedFix: 'Remove secondary CTAs to keep total at 3 or fewer for better user experience',
+        suggestedFix: `Remove secondary CTAs to keep total at ${maxCtasPerResponse} or fewer (as set in Settings)`,
       })
     );
   }

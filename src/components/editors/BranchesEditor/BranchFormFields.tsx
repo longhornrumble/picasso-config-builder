@@ -22,11 +22,18 @@ export const BranchFormFields: React.FC<FormFieldsProps<BranchEntity>> = ({
   isEditMode,
 }) => {
   const ctas = useConfigStore((state) => Object.entries(state.ctas.ctas));
+  const programs = useConfigStore((state) => state.programs.getAllPrograms());
 
   // CTA options for dropdowns
   const ctaOptions = ctas.map(([id, cta]) => ({
     value: id,
     label: cta.label,
+  }));
+
+  // Program options for dropdown
+  const programOptions = programs.map((p) => ({
+    value: p.program_id,
+    label: p.program_name || p.program_id,
   }));
 
   // Add secondary CTA
@@ -79,6 +86,26 @@ export const BranchFormFields: React.FC<FormFieldsProps<BranchEntity>> = ({
         required
         autoFocus={!isEditMode}
       />
+
+      {/* Program */}
+      <div className="w-full">
+        <Select
+          label="Program"
+          value={value.program_id || ''}
+          onValueChange={(newValue) =>
+            onChange({ ...value, program_id: newValue || undefined })
+          }
+          options={programOptions}
+          placeholder="Select a program (optional)..."
+          helperText="Associate this branch with a specific program"
+          disabled={programs.length === 0}
+        />
+        {programs.length === 0 && (
+          <p className="mt-1.5 text-sm text-amber-600 dark:text-amber-400">
+            No programs available. Create a program first.
+          </p>
+        )}
+      </div>
 
       {/* Primary CTA */}
       <div className="w-full">
@@ -138,7 +165,7 @@ export const BranchFormFields: React.FC<FormFieldsProps<BranchEntity>> = ({
           </div>
         )}
         <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-          Additional CTAs available in this conversation branch (max 2)
+          Additional CTAs available in this conversation branch
         </p>
       </div>
     </>

@@ -59,12 +59,17 @@ export function validateConfigFromStore(state: {
   forms: { forms: Record<string, ConversationalForm> };
   ctas: { ctas: Record<string, CTADefinition> };
   branches: { branches: Record<string, ConversationBranch> };
+  config: { baseConfig: any };
 }): ConfigValidationResult {
+  // Extract max CTAs per response from global settings (default to 4)
+  const maxCtasPerResponse = state.config?.baseConfig?.cta_settings?.max_ctas_per_response || 4;
+
   return validateConfig(
     state.programs.programs,
     state.forms.forms,
     state.ctas.ctas,
-    state.branches.branches
+    state.branches.branches,
+    maxCtasPerResponse
   );
 }
 
@@ -84,13 +89,15 @@ export function validateConfigFromStore(state: {
  * @param forms - All forms
  * @param ctas - All CTAs
  * @param branches - All branches
+ * @param maxCtasPerResponse - Maximum CTAs per response (from global settings)
  * @returns Comprehensive validation result
  */
 export function validateConfig(
   programs: Record<string, Program>,
   forms: Record<string, ConversationalForm>,
   ctas: Record<string, CTADefinition>,
-  branches: Record<string, ConversationBranch>
+  branches: Record<string, ConversationBranch>,
+  maxCtasPerResponse: number = 4
 ): ConfigValidationResult {
   const entityResults: EntityValidationResult[] = [];
   const allErrors: ValidationError[] = [];
@@ -127,12 +134,12 @@ export function validateConfig(
     }
   });
 
-  // Branches
-  const branchesResult = validateBranches(branches, ctas);
+  // Branches - Pass maxCtasPerResponse
+  const branchesResult = validateBranches(branches, ctas, maxCtasPerResponse);
   allErrors.push(...branchesResult.errors);
   allWarnings.push(...branchesResult.warnings);
   Object.keys(branches).forEach((branchId) => {
-    const result = validateBranch(branches[branchId], branchId, ctas);
+    const result = validateBranch(branches[branchId], branchId, ctas, maxCtasPerResponse);
     if (result.errors.length > 0 || result.warnings.length > 0) {
       entityResults.push({
         entityId: branchId,
@@ -147,8 +154,8 @@ export function validateConfig(
   allErrors.push(...relationshipsResult.errors);
   allWarnings.push(...relationshipsResult.warnings);
 
-  // Validate runtime behavior
-  const runtimeResult = validateRuntimeBehavior(programs, forms, ctas, branches);
+  // Validate runtime behavior - Pass maxCtasPerResponse
+  const runtimeResult = validateRuntimeBehavior(programs, forms, ctas, branches, maxCtasPerResponse);
   allErrors.push(...runtimeResult.errors);
   allWarnings.push(...runtimeResult.warnings);
 

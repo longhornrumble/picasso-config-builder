@@ -60,6 +60,7 @@ export const CTAsEditor: React.FC = () => {
         query: '',
         prompt: '',
         target_branch: undefined,
+        program_id: undefined,
         // Note: 'style' field removed in v1.5 - position-based styling from branches
       }}
       config={{
@@ -96,6 +97,7 @@ export const CTAsEditor: React.FC = () => {
               ...(ctaData.query && { query: ctaData.query }),
               ...(ctaData.prompt && { prompt: ctaData.prompt }),
               ...(ctaData.target_branch && { target_branch: ctaData.target_branch }),
+              ...(ctaData.program_id && { program_id: ctaData.program_id }),
             };
             createCTA(cta, ctaId);
           },
@@ -114,6 +116,10 @@ export const CTAsEditor: React.FC = () => {
             // Handle target_branch: include if defined, or explicitly set to undefined to remove
             if (ctaEntity.target_branch !== undefined) {
               updates.target_branch = ctaEntity.target_branch || undefined;
+            }
+            // Handle program_id: include if defined, or explicitly set to undefined to remove
+            if (ctaEntity.program_id !== undefined) {
+              updates.program_id = ctaEntity.program_id || undefined;
             }
             updateCTA(ctaId, updates);
           },

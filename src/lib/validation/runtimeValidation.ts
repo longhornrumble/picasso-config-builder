@@ -21,19 +21,21 @@ import { messages, createWarning } from './validationMessages';
  *
  * Checks:
  * - Program-based filtering compatibility
- * - Max 3 CTAs per branch constraint
+ * - Max CTAs per branch constraint (from global settings)
  *
  * @param programs - All programs
  * @param forms - All forms
  * @param ctas - All CTAs
  * @param branches - All branches
+ * @param maxCtasPerResponse - Maximum CTAs allowed per response (from global settings)
  * @returns Validation result with warnings
  */
 export function validateRuntimeBehavior(
   _programs: Record<string, Program>,
   forms: Record<string, ConversationalForm>,
   _ctas: Record<string, CTADefinition>,
-  branches: Record<string, ConversationBranch>
+  branches: Record<string, ConversationBranch>,
+  maxCtasPerResponse: number = 4
 ): ValidationResult {
   const errors: ValidationError[] = []; // Runtime validation typically only produces warnings
   const warnings: ValidationWarning[] = [];
@@ -41,8 +43,8 @@ export function validateRuntimeBehavior(
   // Validate program-based filtering
   validateProgramFiltering(forms, warnings);
 
-  // Validate max 3 CTAs constraint
-  validateMaxCTAsConstraint(branches, warnings);
+  // Validate max CTAs constraint
+  validateMaxCTAsConstraint(branches, warnings, maxCtasPerResponse);
 
   return {
     valid: errors.length === 0,
@@ -82,22 +84,23 @@ function validateProgramFiltering(
 // ============================================================================
 
 /**
- * Validate that branches respect the max 3 CTAs constraint
+ * Validate that branches respect the max CTAs constraint from global settings
  */
 function validateMaxCTAsConstraint(
   branches: Record<string, ConversationBranch>,
-  warnings: ValidationWarning[]
+  warnings: ValidationWarning[],
+  maxCtasPerResponse: number
 ): void {
   Object.entries(branches).forEach(([branchId, branch]) => {
     const totalCTAs = 1 + (branch.available_ctas.secondary?.length || 0);
 
-    if (totalCTAs > 3) {
+    if (totalCTAs > maxCtasPerResponse) {
       warnings.push(
-        createWarning(messages.branch.tooManyCTAs(totalCTAs), 'runtime', {
+        createWarning(messages.branch.tooManyCTAs(totalCTAs, maxCtasPerResponse), 'runtime', {
           field: 'available_ctas',
           entityId: `branch-${branchId}`,
           suggestedFix:
-            'Runtime limits display to 3 buttons (1 primary + 2 secondary). Additional CTAs will not be shown to users.',
+            `Runtime limits display to ${maxCtasPerResponse} buttons. Additional CTAs will not be shown to users.`,
         })
       );
     }

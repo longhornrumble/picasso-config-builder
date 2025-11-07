@@ -67,7 +67,7 @@ const SelectTrigger = forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm',
+      'select-trigger flex h-10 w-full items-center justify-between border border-gray-300 bg-white px-3 py-2 text-sm',
       'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
       'disabled:cursor-not-allowed disabled:opacity-50',
       'dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100',
@@ -92,7 +92,7 @@ const SelectContent = forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        'relative z-50 min-w-[8rem] overflow-hidden rounded-md border border-gray-200 bg-white shadow-md',
+        'select-content relative z-50 min-w-[8rem] overflow-hidden border border-gray-200 bg-white shadow-md',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
         'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -126,7 +126,7 @@ const SelectItem = forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none',
+      'select-item relative flex w-full cursor-pointer select-none items-center py-1.5 pl-8 pr-2 text-sm outline-none',
       'text-gray-900 dark:text-gray-200',
       'focus:bg-gray-100 focus:text-gray-900',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',

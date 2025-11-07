@@ -8,8 +8,10 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#4CAF50',
-          hover: '#45a049',
+          DEFAULT: '#047857', // MyRecruiter green
+          light: '#10b981',
+          dark: '#065f46',
+          hover: '#065f46',
         },
       },
     },

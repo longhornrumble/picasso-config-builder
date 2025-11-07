@@ -3,7 +3,7 @@
  * Main container for managing conversational forms using the generic CRUD framework
  *
  * This component demonstrates the framework handling complex nested data:
- * - Form metadata (form_id, title, program, trigger_phrases)
+ * - Form metadata (form_id, title, program)
  * - Field collection (array of FormField with full CRUD)
  * - All managed through the same generic EntityEditor
  */
@@ -41,7 +41,6 @@ export const FormsEditor: React.FC = () => {
         description: '',
         program: '',
         enabled: true,
-        trigger_phrases: [],
         fields: [],
       }}
       config={{

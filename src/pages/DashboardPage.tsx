@@ -35,6 +35,7 @@ export const DashboardPage: React.FC = () => {
   const branches = useConfigStore((state) => state.branches.branches);
   const actionChips = useConfigStore((state) => state.config.baseConfig?.action_chips?.default_chips || {});
   const showcaseItems = useConfigStore((state) => state.contentShowcase.content_showcase);
+  const isLoading = useConfigStore((state) => state.ui.loading.config);
 
   // Calculate entity counts
   const entityCounts = {
@@ -78,7 +79,6 @@ export const DashboardPage: React.FC = () => {
   }
 
   // Show loading state while config is being loaded
-  const isLoading = useConfigStore((state) => state.ui.loading.config);
   if (isLoading) {
     return (
       <div className="space-y-4 sm:space-y-6">

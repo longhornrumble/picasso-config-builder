@@ -248,19 +248,12 @@ function validateField(
  * Validate trigger phrases (warning if missing)
  */
 function validateTriggerPhrases(
-  form: ConversationalForm,
-  formId: string,
-  warnings: ValidationWarning[]
+  _form: ConversationalForm,
+  _formId: string,
+  _warnings: ValidationWarning[]
 ): void {
-  if (!form.trigger_phrases || form.trigger_phrases.length === 0) {
-    warnings.push(
-      createWarning(messages.form.noTriggerPhrases, 'form', {
-        field: 'trigger_phrases',
-        entityId: formId,
-        suggestedFix: 'Add trigger phrases so users can activate this form directly through conversation',
-      })
-    );
-  }
+  // Trigger phrases removed - forms now use explicit CTA routing
+  // No validation needed for trigger phrases
 }
 
 // ============================================================================

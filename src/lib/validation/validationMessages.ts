@@ -48,8 +48,8 @@ export const messages = {
     invalidPrimaryCTA: (ctaId: string) => `Referenced CTA "${ctaId}" does not exist\n→ Fix: Select an existing CTA or create the CTA first`,
     invalidSecondaryCTA: (ctaId: string, index: number) =>
       `Secondary CTA ${index + 1} "${ctaId}" does not exist\n→ Fix: Remove this CTA or select an existing one`,
-    tooManyCTAs: (count: number) =>
-      `Branch has too many CTAs (${count} total). Runtime limits to 3 buttons - only first 3 will be shown\n→ Fix: Remove CTAs or prioritize the most important 3`,
+    tooManyCTAs: (count: number, maxCtas: number) =>
+      `Branch has too many CTAs (${count} total). Runtime limits to ${maxCtas} buttons - only first ${maxCtas} will be shown\n→ Fix: Remove CTAs or prioritize the most important ${maxCtas}`,
     keywordsLookLikeQueries:
       'Keywords contain question words. Detection keywords should match anticipated Bedrock responses, not user queries\n→ Fix: Use topic words instead (e.g., "volunteer opportunities" not "how to volunteer")',
     questionWords: (words: string[]) => `Found question words: ${words.join(', ')}\n→ Fix: Remove question words and use declarative topic keywords`,

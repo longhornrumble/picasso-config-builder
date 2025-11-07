@@ -61,6 +61,7 @@ export const ActionChipsEditor: React.FC = () => {
 
       state.config.baseConfig.action_chips.default_chips[chipId] = {
         label: chip.label,
+        action: chip.action || 'send_query',
         value: chip.value,
         ...(chip.target_branch && { target_branch: chip.target_branch }),
       };
@@ -92,6 +93,7 @@ export const ActionChipsEditor: React.FC = () => {
       initialValue={{
         chipId: '',
         label: '',
+        action: 'send_query',
         value: '',
         target_branch: undefined,
       }}

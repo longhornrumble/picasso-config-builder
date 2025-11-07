@@ -107,7 +107,6 @@ export function validateCTA(
       label: data.label,
       action: data.action,
       type: data.type,
-      style: data.style,
       ...(data.formId && { formId: data.formId }),
       ...(data.url && { url: data.url }),
       ...(data.query && { query: data.query }),
@@ -196,6 +195,13 @@ export function validateBranch(
     if (!cleanedData.available_ctas?.primary) {
       errors['available_ctas.primary'] = 'Primary CTA is required';
     }
+
+    // Check total CTA count against global max_ctas_per_response setting
+    const totalCTAs = 1 + cleanedData.available_ctas.secondary.length;
+    const maxCtas = context.maxCtasPerResponse || 10; // Default to 10 if not set
+    if (totalCTAs > maxCtas) {
+      errors['available_ctas.secondary'] = `Total CTAs (${totalCTAs}) exceeds max limit of ${maxCtas} set in Settings`;
+    }
   } catch (error) {
     if (error instanceof ZodError) {
       error.errors.forEach((err) => {
@@ -231,15 +237,8 @@ export function validateForm(
   const errors: ValidationErrors = {};
 
   try {
-    // Filter out null/undefined/empty trigger phrases before validation
-    // This prevents validation errors from placeholder or deleted phrases
-    const cleanedData = {
-      ...data,
-      trigger_phrases: data.trigger_phrases.filter((phrase) => phrase != null && phrase !== ''),
-    };
-
     // Validate with Zod schema
-    conversationalFormSchema.parse(cleanedData);
+    conversationalFormSchema.parse(data);
 
     // Check for duplicate form_id (only in create mode or if ID changed)
     if (

@@ -209,8 +209,8 @@ export const isValidCTA = (cta: unknown): cta is CTADefinition => {
     c.label.length > 0 &&
     typeof c.action === 'string' &&
     ['start_form', 'external_link', 'send_query', 'show_info'].includes(c.action) &&
-    typeof c.type === 'string' &&
-    typeof c.style === 'string'
+    typeof c.type === 'string'
+    // Note: style field removed in v1.5 - position-based styling
   );
 };
 

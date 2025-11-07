@@ -34,6 +34,10 @@ export const BranchesEditor: React.FC = () => {
   const createBranch = useConfigStore((state) => state.branches.createBranch);
   const updateBranch = useConfigStore((state) => state.branches.updateBranch);
   const deleteBranch = useConfigStore((state) => state.branches.deleteBranch);
+  const baseConfig = useConfigStore((state) => state.config.baseConfig);
+
+  // Get max CTAs per response setting (default to 4)
+  const maxCtasPerResponse = baseConfig?.cta_settings?.max_ctas_per_response || 4;
 
   // Transform branches from Record<string, ConversationBranch> to BranchEntity[]
   const branches = useMemo(() => {
@@ -45,6 +49,13 @@ export const BranchesEditor: React.FC = () => {
       return acc;
     }, {} as Record<string, BranchEntity>);
   }, [branchesRecord]);
+
+  // Wrap validator to inject maxCtasPerResponse
+  const branchValidator = useMemo(() => {
+    return (data: BranchEntity, context: any) => {
+      return validateBranch(data, { ...context, maxCtasPerResponse });
+    };
+  }, [maxCtasPerResponse]);
 
   // Configure the generic editor
   return (
@@ -83,6 +94,7 @@ export const BranchesEditor: React.FC = () => {
             const { branchId, ...branchData } = branchEntity;
             const branch: ConversationBranch = {
               available_ctas: branchData.available_ctas,
+              program_id: branchData.program_id,
             };
             createBranch(branch, branchId);
           },
@@ -91,6 +103,7 @@ export const BranchesEditor: React.FC = () => {
           updateEntity: (branchId: string, branchEntity: BranchEntity) => {
             const updates: Partial<ConversationBranch> = {
               available_ctas: branchEntity.available_ctas,
+              program_id: branchEntity.program_id,
             };
             updateBranch(branchId, updates);
           },
@@ -110,8 +123,8 @@ export const BranchesEditor: React.FC = () => {
           },
         }),
 
-        // Validation
-        validation: validateBranch,
+        // Validation (with max CTAs injected)
+        validation: branchValidator,
 
         // ID and name extraction
         getId: (branch) => branch.branchId,

@@ -98,6 +98,27 @@ export const createValidationSlice: SliceCreator<ValidationSlice> = (set, get) =
       });
     });
 
+    // Ensure all entities are tracked as validated (even if they have no errors/warnings)
+    // This marks them as "validated" so they don't show "Not Validated" status
+    const allEntityIds = [
+      ...Object.keys(state.programs.programs),
+      ...Object.keys(state.forms.forms),
+      ...Object.keys(state.ctas.ctas),
+      ...Object.keys(state.branches.branches),
+      ...Object.keys(state.config.baseConfig?.action_chips?.default_chips || {}),
+      ...state.contentShowcase.content_showcase.map((item) => item.id),
+    ];
+
+    allEntityIds.forEach((entityId) => {
+      // If entity doesn't have errors or warnings, add it with empty arrays
+      if (!(entityId in errorsByEntity)) {
+        errorsByEntity[entityId] = [];
+      }
+      if (!(entityId in warningsByEntity)) {
+        warningsByEntity[entityId] = [];
+      }
+    });
+
     // Update validation state
     set((state) => {
       state.validation.errors = errorsByEntity;

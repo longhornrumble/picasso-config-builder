@@ -12,8 +12,7 @@ export const branchAvailableCTAsSchema = z.object({
   primary: z.string().min(1, 'Primary CTA ID is required'),
   secondary: z
     .array(z.string().min(1, 'CTA ID cannot be empty'))
-    .max(2, 'Maximum 2 secondary CTAs allowed')
-    .default([]),
+    .default([]), // No max limit - unlimited secondary CTAs
 });
 
 export const conversationBranchSchema = z.object({
@@ -28,15 +27,7 @@ export const conversationBranchSchema = z.object({
     });
   }
 
-  // Validate total CTA count
-  const totalCTAs = 1 + data.available_ctas.secondary.length;
-  if (totalCTAs > 3) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['available_ctas'],
-      message: `Total CTAs (${totalCTAs}) exceeds recommended maximum of 3`,
-    });
-  }
+  // No max CTA limit - unlimited CTAs allowed per branch
 });
 
 // ============================================================================

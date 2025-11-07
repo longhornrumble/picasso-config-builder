@@ -70,7 +70,7 @@ export const Header: React.FC = () => {
               <Menu className="w-5 h-5" />
             </Button>
 
-            <h1 className="text-lg sm:text-xl font-bold text-green-600 flex items-center gap-1 sm:gap-2 truncate">
+            <h1 className="text-lg sm:text-xl font-bold text-white flex items-center gap-1 sm:gap-2 truncate">
               <span className="text-xl sm:text-2xl flex-shrink-0">🎨</span>
               <span className="hide-mobile">Picasso Config Builder</span>
               <span className="hide-desktop">Picasso</span>
