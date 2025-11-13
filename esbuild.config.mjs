@@ -172,11 +172,11 @@ const buildOptions = {
   ],
 
   ...(environment === 'production' && !isDevelopment ? {
-    drop: ['console', 'debugger'],
+    drop: ['debugger'],  // Keep console.log for debugging
     legalComments: 'none',
     treeShaking: true,
     minifyWhitespace: true,
-    minifyIdentifiers: true,
+    minifyIdentifiers: false,  // Disable to prevent breaking code
     minifySyntax: true,
     keepNames: true  // Keep component names even in production to avoid breaking React components
   } : {

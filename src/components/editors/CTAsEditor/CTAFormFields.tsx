@@ -91,7 +91,7 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
         {/* Action */}
         <Select
           label="Action"
-          value={value.action}
+          value={value.action || ''}
           onValueChange={(newValue) => {
             const newAction = newValue as CTAActionType;
 
@@ -124,7 +124,7 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
         {/* Type */}
         <Select
           label="Type"
-          value={value.type}
+          value={value.type || ''}
           onValueChange={(newValue) =>
             onChange({ ...value, type: newValue as CTAType })
           }

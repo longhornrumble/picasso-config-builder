@@ -36,13 +36,16 @@ export const ActionChipsEditor: React.FC = () => {
 
   // Transform Action Chips from Record<string, ActionChip> to ActionChipEntity[]
   const chips = useMemo(() => {
-    return Object.entries(chipsRecord).reduce((acc, [chipId, chip]) => {
+    console.log('🔍 chips memoization running, chipsRecord:', chipsRecord);
+    const result = Object.entries(chipsRecord).reduce((acc, [chipId, chip]) => {
       acc[chipId] = {
         ...chip,
         chipId,
       };
       return acc;
     }, {} as Record<string, ActionChipEntity>);
+    console.log('🔍 chips memoization result:', result);
+    return result;
   }, [chipsRecord]);
 
   // Store operations for Action Chips using immer from Zustand
@@ -64,17 +67,56 @@ export const ActionChipsEditor: React.FC = () => {
         action: chip.action || 'send_query',
         value: chip.value,
         ...(chip.target_branch && { target_branch: chip.target_branch }),
+        ...(chip.program_id && { program_id: chip.program_id }),
       };
     });
     markDirty();
   };
 
   const updateChip = (chipId: string, updates: Partial<ActionChip>) => {
-    setState((state) => {
-      if (!state.config.baseConfig?.action_chips?.default_chips?.[chipId]) return;
+    console.log('🚀 updateChip CALLED with chipId:', chipId, 'updates:', updates);
 
-      Object.assign(state.config.baseConfig.action_chips.default_chips[chipId], updates);
+    setState((state) => {
+      if (!state.config.baseConfig?.action_chips?.default_chips?.[chipId]) {
+        console.log('❌ updateChip - chip not found in store:', chipId);
+        return;
+      }
+
+      const currentChip = state.config.baseConfig.action_chips.default_chips[chipId];
+      console.log('🔧 updateChip - current chip:', currentChip);
+      console.log('🔧 updateChip - updates:', updates);
+
+      // Build the updated chip with all fields explicitly set
+      const updatedChip: ActionChip = {
+        label: updates.label !== undefined ? updates.label : currentChip.label,
+        action: updates.action !== undefined ? updates.action : (currentChip.action || 'send_query'),
+        value: updates.value !== undefined ? updates.value : currentChip.value,
+      };
+
+      // Add optional fields if present in either updates or current chip
+      if ('target_branch' in updates || 'target_branch' in currentChip) {
+        updatedChip.target_branch = 'target_branch' in updates ? updates.target_branch : currentChip.target_branch;
+      }
+
+      if ('program_id' in updates || 'program_id' in currentChip) {
+        updatedChip.program_id = 'program_id' in updates ? updates.program_id : currentChip.program_id;
+      }
+
+      console.log('✅ updateChip - final chip:', updatedChip);
+
+      // Replace the chip entirely
+      state.config.baseConfig.action_chips.default_chips[chipId] = updatedChip;
+
+      console.log('💾 updateChip - chip replaced in state, verifying:', state.config.baseConfig.action_chips.default_chips[chipId]);
     });
+
+    // Check the store AFTER setState completes
+    setTimeout(() => {
+      const currentStore = useConfigStore.getState();
+      const verifyChip = currentStore.config.baseConfig?.action_chips?.default_chips?.[chipId];
+      console.log('🔬 VERIFICATION - chip in store after setState:', verifyChip);
+    }, 0);
+
     markDirty();
   };
 
@@ -96,6 +138,7 @@ export const ActionChipsEditor: React.FC = () => {
         action: 'send_query',
         value: '',
         target_branch: undefined,
+        program_id: undefined,
       }}
       config={{
         // Entity metadata
@@ -124,19 +167,30 @@ export const ActionChipsEditor: React.FC = () => {
             const { chipId, ...chipData } = chipEntity;
             const chip: ActionChip = {
               label: chipData.label,
+              action: chipData.action || 'send_query',
               value: chipData.value,
               ...(chipData.target_branch && { target_branch: chipData.target_branch }),
+              ...(chipData.program_id && { program_id: chipData.program_id }),
             };
             createChip(chip, chipId);
           },
 
-          // Update: Extract chipId and pass updates
+          // Update: Extract chipId and pass all fields from form
           updateEntity: (chipId: string, chipEntity: ActionChipEntity) => {
+            console.log('🔄 ActionChips updateEntity called:', {
+              chipId,
+              chipEntity,
+              action: chipEntity.action,
+              program_id: chipEntity.program_id,
+            });
             const updates: Partial<ActionChip> = {
               label: chipEntity.label,
+              action: chipEntity.action, // Don't default here, let updateChip handle it
               value: chipEntity.value,
               target_branch: chipEntity.target_branch,
+              program_id: chipEntity.program_id,
             };
+            console.log('📦 Updates object:', updates);
             updateChip(chipId, updates);
           },
 
