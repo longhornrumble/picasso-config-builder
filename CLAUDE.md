@@ -553,25 +553,71 @@ aws s3 ls s3://myrecruiter-picasso/
 
 ## Deployment
 
+### Production Infrastructure
+
+**Frontend:**
+- **S3 Bucket:** `picasso-config-builder-prod`
+- **Production URL:** http://picasso-config-builder-prod.s3-website-us-east-1.amazonaws.com
+- **Region:** us-east-1
+
+**Backend API:**
+- **Lambda Function:** `picasso-config-api`
+- **API Endpoint:** https://56mwo4zatkiqzpancrkkzqr43e0nkrui.lambda-url.us-east-1.on.aws
+- **Region:** us-east-1
+
+**Storage:**
+- **Config Bucket:** `myrecruiter-picasso`
+- **Config Path:** `tenant-configs/{tenant_hash}.json`
+
 ### Frontend Deployment
 
-Deploy to S3 + CloudFront for private internal access:
+Deploy to S3 for private internal access:
 
 ```bash
+# Build for production
 npm run build:production
-# Upload dist/ to S3 bucket
+
+# Deploy to production S3 bucket
+AWS_PROFILE=chris-admin aws s3 sync dist/ s3://picasso-config-builder-prod/ --delete --exclude "*.map"
+
+# Verify deployment
+AWS_PROFILE=chris-admin aws s3 ls s3://picasso-config-builder-prod/
+```
+
+**Automated Deployment Script:**
+
+```bash
+# Use the deployment script
+./scripts/deploy.sh production
 ```
 
 ### Lambda Deployment
 
-Package and deploy via AWS SAM or CDK:
+Package and deploy the config API Lambda:
 
 ```bash
 cd lambda
 npm ci --production
 npm run package
-aws lambda update-function-code --function-name config-api --zip-file fileb://deployment.zip
+AWS_PROFILE=chris-admin aws lambda update-function-code \
+  --function-name picasso-config-api \
+  --zip-file fileb://deployment.zip \
+  --region us-east-1
 ```
+
+### Deployment Checklist
+
+Before deploying to production:
+
+1. ✅ Run all tests: `npm run test:all`
+2. ✅ Type check: `npm run typecheck`
+3. ✅ Build validation: `npm run validate`
+4. ✅ Review git changes: `git status`
+5. ✅ Commit and push to GitHub
+6. ✅ Build production bundle: `npm run build:production`
+7. ✅ Deploy to S3
+8. ✅ Test production URL
+9. ✅ Verify API connectivity
 
 ## Support
 

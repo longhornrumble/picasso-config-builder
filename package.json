@@ -37,7 +37,9 @@
     "docs:update": "node scripts/update-claude-md.mjs",
     "docs:update:dry-run": "node scripts/update-claude-md.mjs --dry-run",
     "docs:validate": "node scripts/validate-claude-md.mjs",
-    "setup:hooks": "node scripts/setup-hooks.mjs"
+    "setup:hooks": "node scripts/setup-hooks.mjs",
+    "deploy": "./scripts/deploy.sh production",
+    "deploy:production": "./scripts/deploy.sh production"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
