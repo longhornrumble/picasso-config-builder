@@ -97,11 +97,11 @@ export const DeployDialog: React.FC<DeployDialogProps> = ({
 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <ModalContent className="sm:max-w-xl md:max-w-2xl max-h-[100vh] sm:max-h-[90vh] overflow-y-auto">
         <ModalHeader>
-          <ModalTitle className="flex items-center gap-2">
-            <Upload className="w-5 h-5 text-green-600 dark:text-green-400" />
-            Deploy Configuration
+          <ModalTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Upload className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+            <span>Deploy Configuration</span>
           </ModalTitle>
         </ModalHeader>
 
@@ -120,11 +120,12 @@ export const DeployDialog: React.FC<DeployDialogProps> = ({
                 hasChanges={hasChanges}
               />
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-600">
                 <Button
                   variant="ghost"
                   onClick={handleCancel}
                   disabled={isDeploying}
+                  className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
                 >
                   Cancel
                 </Button>
@@ -132,7 +133,7 @@ export const DeployDialog: React.FC<DeployDialogProps> = ({
                   variant="primary"
                   onClick={handleConfirm}
                   disabled={isDeploying}
-                  className="bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-600"
+                  className="bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-600 w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   Deploy to S3
@@ -190,17 +191,18 @@ export const DeployDialog: React.FC<DeployDialogProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-600">
                 <Button
                   variant="ghost"
                   onClick={handleCancel}
+                  className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
                 >
                   Close
                 </Button>
                 <Button
                   variant="primary"
                   onClick={handleConfirm}
-                  className="bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-600"
+                  className="bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-600 w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   Try Again

@@ -2,6 +2,33 @@
 
 This file provides guidance to Claude Code when working with the Picasso Config Builder project.
 
+---
+
+## 🚨 MANDATORY: Development Process
+
+**All development work MUST follow the Standard Operating Procedure.**
+
+📚 **Required Reading for All Agents:**
+- **[SOP: Development Workflow](docs/SOP_DEVELOPMENT_WORKFLOW.md)** - Complete workflow from requirements to production with phase-based agent orchestration
+- **[Agent Responsibility Matrix](docs/AGENT_RESPONSIBILITY_MATRIX.md)** - Agent selection guide, capabilities, and collaboration patterns
+
+**For Orchestrator Agents:**
+- Follow phase-based workflow (Phase 0-5) defined in SOP
+- Use agent invocation templates for consistency
+- Track phase gates and validation checkpoints
+- Manage handoffs between agents with explicit input/output artifacts
+- See "Standard Task Workflow" section in SOP for detailed agent workflows
+
+**For Individual Specialized Agents:**
+- Refer to your specific responsibilities in the Agent Responsibility Matrix
+- Follow invocation templates when deployed
+- Deliver artifacts specified in phase workflows
+- Validate deliverables against success criteria
+
+**Quick Command:** Type `/follow-sop` to load SOP context
+
+---
+
 ## Project Overview
 
 The Picasso Config Builder is a web-based internal operations tool for managing conversational forms, CTAs, conversation branches, and content showcase configurations for the Picasso chat widget. It allows non-technical team members to configure forms-enabled tenants without manual JSON editing.

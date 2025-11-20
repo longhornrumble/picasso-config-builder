@@ -4,3 +4,4 @@
  */
 
 export { CTASettings } from './CTASettings';
+export { BedrockInstructionsSettings } from './BedrockInstructionsSettings';

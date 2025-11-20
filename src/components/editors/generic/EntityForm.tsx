@@ -175,22 +175,22 @@ export function EntityForm<T extends BaseEntity>({
 
   return (
     <Modal open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
-      <ModalContent className="sm:max-w-[600px]" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+      <ModalContent className="sm:max-w-[600px] md:max-w-[700px] lg:max-w-[800px]" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
         <form onSubmit={handleSubmit}>
           <ModalHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <ModalTitle>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <ModalTitle className="text-lg sm:text-xl">
                   {isEditMode ? `Edit ${entityName}` : `Create ${entityName}`}
                 </ModalTitle>
-                <ModalDescription>
+                <ModalDescription className="mt-1">
                   {isEditMode
                     ? `Update the ${entityName.toLowerCase()} details below.`
                     : `Define a new ${entityName.toLowerCase()}.`}
                 </ModalDescription>
               </div>
               <Tooltip content={`Press ${saveShortcut} to save`}>
-                <Badge variant="secondary" className="font-mono text-xs">
+                <Badge variant="secondary" className="font-mono text-xs flex-shrink-0 hidden sm:inline-flex">
                   {saveShortcut}
                 </Badge>
               </Tooltip>
@@ -220,19 +220,30 @@ export function EntityForm<T extends BaseEntity>({
             />
           </div>
 
-          <div className={`flex items-center ${footerActions ? 'justify-between' : 'justify-end'} gap-2 pt-4 mt-4 border-t border-gray-200 dark:border-gray-800`}>
+          <div className={`flex flex-col sm:flex-row sm:items-center ${footerActions ? 'sm:justify-between' : 'sm:justify-end'} gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-800`}>
             {footerActions && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 order-2 sm:order-1">
                 {typeof footerActions === 'function'
                   ? footerActions(formData, handleChange)
                   : footerActions}
               </div>
             )}
-            <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 order-1 sm:order-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isSubmitting}
+                className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
+              >
                 Cancel
               </Button>
-              <Button type="submit" variant="primary" disabled={!isValid || isSubmitting}>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={!isValid || isSubmitting}
+                className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
+              >
                 {isSubmitting ? 'Saving...' : isEditMode ? `Update ${entityName}` : `Create ${entityName}`}
               </Button>
             </div>

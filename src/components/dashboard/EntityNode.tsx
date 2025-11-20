@@ -333,35 +333,36 @@ export const EntityNode = React.memo<EntityNodeProps>(
     return (
       <div
         className={`
-          flex flex-col gap-2 p-3 rounded-lg border cursor-pointer
-          transition-all duration-200 hover:shadow-md
+          flex flex-col gap-2 p-3 sm:p-4 rounded-lg border cursor-pointer
+          transition-all duration-200 hover:shadow-md touch-manipulation
           ${metadata.color.bg} ${metadata.color.border}
         `}
-        style={{ marginLeft: `${depth * 24}px` }}
+        style={{ marginLeft: `${Math.min(depth * 24, 48)}px` }}
         onClick={handleClick}
       >
         {/* Header Row */}
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-2 sm:gap-3">
           {/* Expand/Collapse Button */}
           {hasChildren && (
             <button
               onClick={handleToggle}
               className={`
                 flex-shrink-0 mt-0.5 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700
-                transition-colors
+                transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0
+                flex items-center justify-center touch-manipulation
               `}
               aria-label={isExpanded ? 'Collapse' : 'Expand'}
             >
               {isExpanded ? (
-                <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <ChevronDown className="w-5 h-5 sm:w-4 sm:h-4 text-gray-600 dark:text-gray-400" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <ChevronRight className="w-5 h-5 sm:w-4 sm:h-4 text-gray-600 dark:text-gray-400" />
               )}
             </button>
           )}
 
-          {/* Spacer for nodes without children */}
-          {!hasChildren && <div className="w-6" />}
+          {/* Spacer for nodes without children - hide on mobile */}
+          {!hasChildren && <div className="hidden sm:block sm:w-6" />}
 
           {/* Entity Icon */}
           <div className="flex-shrink-0 mt-0.5">
@@ -371,8 +372,8 @@ export const EntityNode = React.memo<EntityNodeProps>(
           {/* Entity Content */}
           <div className="flex-1 min-w-0">
             {/* Label and Type Badge */}
-            <div className="flex items-center gap-2 mb-1">
-              <h4 className={`font-medium truncate ${metadata.color.text}`}>{node.label}</h4>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <h4 className={`font-medium text-sm sm:text-base ${metadata.color.text}`}>{node.label}</h4>
               {renderStatusIcons()}
               <Badge variant="secondary" className="flex-shrink-0 text-xs">
                 {metadata.label}
@@ -397,7 +398,7 @@ export const EntityNode = React.memo<EntityNodeProps>(
           </div>
 
           {/* Validation Status */}
-          <div className="flex-shrink-0 flex items-center gap-2">
+          <div className="flex-shrink-0 flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2">
             {/* Status Icon with Tooltip */}
             <TooltipProvider>
               <Tooltip
@@ -412,7 +413,7 @@ export const EntityNode = React.memo<EntityNodeProps>(
                   `}
                 >
                   <StatusIcon className={`w-4 h-4 ${validationMeta.color}`} />
-                  <span className={`text-xs font-medium ${validationMeta.color}`}>
+                  <span className={`text-xs font-medium ${validationMeta.color} hidden sm:inline`}>
                     {validationMeta.label}
                   </span>
                 </div>
@@ -420,18 +421,22 @@ export const EntityNode = React.memo<EntityNodeProps>(
             </TooltipProvider>
 
             {/* Error/Warning Count Badges */}
-            {node.errorCount > 0 && (
-              <Badge variant="error" className="flex-shrink-0">
-                {node.errorCount}
-              </Badge>
-            )}
-            {node.warningCount > 0 && (
-              <Badge
-                variant="warning"
-                className="flex-shrink-0 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-800"
-              >
-                {node.warningCount}
-              </Badge>
+            {(node.errorCount > 0 || node.warningCount > 0) && (
+              <div className="flex items-center gap-1">
+                {node.errorCount > 0 && (
+                  <Badge variant="error" className="flex-shrink-0 text-xs">
+                    {node.errorCount}
+                  </Badge>
+                )}
+                {node.warningCount > 0 && (
+                  <Badge
+                    variant="warning"
+                    className="flex-shrink-0 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-800"
+                  >
+                    {node.warningCount}
+                  </Badge>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -464,7 +469,8 @@ const CTABadge: React.FC<{
       onClick={handleClick}
       className={`
         inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium
-        transition-all hover:shadow-md hover:scale-105
+        transition-all hover:shadow-md hover:scale-105 touch-manipulation
+        min-h-[36px] sm:min-h-0
         ${badge.color}
       `}
     >

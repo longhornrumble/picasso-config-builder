@@ -376,6 +376,30 @@ export interface WidgetBehaviorConfig {
 }
 
 // ============================================================================
+// BEDROCK INSTRUCTIONS (Multi-Tenant Prompt Customization)
+// ============================================================================
+
+export type EmojiUsage = 'none' | 'moderate' | 'generous';
+export type ResponseStyle = 'professional_concise' | 'warm_conversational' | 'structured_detailed';
+export type DetailLevel = 'concise' | 'balanced' | 'comprehensive';
+
+export interface FormattingPreferences {
+  emoji_usage: EmojiUsage;
+  max_emojis_per_response: number;
+  response_style: ResponseStyle;
+  detail_level: DetailLevel;
+}
+
+export interface BedrockInstructions {
+  _version: string;
+  _updated: string; // ISO timestamp
+  role_instructions: string;
+  formatting_preferences: FormattingPreferences;
+  custom_constraints: string[];
+  fallback_message: string;
+}
+
+// ============================================================================
 // AWS CONFIGURATION
 // ============================================================================
 
@@ -419,5 +443,6 @@ export interface TenantConfig {
   action_chips?: ActionChipsConfig;
   widget_behavior?: WidgetBehaviorConfig;
   cta_settings?: CTASettings;
+  bedrock_instructions?: BedrockInstructions;
   aws: AWSConfig;
 }

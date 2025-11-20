@@ -178,6 +178,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         conversation_branches: mergedConfig.conversation_branches,
         content_showcase: mergedConfig.content_showcase,
         cta_settings: mergedConfig.cta_settings,
+        bedrock_instructions: mergedConfig.bedrock_instructions,
       };
 
       console.log('[DEPLOY] Filtered config keys:', Object.keys(editableConfig));
@@ -302,6 +303,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       ...(state.config.baseConfig.action_chips && { action_chips: state.config.baseConfig.action_chips }),
       ...(state.config.baseConfig.widget_behavior && { widget_behavior: state.config.baseConfig.widget_behavior }),
       ...(state.config.baseConfig.cta_settings && { cta_settings: state.config.baseConfig.cta_settings }),
+      ...(state.config.baseConfig.bedrock_instructions && { bedrock_instructions: state.config.baseConfig.bedrock_instructions }),
     };
 
     return mergedConfig;

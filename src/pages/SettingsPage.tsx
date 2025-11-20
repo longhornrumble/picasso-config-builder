@@ -7,7 +7,7 @@ import React from 'react';
 import { Settings, CheckCircle, AlertCircle, Clock, Info } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from '@/components/ui';
 import { useConfigStore } from '@/store';
-import { CTASettings } from '@/components/settings';
+import { CTASettings, BedrockInstructionsSettings } from '@/components/settings';
 
 /**
  * Settings Page
@@ -106,6 +106,9 @@ export const SettingsPage: React.FC = () => {
 
           {/* CTA Settings */}
           <CTASettings />
+
+          {/* Bedrock Instructions */}
+          <BedrockInstructionsSettings />
 
           {/* Validation Status */}
           <Card>

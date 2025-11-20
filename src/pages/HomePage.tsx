@@ -109,36 +109,36 @@ export const HomePage: React.FC = () => {
             <CardDescription>Tenant: {tenantId}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid-responsive-2-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-blue-600">
                   {Object.keys(programs).length}
                 </div>
-                <div className="text-responsive-sm text-gray-600">Programs</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Programs</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-green-600">
                   {Object.keys(forms).length}
                 </div>
-                <div className="text-responsive-sm text-gray-600">Forms</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Forms</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-purple-600">
                   {Object.keys(ctas).length}
                 </div>
-                <div className="text-responsive-sm text-gray-600">CTAs</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">CTAs</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-orange-600">
                   {Object.keys(branches).length}
                 </div>
-                <div className="text-responsive-sm text-gray-600">Branches</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Branches</div>
               </div>
-              <div className="text-center">
+              <div className="text-center col-span-2 sm:col-span-1">
                 <div className="text-2xl sm:text-3xl font-bold text-yellow-600">
                   {Object.keys(actionChips).length}
                 </div>
-                <div className="text-responsive-sm text-gray-600">Action Chips</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Action Chips</div>
               </div>
             </div>
           </CardContent>
