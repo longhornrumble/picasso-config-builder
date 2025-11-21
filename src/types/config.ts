@@ -83,6 +83,9 @@ export interface FormField {
   // Eligibility gates
   eligibility_gate?: boolean;
   failure_message?: string;
+
+  // Age-based eligibility (for date fields)
+  minimum_age?: number;
 }
 
 export type PostSubmissionActionType =

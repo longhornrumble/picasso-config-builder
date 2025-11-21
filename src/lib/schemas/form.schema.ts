@@ -41,6 +41,7 @@ export const formFieldSchema = z.object({
   subfields: z.array(formFieldSubfieldSchema).optional(),
   eligibility_gate: z.boolean().optional(),
   failure_message: z.string().max(500, 'Failure message must be 500 characters or less').optional(),
+  minimum_age: z.number().int().positive('Minimum age must be a positive number').max(120, 'Minimum age must be 120 or less').optional(),
 }).superRefine((data, ctx) => {
   // Validate that select fields have options
   if (data.type === 'select' && (!data.options || data.options.length === 0)) {
@@ -51,12 +52,12 @@ export const formFieldSchema = z.object({
     });
   }
 
-  // Validate that eligibility gates are only used with select fields
-  if (data.eligibility_gate && data.type !== 'select') {
+  // Validate that eligibility gates are used with select or date fields
+  if (data.eligibility_gate && data.type !== 'select' && data.type !== 'date') {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['eligibility_gate'],
-      message: 'Eligibility gates are only available for select (dropdown) fields',
+      message: 'Eligibility gates are only available for select (dropdown) and date fields',
     });
   }
 
@@ -66,6 +67,24 @@ export const formFieldSchema = z.object({
       code: z.ZodIssueCode.custom,
       path: ['failure_message'],
       message: 'Eligibility gate fields must have a failure message',
+    });
+  }
+
+  // Validate that date eligibility gates have minimum_age
+  if (data.eligibility_gate && data.type === 'date' && !data.minimum_age) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['minimum_age'],
+      message: 'Date eligibility gates must have a minimum age requirement',
+    });
+  }
+
+  // Validate that only date fields can have minimum_age
+  if (data.minimum_age && data.type !== 'date') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['minimum_age'],
+      message: 'Only date fields can have a minimum age requirement',
     });
   }
 

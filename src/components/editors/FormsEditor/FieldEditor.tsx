@@ -293,16 +293,16 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
 
       {/* Eligibility Gate */}
       <div className="border-t pt-4 space-y-3">
-        <label className={`flex items-center gap-2 ${field.type === 'select' ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
+        <label className={`flex items-center gap-2 ${(field.type === 'select' || field.type === 'date') ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
           <input
             type="checkbox"
             checked={field.eligibility_gate || false}
             onChange={(e) => {
-              if (field.type === 'select') {
+              if (field.type === 'select' || field.type === 'date') {
                 onChange({ ...field, eligibility_gate: e.target.checked });
               }
             }}
-            disabled={field.type !== 'select'}
+            disabled={field.type !== 'select' && field.type !== 'date'}
             className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 disabled:opacity-50"
           />
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -313,20 +313,39 @@ export const FieldEditor: React.FC<FieldEditorProps> = ({
           <p className="text-sm text-gray-500 dark:text-gray-400 ml-6">
             Stop form if user selects a disqualifying option (e.g., "No" for age confirmation)
           </p>
+        ) : field.type === 'date' ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400 ml-6">
+            Stop form if user's age is below the minimum requirement (automatically calculated from birthdate)
+          </p>
         ) : (
           <p className="text-sm text-amber-600 dark:text-amber-400 ml-6">
-            Eligibility gates are only available for Select (Dropdown) fields. Use a dropdown with Yes/No options for binary requirements.
+            Eligibility gates are only available for Select (Dropdown) and Date fields. Use a dropdown with Yes/No options for binary requirements, or a date field for age verification.
           </p>
         )}
 
-        {field.eligibility_gate && field.type === 'select' && (
+        {field.eligibility_gate && field.type === 'date' && (
+          <Input
+            label="Minimum Age"
+            id={`field-${index}-minimum-age`}
+            type="number"
+            value={field.minimum_age?.toString() || ''}
+            onChange={(e) => onChange({ ...field, minimum_age: parseInt(e.target.value) || undefined })}
+            placeholder="e.g., 18"
+            helperText="User must be at least this many years old"
+            required
+            min={1}
+            max={120}
+          />
+        )}
+
+        {field.eligibility_gate && (field.type === 'select' || field.type === 'date') && (
           <Input
             label="Failure Message"
             id={`field-${index}-failure-message`}
             value={field.failure_message || ''}
             onChange={(e) => onChange({ ...field, failure_message: e.target.value })}
-            placeholder="e.g., Sorry, you must be 18 or older to apply"
-            helperText="Message shown when user selects a disqualifying option"
+            placeholder={field.type === 'date' ? "e.g., You must be at least 18 years old to apply" : "e.g., Sorry, you must be 18 or older to apply"}
+            helperText={field.type === 'date' ? "Message shown when user is too young" : "Message shown when user selects a disqualifying option"}
             required
           />
         )}
