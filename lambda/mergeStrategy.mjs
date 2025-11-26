@@ -13,6 +13,7 @@ const EDITABLE_SECTIONS = [
   'conversation_branches',
   'content_showcase',
   'cta_settings',
+  'bedrock_instructions',
 ];
 
 /**
@@ -33,10 +34,17 @@ const READ_ONLY_SECTIONS = [
  */
 const METADATA_FIELDS = [
   'tenant_id',
+  'tenant_hash',
   'version',
   'chat_title',
   'company_name',
   'last_updated',
+  'generated_at',
+  'tone_prompt',
+  'welcome_message',
+  'callout_text',
+  'model_id',
+  'subscription_tier',
 ];
 
 /**
@@ -106,33 +114,38 @@ export function extractEditableSections(fullConfig) {
 
 /**
  * Validate that edited sections only contain allowed sections
+ * Note: Read-only sections are allowed in input but will be ignored during merge
+ * (they're preserved from the base config instead)
  *
  * @param {Object} editedSections - Object containing edited sections
  * @returns {Object} Validation result with isValid and errors
  */
 export function validateEditedSections(editedSections) {
   const errors = [];
-  const allowedKeys = [...EDITABLE_SECTIONS, ...METADATA_FIELDS];
+  const warnings = [];
+  const allowedKeys = [...EDITABLE_SECTIONS, ...METADATA_FIELDS, ...READ_ONLY_SECTIONS];
 
-  // Check for disallowed sections
+  // Check for completely unknown sections
   const editedKeys = Object.keys(editedSections);
-  const disallowedKeys = editedKeys.filter(
-    key => !allowedKeys.includes(key) && !READ_ONLY_SECTIONS.includes(key)
-  );
+  const unknownKeys = editedKeys.filter(key => !allowedKeys.includes(key));
 
-  if (disallowedKeys.length > 0) {
-    errors.push(`Disallowed sections in edited config: ${disallowedKeys.join(', ')}`);
+  if (unknownKeys.length > 0) {
+    // Log warning but don't fail - unknown keys will be ignored during merge
+    warnings.push(`Unknown sections will be ignored: ${unknownKeys.join(', ')}`);
+    console.log(`[Validation Warning] ${warnings[0]}`);
   }
 
-  // Check for attempts to edit read-only sections
-  const readOnlyAttempts = editedKeys.filter(key => READ_ONLY_SECTIONS.includes(key));
-  if (readOnlyAttempts.length > 0) {
-    errors.push(`Cannot edit read-only sections: ${readOnlyAttempts.join(', ')}`);
+  // Read-only sections are allowed in input - they'll be preserved from base config
+  // Just log for visibility
+  const readOnlySections = editedKeys.filter(key => READ_ONLY_SECTIONS.includes(key));
+  if (readOnlySections.length > 0) {
+    console.log(`[Validation Info] Read-only sections in input (will use base config values): ${readOnlySections.join(', ')}`);
   }
 
   return {
     isValid: errors.length === 0,
     errors,
+    warnings,
   };
 }
 

@@ -188,8 +188,8 @@ export class ConfigAPIClient {
           },
           body: JSON.stringify({
             config,
-            merge: false,  // Skip validation and merge - save full config directly
-            createBackup: true,
+            merge: true,  // Merge editable sections with base config to preserve read-only sections
+            create_backup: true,
           }),
         });
 
