@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { Input, Select, Badge } from '@/components/ui';
+import { Input, Select, Badge, Textarea } from '@/components/ui';
 import { X } from 'lucide-react';
 import { useConfigStore } from '@/store';
 import type { FormFieldsProps } from '@/lib/crud/types';
@@ -85,6 +85,19 @@ export const BranchFormFields: React.FC<FormFieldsProps<BranchEntity>> = ({
         disabled={isEditMode}
         required
         autoFocus={!isEditMode}
+      />
+
+      {/* Description - for AI routing */}
+      <Textarea
+        label="Description"
+        id="description"
+        placeholder="e.g., Use when user asks about volunteering, helping families in need, or enrollment requirements"
+        value={value.description || ''}
+        onChange={(e) => onChange({ ...value, description: e.target.value })}
+        onBlur={() => onBlur('description')}
+        error={touched.description ? errors.description : undefined}
+        helperText="Describes when this branch should be triggered. Used by AI for free-form query routing."
+        rows={3}
       />
 
       {/* Program */}

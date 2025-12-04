@@ -94,6 +94,7 @@ export const BranchesEditor: React.FC = () => {
             const { branchId, ...branchData } = branchEntity;
             const branch: ConversationBranch = {
               available_ctas: branchData.available_ctas,
+              description: branchData.description,
               program_id: branchData.program_id,
             };
             createBranch(branch, branchId);
@@ -103,6 +104,7 @@ export const BranchesEditor: React.FC = () => {
           updateEntity: (branchId: string, branchEntity: BranchEntity) => {
             const updates: Partial<ConversationBranch> = {
               available_ctas: branchEntity.available_ctas,
+              description: branchEntity.description,
               program_id: branchEntity.program_id,
             };
             updateBranch(branchId, updates);

@@ -310,11 +310,20 @@ export function validateActionChip(
       errors.label = 'Label must be 50 characters or less';
     }
 
-    // Validate value/query
-    if (!data.value || !data.value.trim()) {
-      errors.value = 'Query is required';
-    } else if (data.value.length > 200) {
-      errors.value = 'Query must be 200 characters or less';
+    // Validate value/query (required for send_query and show_info, not for show_showcase)
+    if (data.action !== 'show_showcase') {
+      if (!data.value || !data.value.trim()) {
+        errors.value = 'Query is required';
+      } else if (data.value.length > 200) {
+        errors.value = 'Query must be 200 characters or less';
+      }
+    }
+
+    // Validate target_showcase_id (required for show_showcase action)
+    if (data.action === 'show_showcase') {
+      if (!data.target_showcase_id || !data.target_showcase_id.trim()) {
+        errors.target_showcase_id = 'Showcase item is required for this action';
+      }
     }
 
     // target_branch is optional, no validation needed

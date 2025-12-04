@@ -218,18 +218,21 @@ npm run lint                          # ESLint code checking
 npm run format                        # Format code with Prettier
 ```
 
+### Deployment
+
+```bash
+npm run deploy                        # Deploy to production (same as deploy:production)
+npm run deploy:production             # Deploy to production S3 bucket
+```
+
 ### Documentation Maintenance
 
 ```bash
-# CLAUDE.md automation
 npm run docs:update                   # Update CLAUDE.md automatically
 npm run docs:update:dry-run           # Preview CLAUDE.md changes
 npm run docs:validate                 # Validate CLAUDE.md accuracy
-
-# Git hooks setup
 npm run setup:hooks                   # Install pre-commit hooks for CLAUDE.md
 ```
-
 
 ## Configuration Schema Versions
 
@@ -715,5 +718,5 @@ See `scripts/README.md` for detailed automation documentation.
 
 - **Version**: 0.1.0
 - **Status**: Active Development
-- **Last Updated**: 2025-11-06
+- **Last Updated**: 2025-11-25
 - **Schema Version**: v1.4.1

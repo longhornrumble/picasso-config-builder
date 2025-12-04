@@ -14,6 +14,7 @@ const EDITABLE_SECTIONS = [
   'content_showcase',
   'cta_settings',
   'bedrock_instructions',
+  'action_chips',
 ];
 
 /**
@@ -23,7 +24,6 @@ const READ_ONLY_SECTIONS = [
   'branding',
   'features',
   'quick_help',
-  'action_chips',
   'widget_behavior',
   'aws',
   'card_inventory',

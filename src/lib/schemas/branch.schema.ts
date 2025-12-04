@@ -16,6 +16,14 @@ export const branchAvailableCTAsSchema = z.object({
 });
 
 export const conversationBranchSchema = z.object({
+  description: z
+    .string()
+    .optional()
+    .describe('Description of when this branch should be triggered (used for AI routing)'),
+  program: z
+    .string()
+    .optional()
+    .describe('Associated program ID'),
   available_ctas: branchAvailableCTAsSchema,
 }).superRefine((data, ctx) => {
   // Validate that primary CTA is not also in secondary list

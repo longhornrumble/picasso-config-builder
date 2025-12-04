@@ -362,14 +362,128 @@ export const ShowcaseItemFormFields: React.FC<FormFieldsProps<ShowcaseItemEntity
         )}
       </div>
 
-      {/* Action Configuration */}
+      {/* CTA Hub Configuration - Digital Flyer CTAs */}
+      <div className="w-full space-y-4 p-4 border-2 border-primary-200 dark:border-primary-700 rounded-lg bg-primary-50 dark:bg-primary-900/20">
+        <div className="flex items-center gap-2 mb-2">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            CTA Hub
+          </label>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            (Recommended)
+          </span>
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Group CTAs with this showcase item to create a "digital flyer" experience.
+          CTAs will render inside the card when displayed.
+        </p>
+
+        {/* Primary CTA */}
+        <div className="w-full">
+          <Select
+            label="Primary CTA"
+            value={value.available_ctas?.primary || '__none__'}
+            onValueChange={(newValue) =>
+              onChange({
+                ...value,
+                available_ctas: {
+                  ...value.available_ctas,
+                  primary: newValue === '__none__' ? undefined : newValue,
+                  secondary: value.available_ctas?.secondary || [],
+                },
+              })
+            }
+            options={ctaOptions}
+            helperText="Featured call-to-action displayed prominently in the card"
+            disabled={ctas.length === 0}
+          />
+          {ctas.length === 0 && (
+            <p className="mt-1.5 text-sm text-amber-600 dark:text-amber-400">
+              No CTAs available. Create CTAs in the CTAs section first.
+            </p>
+          )}
+        </div>
+
+        {/* Secondary CTAs */}
+        <div className="w-full">
+          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Secondary CTAs
+          </label>
+          <Select
+            value="__placeholder__"
+            onValueChange={(ctaId) => {
+              if (ctaId && ctaId !== '__placeholder__' && ctaId !== '__none__') {
+                const currentSecondary = value.available_ctas?.secondary || [];
+                if (!currentSecondary.includes(ctaId)) {
+                  onChange({
+                    ...value,
+                    available_ctas: {
+                      ...value.available_ctas,
+                      primary: value.available_ctas?.primary,
+                      secondary: [...currentSecondary, ctaId],
+                    },
+                  });
+                }
+              }
+            }}
+            options={[
+              { value: '__placeholder__', label: 'Add secondary CTA...' },
+              ...ctas
+                .filter(
+                  (cta) =>
+                    cta.id !== value.available_ctas?.primary &&
+                    !value.available_ctas?.secondary?.includes(cta.id)
+                )
+                .map((cta) => ({
+                  value: cta.id,
+                  label: cta.cta.label,
+                })),
+            ]}
+            disabled={ctas.length === 0 || ctas.length <= 1}
+          />
+          {(value.available_ctas?.secondary?.length || 0) > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {value.available_ctas?.secondary?.map((ctaId) => {
+                const cta = ctas.find((c) => c.id === ctaId);
+                return (
+                  <Badge key={ctaId} variant="outline" className="gap-1">
+                    {cta?.cta.label || ctaId}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onChange({
+                          ...value,
+                          available_ctas: {
+                            ...value.available_ctas,
+                            primary: value.available_ctas?.primary,
+                            secondary: value.available_ctas?.secondary?.filter(
+                              (id) => id !== ctaId
+                            ) || [],
+                          },
+                        })
+                      }
+                      className="ml-1 hover:text-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                );
+              })}
+            </div>
+          )}
+          <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+            Additional CTAs shown below the primary (max 5 recommended)
+          </p>
+        </div>
+      </div>
+
+      {/* Legacy Action Configuration */}
       <div className="w-full space-y-4 p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
         <div className="flex items-center gap-2 mb-2">
           <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
             Card Action
           </label>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            (Optional)
+          <span className="text-xs text-amber-600 dark:text-amber-400">
+            (Legacy - use CTA Hub instead)
           </span>
         </div>
 

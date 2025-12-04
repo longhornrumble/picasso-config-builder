@@ -210,14 +210,40 @@ export interface BranchAvailableCTAs {
   secondary: string[]; // Array of CTA IDs
 }
 
+/**
+ * CTA configuration for showcase items.
+ * Similar to BranchAvailableCTAs but all fields are optional.
+ * Showcase items act as "digital flyers" with grouped CTAs.
+ */
+export interface ShowcaseAvailableCTAs {
+  /** Primary/featured CTA ID */
+  primary?: string;
+  /** Secondary CTA IDs (max 5 recommended) */
+  secondary?: string[];
+}
+
 export interface ConversationBranch {
   available_ctas: BranchAvailableCTAs;
+
+  /**
+   * Description of when this branch should be triggered.
+   * Used by AI to determine routing for free-form user queries.
+   * Example: "Use when user asks about volunteering, helping families, or enrollment"
+   */
+  description?: string;
 
   /**
    * Program ID to associate this branch with a specific program.
    * Optional field for organizational purposes.
    */
   program_id?: string;
+
+  /**
+   * Showcase item ID to display when this branch is triggered.
+   * Links to content_showcase[].id for "digital flyer" presentation.
+   * When set, the showcase card renders with its own CTAs.
+   */
+  showcase_item_id?: string;
 }
 
 // ============================================================================
@@ -261,8 +287,18 @@ export interface ShowcaseItem {
   // Targeting
   keywords: string[];
 
-  // Action configuration
+  /**
+   * @deprecated Use available_ctas instead for multi-CTA support.
+   * Single action configuration (legacy support).
+   */
   action?: ShowcaseItemAction;
+
+  /**
+   * CTA hub configuration - groups multiple CTAs with this showcase item.
+   * When set, CTAs render inside the showcase card as a "digital flyer".
+   * Primary CTA is featured prominently, secondary CTAs shown below.
+   */
+  available_ctas?: ShowcaseAvailableCTAs;
 
   /**
    * Program ID to associate this showcase item with a specific program.
@@ -326,7 +362,7 @@ export interface QuickHelpConfig {
 // ACTION CHIPS
 // ============================================================================
 
-export type ActionChipActionType = 'send_query' | 'show_info';
+export type ActionChipActionType = 'send_query' | 'show_info' | 'show_showcase';
 
 export interface ActionChip {
   label: string;
@@ -346,6 +382,13 @@ export interface ActionChip {
    * If null/undefined, chip will use fallback routing
    */
   target_branch?: string | null;
+
+  /**
+   * Showcase Item ID to display when action is 'show_showcase'.
+   * Renders the showcase as a "digital flyer" with embedded CTAs.
+   * Bypasses Bedrock entirely.
+   */
+  target_showcase_id?: string;
 
   /**
    * Program ID to associate this action chip with a specific program.

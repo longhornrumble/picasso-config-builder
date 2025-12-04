@@ -30,12 +30,36 @@ export const ActionChipsEditor: React.FC = () => {
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
   const markDirty = useConfigStore((state) => state.config.markDirty);
 
-  // Get the chips dictionary (default to empty object if not present)
+  // Get the chips - may be array (legacy) or dictionary (v1.4.1+)
   const actionChipsConfig = baseConfig?.action_chips;
-  const chipsRecord = actionChipsConfig?.default_chips || {};
+  const rawChips = actionChipsConfig?.default_chips;
 
-  // Transform Action Chips from Record<string, ActionChip> to ActionChipEntity[]
+  // Migrate legacy array format to dictionary format, then transform to entities
   const chips = useMemo(() => {
+    if (!rawChips) return {};
+
+    // Check if legacy array format and migrate to dictionary
+    let chipsRecord: Record<string, ActionChip>;
+    if (Array.isArray(rawChips)) {
+      console.log('🔄 Migrating action chips from array to dictionary format');
+      chipsRecord = rawChips.reduce((acc, chip, index) => {
+        // Generate ID from label (slugify)
+        const chipId = chip.label
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '_')
+          .replace(/^_|_$/g, '') || `chip_${index}`;
+
+        acc[chipId] = {
+          ...chip,
+          action: chip.action || 'send_query',
+        };
+        return acc;
+      }, {} as Record<string, ActionChip>);
+    } else {
+      chipsRecord = rawChips;
+    }
+
+    // Transform to ActionChipEntity with chipId field
     console.log('🔍 chips memoization running, chipsRecord:', chipsRecord);
     const result = Object.entries(chipsRecord).reduce((acc, [chipId, chip]) => {
       acc[chipId] = {
@@ -46,7 +70,7 @@ export const ActionChipsEditor: React.FC = () => {
     }, {} as Record<string, ActionChipEntity>);
     console.log('🔍 chips memoization result:', result);
     return result;
-  }, [chipsRecord]);
+  }, [rawChips]);
 
   // Store operations for Action Chips using immer from Zustand
   const { setState } = useConfigStore;
@@ -62,12 +86,31 @@ export const ActionChipsEditor: React.FC = () => {
         };
       }
 
+      // Migrate legacy array format to dictionary in the store before adding new chip
+      const currentChips = state.config.baseConfig.action_chips.default_chips;
+      if (Array.isArray(currentChips)) {
+        console.log('🔄 Migrating action chips array to dictionary in store');
+        const migratedChips: Record<string, ActionChip> = {};
+        currentChips.forEach((existingChip, index) => {
+          const existingChipId = existingChip.label
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_|_$/g, '') || `chip_${index}`;
+          migratedChips[existingChipId] = {
+            ...existingChip,
+            action: existingChip.action || 'send_query',
+          };
+        });
+        state.config.baseConfig.action_chips.default_chips = migratedChips;
+      }
+
       state.config.baseConfig.action_chips.default_chips[chipId] = {
         label: chip.label,
         action: chip.action || 'send_query',
         value: chip.value,
         ...(chip.target_branch && { target_branch: chip.target_branch }),
         ...(chip.program_id && { program_id: chip.program_id }),
+        ...(chip.target_showcase_id && { target_showcase_id: chip.target_showcase_id }),
       };
     });
     markDirty();
@@ -77,7 +120,30 @@ export const ActionChipsEditor: React.FC = () => {
     console.log('🚀 updateChip CALLED with chipId:', chipId, 'updates:', updates);
 
     setState((state) => {
-      if (!state.config.baseConfig?.action_chips?.default_chips?.[chipId]) {
+      if (!state.config.baseConfig?.action_chips?.default_chips) {
+        console.log('❌ updateChip - no default_chips in store');
+        return;
+      }
+
+      // Migrate legacy array format to dictionary in the store before updating
+      const currentChips = state.config.baseConfig.action_chips.default_chips;
+      if (Array.isArray(currentChips)) {
+        console.log('🔄 Migrating action chips array to dictionary in store (from updateChip)');
+        const migratedChips: Record<string, ActionChip> = {};
+        currentChips.forEach((existingChip, index) => {
+          const existingChipId = existingChip.label
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_|_$/g, '') || `chip_${index}`;
+          migratedChips[existingChipId] = {
+            ...existingChip,
+            action: existingChip.action || 'send_query',
+          };
+        });
+        state.config.baseConfig.action_chips.default_chips = migratedChips;
+      }
+
+      if (!state.config.baseConfig.action_chips.default_chips[chipId]) {
         console.log('❌ updateChip - chip not found in store:', chipId);
         return;
       }
@@ -100,6 +166,10 @@ export const ActionChipsEditor: React.FC = () => {
 
       if ('program_id' in updates || 'program_id' in currentChip) {
         updatedChip.program_id = 'program_id' in updates ? updates.program_id : currentChip.program_id;
+      }
+
+      if ('target_showcase_id' in updates || 'target_showcase_id' in currentChip) {
+        updatedChip.target_showcase_id = 'target_showcase_id' in updates ? updates.target_showcase_id : currentChip.target_showcase_id;
       }
 
       console.log('✅ updateChip - final chip:', updatedChip);
@@ -139,6 +209,7 @@ export const ActionChipsEditor: React.FC = () => {
         value: '',
         target_branch: undefined,
         program_id: undefined,
+        target_showcase_id: undefined,
       }}
       config={{
         // Entity metadata
@@ -171,6 +242,7 @@ export const ActionChipsEditor: React.FC = () => {
               value: chipData.value,
               ...(chipData.target_branch && { target_branch: chipData.target_branch }),
               ...(chipData.program_id && { program_id: chipData.program_id }),
+              ...(chipData.target_showcase_id && { target_showcase_id: chipData.target_showcase_id }),
             };
             createChip(chip, chipId);
           },
@@ -189,6 +261,7 @@ export const ActionChipsEditor: React.FC = () => {
               value: chipEntity.value,
               target_branch: chipEntity.target_branch,
               program_id: chipEntity.program_id,
+              target_showcase_id: chipEntity.target_showcase_id,
             };
             console.log('📦 Updates object:', updates);
             updateChip(chipId, updates);

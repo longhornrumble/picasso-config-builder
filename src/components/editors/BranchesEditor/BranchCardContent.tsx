@@ -26,6 +26,18 @@ export const BranchCardContent: React.FC<CardContentProps<BranchEntity>> = ({
 
   return (
     <div className="space-y-3">
+      {/* Description */}
+      {branch.description && (
+        <div>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+            AI Routing Description
+          </p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+            {branch.description}
+          </p>
+        </div>
+      )}
+
       {/* Primary CTA */}
       <div>
         <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
