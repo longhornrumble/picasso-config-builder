@@ -28,7 +28,7 @@ describe('Programs Slice', () => {
         contentShowcase: {} as any,
         ui: createUISlice(...args),
         config: createConfigSlice(...args),
-        validation: {} as any,
+        validation: { validateAll: vi.fn() } as any,
       }))
     );
   });
