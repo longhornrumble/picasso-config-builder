@@ -28,19 +28,73 @@ export const createProgramsSlice: SliceCreator<ProgramsSlice> = (set, get) => ({
     get().validation.validateAll();
   },
 
-  updateProgram: (programId: string, updates: Partial<Program>) => {
+  updateProgram: (programId: string, updates: Partial<Program> | Program) => {
+    let updateSucceeded = false;
+
     set((state) => {
       const program = state.programs.programs[programId];
-      if (program) {
-        state.programs.programs[programId] = { ...program, ...updates };
-        state.config.markDirty();
+
+      if (!program) {
+        console.error('[programs.ts] Program not found:', {
+          programId,
+          availableProgramIds: Object.keys(state.programs.programs),
+        });
+        return;
       }
+
+      // If updates contains program_id, it's a full replacement, otherwise it's a partial update
+      const isFullReplacement = 'program_id' in updates;
+      const newProgramId = isFullReplacement ? (updates as Program).program_id : programId;
+      const programIdChanged = newProgramId !== programId;
+
+      // If program_id changed, check for duplicates
+      if (programIdChanged && state.programs.programs[newProgramId]) {
+        get().ui.addToast({
+          type: 'error',
+          message: `Program ID "${newProgramId}" already exists`,
+        });
+        return;
+      }
+
+      // Build the updated program
+      const updatedProgram = isFullReplacement
+        ? (updates as Program)
+        : { ...program, ...updates };
+
+      // If program_id changed, handle key remapping and cascade updates
+      if (programIdChanged) {
+        // Remove old key
+        delete state.programs.programs[programId];
+
+        // Add with new key
+        state.programs.programs[newProgramId] = updatedProgram;
+
+        // Cascade update forms that reference this program
+        Object.entries(state.forms.forms).forEach(([formId, form]) => {
+          if (form.program === programId) {
+            state.forms.forms[formId] = { ...form, program: newProgramId };
+          }
+        });
+
+        // Update activeProgramId if it was the renamed program
+        if (state.programs.activeProgramId === programId) {
+          state.programs.activeProgramId = newProgramId;
+        }
+      } else {
+        // No ID change - simple update
+        state.programs.programs[programId] = updatedProgram;
+      }
+
+      state.config.markDirty();
+      updateSucceeded = true;
     });
 
-    get().ui.addToast({
-      type: 'success',
-      message: 'Program updated successfully',
-    });
+    if (updateSucceeded) {
+      get().ui.addToast({
+        type: 'success',
+        message: 'Program updated successfully',
+      });
+    }
 
     // Re-run validation after updating program
     get().validation.validateAll();

@@ -30,12 +30,7 @@ export const ProgramFormFields: React.FC<FormFieldsProps<Program>> = ({
         onChange={(e) => onChange({ ...value, program_id: e.target.value })}
         onBlur={() => onBlur('program_id')}
         error={touched.program_id ? errors.program_id : undefined}
-        helperText={
-          isEditMode
-            ? 'Program ID cannot be changed'
-            : 'Lowercase letters, numbers, and underscores only'
-        }
-        disabled={isEditMode}
+        helperText="Lowercase letters, numbers, and underscores only"
         required
         autoFocus={!isEditMode}
       />
