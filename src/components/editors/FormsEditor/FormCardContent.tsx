@@ -14,7 +14,9 @@ export interface FormCardContentProps {
 
 export const FormCardContent: React.FC<FormCardContentProps> = ({ entity }) => {
   const programs = useConfigStore((state) => state.programs.programs);
-  const program = programs[entity.program];
+  // Look up program by key first, then by program_id field
+  const program = programs[entity.program] ||
+    Object.values(programs).find((p) => p.program_id === entity.program);
 
   return (
     <div className="space-y-3">
