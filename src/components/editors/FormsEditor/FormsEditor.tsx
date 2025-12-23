@@ -31,10 +31,10 @@ import type { ValidationErrors } from '@/types/validation';
 export const FormsEditor: React.FC = () => {
   // Get store slices
   const formsStore = useConfigStore((state) => state.forms);
-  const programsStore = useConfigStore((state) => state.programs);
   const getCTAsByForm = useConfigStore((state) => state.ctas.getCTAsByForm);
 
   // Enhanced validation that checks program existence
+  // Note: We get programs directly from store.getState() to avoid stale closure issues
   const validateFormWithProgram = useCallback(
     (data: ConversationalForm, context: ValidationContext<ConversationalForm>): ValidationErrors => {
       // Run base validation
@@ -42,7 +42,9 @@ export const FormsEditor: React.FC = () => {
 
       // Check if program exists (only if program is set and no existing error)
       if (data.program && !errors.program) {
-        const programExists = programsStore.programs[data.program];
+        // Get current programs from store (not from closure to avoid stale data)
+        const currentPrograms = useConfigStore.getState().programs.programs;
+        const programExists = currentPrograms[data.program];
         if (!programExists) {
           errors.program = `Program "${data.program}" does not exist. Select a valid program.`;
         }
@@ -50,7 +52,7 @@ export const FormsEditor: React.FC = () => {
 
       return errors;
     },
-    [programsStore.programs]
+    [] // No dependencies - we get fresh data from store each time
   );
 
   // Configure the generic editor
