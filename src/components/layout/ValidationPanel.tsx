@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { X, ChevronUp, ChevronDown, AlertCircle } from 'lucide-react';
+import { X, ChevronUp, ChevronDown, AlertCircle, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -49,6 +49,20 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
   const warnings = useConfigStore((state) => state.validation.warnings);
   const isValid = useConfigStore((state) => state.validation.isValid);
   const lastValidated = useConfigStore((state) => state.validation.lastValidated);
+  const validateAll = useConfigStore((state) => state.validation.validateAll);
+
+  // State for re-validate button
+  const [isValidating, setIsValidating] = useState(false);
+
+  // Handle re-validation
+  const handleRevalidate = async () => {
+    setIsValidating(true);
+    try {
+      await validateAll();
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   // Group issues by entity
   const groupedIssues = useMemo(() => {
@@ -236,16 +250,29 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
               </div>
             </button>
 
-            {/* Close Button */}
+            {/* Re-validate and Close Buttons */}
             {isExpanded && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsExpanded(false)}
-                className="ml-2 p-1 h-auto"
-              >
-                <X className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-1 ml-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRevalidate}
+                  disabled={isValidating}
+                  className="p-1 h-auto"
+                  title="Re-run validation"
+                >
+                  <RefreshCw className={cn('w-4 h-4', isValidating && 'animate-spin')} />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsExpanded(false)}
+                  className="p-1 h-auto"
+                  title="Close panel"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             )}
           </div>
         </CardHeader>
