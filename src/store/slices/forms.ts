@@ -28,30 +28,84 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
   },
 
   updateForm: (formId: string, updates: Partial<ConversationalForm> | ConversationalForm) => {
+    let updateSucceeded = false;
+
     set((state) => {
       const form = state.forms.forms[formId];
 
-      if (form) {
-        // If updates contains form_id, it's a full replacement, otherwise it's a partial update
-        const isFullReplacement = 'form_id' in updates;
-
-        state.forms.forms[formId] = isFullReplacement
-          ? (updates as ConversationalForm)
-          : { ...form, ...updates };
-
-        state.config.markDirty();
-      } else {
+      if (!form) {
         console.error('[forms.ts] Form not found:', {
           formId,
           availableFormIds: Object.keys(state.forms.forms),
         });
+        return;
       }
+
+      // If updates contains form_id, it's a full replacement, otherwise it's a partial update
+      const isFullReplacement = 'form_id' in updates;
+      const newFormId = isFullReplacement ? (updates as ConversationalForm).form_id : formId;
+      const formIdChanged = newFormId !== formId;
+
+      // If form_id changed, check for duplicates
+      if (formIdChanged && state.forms.forms[newFormId]) {
+        get().ui.addToast({
+          type: 'error',
+          message: `Form ID "${newFormId}" already exists`,
+        });
+        return;
+      }
+
+      // Build the updated form
+      const updatedForm = isFullReplacement
+        ? (updates as ConversationalForm)
+        : { ...form, ...updates };
+
+      // If form_id changed, handle key remapping and cascade updates
+      if (formIdChanged) {
+        // Remove old key
+        delete state.forms.forms[formId];
+
+        // Add with new key
+        state.forms.forms[newFormId] = updatedForm;
+
+        // Cascade update CTAs that reference this form
+        Object.entries(state.ctas.ctas).forEach(([ctaId, cta]) => {
+          if (cta.formId === formId) {
+            state.ctas.ctas[ctaId] = { ...cta, formId: newFormId };
+          }
+        });
+
+        // Cascade update post-submission actions in all forms
+        Object.values(state.forms.forms).forEach((f) => {
+          if (f.post_submission?.actions) {
+            const hasChanges = f.post_submission.actions.some((a) => a.formId === formId);
+            if (hasChanges) {
+              f.post_submission.actions = f.post_submission.actions.map((action) =>
+                action.formId === formId ? { ...action, formId: newFormId } : action
+              );
+            }
+          }
+        });
+
+        // Update activeFormId if it was the renamed form
+        if (state.forms.activeFormId === formId) {
+          state.forms.activeFormId = newFormId;
+        }
+      } else {
+        // No ID change - simple update
+        state.forms.forms[formId] = updatedForm;
+      }
+
+      state.config.markDirty();
+      updateSucceeded = true;
     });
 
-    get().ui.addToast({
-      type: 'success',
-      message: 'Form updated successfully',
-    });
+    if (updateSucceeded) {
+      get().ui.addToast({
+        type: 'success',
+        message: 'Form updated successfully',
+      });
+    }
 
     // Re-run validation after updating form
     get().validation.validateAll();

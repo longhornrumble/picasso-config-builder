@@ -39,12 +39,7 @@ export const FormFormFields: React.FC<FormFieldsProps<ConversationalForm>> = ({
         onChange={(e) => onChange({ ...value, form_id: e.target.value })}
         onBlur={() => onBlur('form_id')}
         error={touched.form_id ? errors.form_id : undefined}
-        helperText={
-          isEditMode
-            ? 'Form ID cannot be changed'
-            : 'Lowercase letters, numbers, hyphens, and underscores only'
-        }
-        disabled={isEditMode}
+        helperText="Lowercase letters, numbers, and underscores only"
         required
         autoFocus={!isEditMode}
       />
