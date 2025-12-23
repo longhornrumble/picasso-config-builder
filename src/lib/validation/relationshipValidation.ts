@@ -88,8 +88,10 @@ function validateFormProgramReferences(
     }
 
     // Check by key or by program_id field (in case key doesn't match program_id)
-    const programExists = programs[form.program] ||
-      Object.values(programs).some((p) => p.program_id === form.program);
+    const foundByKey = !!programs[form.program];
+    const foundByField = Object.values(programs).some((p) => p.program_id === form.program);
+    const programExists = foundByKey || foundByField;
+
     if (!programExists) {
       errors.push(
         createError(messages.form.invalidProgram(form.program), 'relationship', {
@@ -223,19 +225,24 @@ function checkOrphanedEntities(
   warnings: ValidationWarning[]
 ): void {
   // Check for orphaned programs (not used by any form)
-  const usedProgramIds = new Set<string>();
+  // Forms reference programs by program_id field, so collect those values
+  const usedProgramRefs = new Set<string>();
   Object.values(forms).forEach((form) => {
-    if (form.program) usedProgramIds.add(form.program);
+    if (form.program) usedProgramRefs.add(form.program);
   });
 
-  Object.entries(programs).forEach(([programId]) => {
-    if (!usedProgramIds.has(programId)) {
+  Object.entries(programs).forEach(([programKey, program]) => {
+    // Check if program is referenced by key OR by program_id field
+    const isUsedByKey = usedProgramRefs.has(programKey);
+    const isUsedByProgramId = usedProgramRefs.has(program.program_id);
+
+    if (!isUsedByKey && !isUsedByProgramId) {
       warnings.push(
         createWarning(
-          messages.relationship.orphanedEntity('Program', programId),
+          messages.relationship.orphanedEntity('Program', program.program_id),
           'relationship',
           {
-            entityId: `program-${programId}`,
+            entityId: `program-${programKey}`,
             level: 'info',
             suggestedFix: 'Assign this program to a form or remove it if no longer needed',
           }
