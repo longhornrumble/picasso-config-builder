@@ -105,9 +105,14 @@ function validateProgramReference(
     return;
   }
 
-  // Check if program exists
-  const program = allPrograms[form.program];
-  if (!program) {
+  // Check if program exists (by key or by program_id field)
+  const programByKey = allPrograms[form.program];
+  const programByField = !programByKey
+    ? Object.values(allPrograms).find((p) => p.program_id === form.program)
+    : undefined;
+  const programExists = programByKey || programByField;
+
+  if (!programExists) {
     errors.push(
       createError(messages.form.invalidProgram(form.program), 'form', {
         field: 'program',

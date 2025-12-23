@@ -44,7 +44,18 @@ export const FormsEditor: React.FC = () => {
       if (data.program && !errors.program) {
         // Get current programs from store (not from closure to avoid stale data)
         const currentPrograms = useConfigStore.getState().programs.programs;
-        const programExists = currentPrograms[data.program];
+
+        // Check by dictionary key first
+        let programExists = !!currentPrograms[data.program];
+
+        // Also check by program_id field (in case key doesn't match program_id)
+        if (!programExists) {
+          const programByField = Object.values(currentPrograms).find(
+            (p) => p.program_id === data.program
+          );
+          programExists = !!programByField;
+        }
+
         if (!programExists) {
           errors.program = `Program "${data.program}" does not exist. Select a valid program.`;
         }

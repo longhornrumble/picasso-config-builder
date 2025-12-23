@@ -87,7 +87,10 @@ function validateFormProgramReferences(
       return;
     }
 
-    if (!programs[form.program]) {
+    // Check by key or by program_id field (in case key doesn't match program_id)
+    const programExists = programs[form.program] ||
+      Object.values(programs).some((p) => p.program_id === form.program);
+    if (!programExists) {
       errors.push(
         createError(messages.form.invalidProgram(form.program), 'relationship', {
           field: 'program',
