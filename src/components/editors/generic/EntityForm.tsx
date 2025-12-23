@@ -221,6 +221,22 @@ export function EntityForm<T extends BaseEntity>({
             />
           </div>
 
+          {/* Show validation errors summary when form is invalid */}
+          {!isValid && Object.keys(errors).length > 0 && (
+            <Alert variant="error" className="mt-4">
+              <AlertDescription>
+                <div className="text-sm">
+                  <strong>Please fix the following errors:</strong>
+                  <ul className="mt-1 list-disc list-inside">
+                    {Object.entries(errors).map(([field, message]) => (
+                      message && <li key={field}><strong>{field}:</strong> {message}</li>
+                    ))}
+                  </ul>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className={`flex flex-col sm:flex-row sm:items-center ${footerActions ? 'sm:justify-between' : 'sm:justify-end'} gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-800`}>
             {footerActions && (
               <div className="flex items-center gap-2 order-2 sm:order-1">
