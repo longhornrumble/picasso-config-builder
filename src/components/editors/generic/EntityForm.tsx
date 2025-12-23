@@ -198,8 +198,9 @@ export function EntityForm<T extends BaseEntity>({
           </ModalHeader>
 
           <div className="space-y-4 py-4">
-            {/* Inline validation from global validation store */}
-            {entityId && <ValidationAlert entityId={entityId} className="mb-4" />}
+            {/* Inline validation from global validation store - only show in edit mode when form hasn't been modified */}
+            {/* Note: Once user starts editing, local validation takes over, so we hide global validation to avoid confusion */}
+            {entityId && Object.keys(touched).length === 0 && <ValidationAlert entityId={entityId} className="mb-4" />}
 
             {/* Form-level error */}
             {errors.form && (

@@ -8,7 +8,7 @@
  * - All managed through the same generic EntityEditor
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { FileText, Plus } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { EntityEditor } from '../generic/EntityEditor';
@@ -17,7 +17,8 @@ import { FormCardContent } from './FormCardContent';
 import { validateForm } from '@/lib/validation/formValidators';
 import { useConfigStore } from '@/store';
 import type { ConversationalForm } from '@/types/config';
-import type { EntityDependencies } from '@/lib/crud/types';
+import type { EntityDependencies, ValidationContext } from '@/lib/crud/types';
+import type { ValidationErrors } from '@/types/validation';
 
 /**
  * FormsEditor - Forms management interface using generic framework
@@ -30,7 +31,27 @@ import type { EntityDependencies } from '@/lib/crud/types';
 export const FormsEditor: React.FC = () => {
   // Get store slices
   const formsStore = useConfigStore((state) => state.forms);
+  const programsStore = useConfigStore((state) => state.programs);
   const getCTAsByForm = useConfigStore((state) => state.ctas.getCTAsByForm);
+
+  // Enhanced validation that checks program existence
+  const validateFormWithProgram = useCallback(
+    (data: ConversationalForm, context: ValidationContext<ConversationalForm>): ValidationErrors => {
+      // Run base validation
+      const errors = validateForm(data, context);
+
+      // Check if program exists (only if program is set and no existing error)
+      if (data.program && !errors.program) {
+        const programExists = programsStore.programs[data.program];
+        if (!programExists) {
+          errors.program = `Program "${data.program}" does not exist. Select a valid program.`;
+        }
+      }
+
+      return errors;
+    },
+    [programsStore.programs]
+  );
 
   // Configure the generic editor
   return (
@@ -89,8 +110,8 @@ export const FormsEditor: React.FC = () => {
           },
         }),
 
-        // Validation
-        validation: validateForm,
+        // Validation (includes program existence check)
+        validation: validateFormWithProgram,
 
         // ID and name extraction
         getId: (form) => form.form_id,
