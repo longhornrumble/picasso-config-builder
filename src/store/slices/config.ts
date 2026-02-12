@@ -263,6 +263,21 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
     });
   },
 
+  clearTenant: () => {
+    set((state) => {
+      state.config.tenantId = null;
+      state.config.baseConfig = null;
+      state.config.isDirty = false;
+      state.config.lastSaved = null;
+      state.programs.programs = {};
+      state.forms.forms = {};
+      state.ctas.ctas = {};
+      state.branches.branches = {};
+      state.contentShowcase.content_showcase = [];
+      state.validation.clearAll();
+    });
+  },
+
   markDirty: () => {
     set((state) => {
       state.config.isDirty = true;

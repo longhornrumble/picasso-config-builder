@@ -246,6 +246,7 @@ export interface ConfigSlice {
   saveConfig: () => Promise<void>;
   deployConfig: () => Promise<void>;
   resetConfig: () => void;
+  clearTenant: () => void;
   markDirty: () => void;
   markClean: () => void;
 

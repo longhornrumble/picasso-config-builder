@@ -259,15 +259,20 @@ export class ConfigAPIClient {
 
   /**
    * Delete tenant configuration (admin operation)
+   * @param full - If true, permanently deletes config, all backups, and hash mapping
    */
-  async deleteConfig(tenantId: string): Promise<void> {
+  async deleteConfig(tenantId: string, full: boolean = false): Promise<void> {
     if (!tenantId || tenantId.trim() === '') {
       throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
     }
 
+    const url = full
+      ? `${this.baseUrl}/config/${tenantId}?full=true`
+      : `${this.baseUrl}/config/${tenantId}`;
+
     return fetchWithRetry(
       async () => {
-        const response = await fetch(`${this.baseUrl}/config/${tenantId}`, {
+        const response = await fetch(url, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -294,8 +299,10 @@ export class ConfigAPIClient {
    * Create a new tenant configuration
    */
   async createTenant(request: {
+    org_name: string;
     tenant_id: string;
     chat_title?: string;
+    chat_subtitle?: string;
     subscription_tier?: string;
     primary_color?: string;
     welcome_message?: string;
