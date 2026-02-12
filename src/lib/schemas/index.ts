@@ -74,3 +74,9 @@ export {
   type CardInventory,
   type TenantConfig,
 } from './tenant.schema';
+
+// Create Tenant schemas
+export {
+  createTenantSchema,
+  type CreateTenantFormData,
+} from './createTenant.schema';

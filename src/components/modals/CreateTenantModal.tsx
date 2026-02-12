@@ -16,7 +16,7 @@ import {
   Alert,
   AlertDescription,
 } from '@/components/ui';
-import { createTenantSchema, type CreateTenantFormData } from '@/lib/schemas/createTenant.schema';
+import { createTenantSchema, type CreateTenantFormData } from '@/lib/schemas';
 import { configApiClient } from '@/lib/api/client';
 
 interface CreateTenantModalProps {
