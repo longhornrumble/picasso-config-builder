@@ -3,11 +3,12 @@
  * Landing page with tenant selector and quick actions
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ListChecks, FileText, MousePointerClick, GitBranch, Zap, ArrowRight } from 'lucide-react';
+import { ListChecks, FileText, MousePointerClick, GitBranch, Zap, ArrowRight, Plus } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button } from '@/components/ui';
 import { TenantSelector } from '@/components/TenantSelector';
+import { CreateTenantModal } from '@/components/modals/CreateTenantModal';
 import { useConfigStore } from '@/store';
 
 interface QuickAction {
@@ -34,6 +35,7 @@ interface QuickAction {
  */
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const tenantId = useConfigStore((state) => state.config.tenantId);
   const programs = useConfigStore((state) => state.programs.programs);
   const forms = useConfigStore((state) => state.forms.forms);
@@ -91,10 +93,23 @@ export const HomePage: React.FC = () => {
       {/* Tenant Selector Card */}
       <Card className="card-container">
         <CardHeader>
-          <CardTitle>Select a Tenant</CardTitle>
-          <CardDescription>
-            Choose a tenant to load and edit its configuration
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Select a Tenant</CardTitle>
+              <CardDescription>
+                Choose a tenant to load and edit its configuration
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCreateModal(true)}
+              className="shrink-0"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create New
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <TenantSelector className="justify-center" />
@@ -189,6 +204,14 @@ export const HomePage: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      <CreateTenantModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={() => {
+          setShowCreateModal(false);
+        }}
+      />
     </div>
   );
 };

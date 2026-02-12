@@ -179,6 +179,18 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         content_showcase: mergedConfig.content_showcase,
         cta_settings: mergedConfig.cta_settings,
         bedrock_instructions: mergedConfig.bedrock_instructions,
+        // Newly editable sections
+        branding: mergedConfig.branding,
+        features: mergedConfig.features,
+        quick_help: mergedConfig.quick_help,
+        action_chips: mergedConfig.action_chips,
+        widget_behavior: mergedConfig.widget_behavior,
+        aws: mergedConfig.aws,
+        // Metadata fields
+        chat_title: mergedConfig.chat_title,
+        welcome_message: mergedConfig.welcome_message,
+        subscription_tier: mergedConfig.subscription_tier,
+        tone_prompt: mergedConfig.tone_prompt,
       };
 
       console.log('[DEPLOY] Filtered config keys:', Object.keys(editableConfig));

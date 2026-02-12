@@ -12,3 +12,4 @@ export { ActionChipsPage } from './ActionChipsPage';
 export { CardsPage } from './CardsPage';
 export { SettingsPage } from './SettingsPage';
 export { NotFoundPage } from './NotFoundPage';
+export { LoginPage } from './LoginPage';

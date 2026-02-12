@@ -1,6 +1,6 @@
 /**
  * App Component
- * Main application component with React Router configuration
+ * Main application component with React Router configuration and authentication
  */
 
 import React from 'react';
@@ -20,12 +20,16 @@ import {
   SettingsPage,
   NotFoundPage,
 } from './pages';
+import { LoginPage } from './pages/LoginPage';
 import { useAutoSave } from './hooks/useAutoSave';
+import { useAuth } from '@/context/AuthContext';
+import { Spinner } from './components/ui';
 
 /**
  * Main Application Component
  *
  * Features:
+ * - Authentication gating with Bubble SSO
  * - React Router v6 configuration
  * - Error boundary for error handling
  * - Toast notification system
@@ -50,9 +54,29 @@ import { useAutoSave } from './hooks/useAutoSave';
  * ```
  */
 const App: React.FC = () => {
+  const { isAuthenticated, loading } = useAuth();
+
   // Enable auto-save functionality
   useAutoSave();
 
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Spinner size="lg" className="mb-4" />
+          <p className="text-gray-600 font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  // Authenticated - show main app
   return (
     <ErrorBoundary>
       <BrowserRouter>

@@ -316,14 +316,37 @@ export interface ContentShowcase {
 // ============================================================================
 
 export interface BrandingConfig {
-  logo_background_color?: string;
+  // Primary colors
   primary_color: string;
-  avatar_background_color?: string;
+  secondary_color?: string;
+  accent_color?: string;
+  background_color?: string;
+  // Header
+  header_background?: string;
   header_text_color?: string;
+  header_subtitle_color?: string;
+  // Chat bubbles
+  user_bubble_color?: string;
+  user_text_color?: string;
+  bot_bubble_color?: string;
+  bot_text_color?: string;
+  // Widget
+  widget_color?: string;
+  widget_text_color?: string;
   widget_icon_color?: string;
+  // Legacy
+  logo_background_color?: string;
+  avatar_background_color?: string;
+  // Typography
   font_family: string;
+  font_size_base?: string;
+  // Layout
+  border_radius?: string;
+  chat_position?: 'bottom-right' | 'bottom-left';
+  // Asset URLs
   logo_url?: string;
   avatar_url?: string;
+  company_logo_url?: string;
 }
 
 // ============================================================================
@@ -333,7 +356,9 @@ export interface BrandingConfig {
 export interface CalloutConfig {
   enabled: boolean;
   text?: string;
+  delay?: number;
   auto_dismiss: boolean;
+  dismiss_timeout?: number;
 }
 
 export interface FeaturesConfig {
@@ -343,6 +368,15 @@ export interface FeaturesConfig {
   streaming: boolean;
   conversational_forms: boolean;
   smart_cards: boolean;
+  sms?: boolean;
+  webchat?: boolean;
+  qr?: boolean;
+  bedrock_kb?: boolean;
+  ats?: boolean;
+  interview_scheduling?: boolean;
+  dashboard_conversations?: boolean;
+  dashboard_forms?: boolean;
+  dashboard_attribution?: boolean;
   callout: CalloutConfig;
 }
 
@@ -419,6 +453,7 @@ export interface WidgetBehaviorConfig {
   remember_state: boolean;
   persist_conversations: boolean;
   session_timeout_minutes: number;
+  auto_open_delay?: number;
 }
 
 // ============================================================================
@@ -452,6 +487,8 @@ export interface BedrockInstructions {
 export interface AWSConfig {
   knowledge_base_id: string;
   aws_region: string;
+  bot_id?: string;
+  bot_alias_id?: string;
 }
 
 // ============================================================================

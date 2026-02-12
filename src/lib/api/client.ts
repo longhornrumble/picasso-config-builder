@@ -29,6 +29,28 @@ export class ConfigAPIClient {
   }
 
   /**
+   * Get authentication headers from localStorage token
+   */
+  private getAuthHeaders(): Record<string, string> {
+    const token = localStorage.getItem('config_builder_token');
+    if (!token) {
+      return {};
+    }
+    return {
+      'Authorization': `Bearer ${token}`,
+    };
+  }
+
+  /**
+   * Handle 401 responses by clearing auth and dispatching session expired event
+   */
+  private handle401Response(): void {
+    localStorage.removeItem('config_builder_token');
+    localStorage.removeItem('config_builder_user');
+    window.dispatchEvent(new CustomEvent('auth:session-expired'));
+  }
+
+  /**
    * List all tenants from S3
    */
   async listTenants(): Promise<TenantListItem[]> {
@@ -37,8 +59,14 @@ export class ConfigAPIClient {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
         },
       });
+
+      if (response.status === 401) {
+        this.handle401Response();
+        throw await parseHTTPError(response);
+      }
 
       if (!response.ok) {
         throw await parseHTTPError(response);
@@ -62,8 +90,14 @@ export class ConfigAPIClient {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
         },
       });
+
+      if (response.status === 401) {
+        this.handle401Response();
+        throw await parseHTTPError(response);
+      }
 
       if (!response.ok) {
         throw await parseHTTPError(response);
@@ -86,8 +120,14 @@ export class ConfigAPIClient {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
         },
       });
+
+      if (response.status === 401) {
+        this.handle401Response();
+        throw await parseHTTPError(response);
+      }
 
       if (!response.ok) {
         throw await parseHTTPError(response);
@@ -151,9 +191,15 @@ export class ConfigAPIClient {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            ...this.getAuthHeaders(),
           },
           body: JSON.stringify(requestBody),
         });
+
+        if (response.status === 401) {
+          this.handle401Response();
+          throw await parseHTTPError(response);
+        }
 
         if (!response.ok) {
           throw await parseHTTPError(response);
@@ -185,6 +231,7 @@ export class ConfigAPIClient {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            ...this.getAuthHeaders(),
           },
           body: JSON.stringify({
             config,
@@ -192,6 +239,11 @@ export class ConfigAPIClient {
             create_backup: true,
           }),
         });
+
+        if (response.status === 401) {
+          this.handle401Response();
+          throw await parseHTTPError(response);
+        }
 
         if (!response.ok) {
           throw await parseHTTPError(response);
@@ -219,8 +271,14 @@ export class ConfigAPIClient {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
+            ...this.getAuthHeaders(),
           },
         });
+
+        if (response.status === 401) {
+          this.handle401Response();
+          throw await parseHTTPError(response);
+        }
 
         if (!response.ok) {
           throw await parseHTTPError(response);
@@ -228,6 +286,51 @@ export class ConfigAPIClient {
       },
       {
         maxRetries: 1, // Delete operations should not retry multiple times
+      }
+    );
+  }
+
+  /**
+   * Create a new tenant configuration
+   */
+  async createTenant(request: {
+    tenant_id: string;
+    chat_title?: string;
+    subscription_tier?: string;
+    primary_color?: string;
+    welcome_message?: string;
+    knowledge_base_id?: string;
+  }): Promise<{
+    success: boolean;
+    tenant_id: string;
+    tenant_hash: string;
+    embed_code: string;
+    config: any;
+  }> {
+    return fetchWithRetry(
+      async () => {
+        const response = await fetch(`${this.baseUrl}/config`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...this.getAuthHeaders(),
+          },
+          body: JSON.stringify(request),
+        });
+
+        if (response.status === 401) {
+          this.handle401Response();
+          throw await parseHTTPError(response);
+        }
+
+        if (!response.ok) {
+          throw await parseHTTPError(response);
+        }
+
+        return response.json();
+      },
+      {
+        maxRetries: 2,
       }
     );
   }

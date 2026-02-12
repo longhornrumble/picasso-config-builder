@@ -5,9 +5,18 @@
 
 import React from 'react';
 import { Settings, CheckCircle, AlertCircle, Clock, Info } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import { useConfigStore } from '@/store';
-import { CTASettings, BedrockInstructionsSettings } from '@/components/settings';
+import {
+  CTASettings,
+  BedrockInstructionsSettings,
+  TenantIdentitySettings,
+  BrandingSettings,
+  FeaturesSettings,
+  QuickHelpSettings,
+  WidgetBehaviorSettings,
+  AWSSettings,
+} from '@/components/settings';
 
 /**
  * Settings Page
@@ -104,11 +113,39 @@ export const SettingsPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* CTA Settings */}
-          <CTASettings />
+          {/* Tabbed Settings */}
+          <Tabs defaultValue="general" className="w-full">
+            <TabsList className="w-full justify-start">
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="branding">Branding</TabsTrigger>
+              <TabsTrigger value="features">Features</TabsTrigger>
+              <TabsTrigger value="ai-aws">AI & AWS</TabsTrigger>
+            </TabsList>
 
-          {/* Bedrock Instructions */}
-          <BedrockInstructionsSettings />
+            {/* General Tab */}
+            <TabsContent value="general" className="space-y-6 mt-6">
+              <TenantIdentitySettings />
+              <CTASettings />
+              <QuickHelpSettings />
+              <WidgetBehaviorSettings />
+            </TabsContent>
+
+            {/* Branding Tab */}
+            <TabsContent value="branding" className="space-y-6 mt-6">
+              <BrandingSettings />
+            </TabsContent>
+
+            {/* Features Tab */}
+            <TabsContent value="features" className="space-y-6 mt-6">
+              <FeaturesSettings />
+            </TabsContent>
+
+            {/* AI & AWS Tab */}
+            <TabsContent value="ai-aws" className="space-y-6 mt-6">
+              <BedrockInstructionsSettings />
+              <AWSSettings />
+            </TabsContent>
+          </Tabs>
 
           {/* Validation Status */}
           <Card>
