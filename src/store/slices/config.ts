@@ -49,23 +49,11 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         state.branches.branches = response.config.conversation_branches || {};
         state.contentShowcase.content_showcase = response.config.content_showcase || [];
 
-        // Flatten available_actions into the availableActions slice
-        const aa = (response.config as any).available_actions || {};
-        const flatActions: Record<string, any> = {};
-        for (const [id, entry] of Object.entries(aa.forms || {})) {
-          flatActions[id] = { ...(entry as any), type: 'form' };
-        }
-        for (const [id, entry] of Object.entries(aa.links || {})) {
-          flatActions[id] = { ...(entry as any), type: 'link' };
-        }
-        state.availableActions.actions = flatActions;
-
         // Clear any active selections
         state.programs.activeProgramId = null;
         state.forms.activeFormId = null;
         state.ctas.activeCtaId = null;
         state.branches.activeBranchId = null;
-        state.availableActions.activeActionId = null;
 
         // Clear validation state
         state.validation.clearAll();
@@ -200,7 +188,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         aws: mergedConfig.aws,
         // V3.5 features
         feature_flags: (mergedConfig as any).feature_flags,
-        available_actions: (mergedConfig as any).available_actions,
         // Metadata fields
         chat_title: mergedConfig.chat_title,
         welcome_message: mergedConfig.welcome_message,
@@ -349,20 +336,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
 
       // V3.5: Feature flags from baseConfig
       ...(state.config.baseConfig.feature_flags && { feature_flags: state.config.baseConfig.feature_flags }),
-
-      // V3.5: Unflatten available_actions from the availableActions slice
-      ...(() => {
-        const actions = state.availableActions.actions;
-        if (Object.keys(actions).length === 0) return {};
-        const forms: Record<string, any> = {};
-        const links: Record<string, any> = {};
-        for (const [id, entry] of Object.entries(actions)) {
-          const { type, ...rest } = entry;
-          if (type === 'form') forms[id] = rest;
-          else if (type === 'link') links[id] = rest;
-        }
-        return { available_actions: { forms, links, queries: {} } };
-      })(),
     };
 
     return mergedConfig;

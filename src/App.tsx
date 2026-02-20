@@ -16,7 +16,6 @@ import {
   CTAsPage,
   BranchesPage,
   ActionChipsPage,
-  AvailableActionsPage,
   CardsPage,
   SettingsPage,
   NotFoundPage,
@@ -108,9 +107,6 @@ const App: React.FC = () => {
 
             {/* Action Chips section */}
             <Route path="action-chips" element={<ActionChipsPage />} />
-
-            {/* Available Actions / Vocabulary section */}
-            <Route path="available-actions" element={<AvailableActionsPage />} />
 
             {/* Card inventory section (optional) */}
             <Route path="cards" element={<CardsPage />} />

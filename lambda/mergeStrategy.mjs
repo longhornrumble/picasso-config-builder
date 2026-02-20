@@ -16,7 +16,6 @@ const EDITABLE_SECTIONS = [
   'bedrock_instructions',
   'action_chips',
   'feature_flags',
-  'available_actions',
 ];
 
 /**

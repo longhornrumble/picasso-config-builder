@@ -154,8 +154,24 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
         )}
       </div>
 
-      {/* Note: Style field removed - CTAs now use position-based styling */}
-      {/* Backend automatically assigns _position: 'primary' or 'secondary' based on CTA placement in branches */}
+      {/* AI Available */}
+      <div className="flex items-start justify-between py-3 px-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg w-full">
+        <div className="flex-1 pr-4">
+          <label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+            AI Can Offer This CTA
+          </label>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            When enabled, the AI can surface this CTA based on conversation context.
+            Otherwise, it only appears when explicitly assigned to a branch.
+          </p>
+        </div>
+        <input
+          type="checkbox"
+          checked={value.ai_available || false}
+          onChange={(e) => onChange({ ...value, ai_available: e.target.checked })}
+          className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer mt-0.5"
+        />
+      </div>
 
       {/* Conditional Fields Based on Action */}
 

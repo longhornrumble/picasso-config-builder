@@ -53,8 +53,22 @@ export const FeaturesSettings: React.FC = () => {
     });
   };
 
+  // Update V3.5 feature flags (stored in baseConfig.feature_flags, separate from features)
+  const updateFeatureFlag = (flag: string, value: boolean) => {
+    useConfigStore.setState((state) => {
+      if (state.config.baseConfig) {
+        if (!state.config.baseConfig.feature_flags) {
+          (state.config.baseConfig as any).feature_flags = {};
+        }
+        ((state.config.baseConfig as any).feature_flags)[flag] = value;
+        state.config.isDirty = true;
+      }
+    });
+  };
+
   const features: Partial<FeaturesConfig> = baseConfig?.features || {};
   const callout: Partial<CalloutConfig> = features.callout || {};
+  const featureFlags = (baseConfig as any)?.feature_flags || {};
 
   // Feature toggle component
   const FeatureToggle: React.FC<{ label: string; field: string; description?: string }> = ({ label, field, description }) => (
@@ -156,6 +170,61 @@ export const FeaturesSettings: React.FC = () => {
               field="interview_scheduling"
               description="Enable automated interview scheduling"
             />
+          </div>
+        </div>
+
+        {/* V3.5 AI Behavior */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">AI Behavior (V3.5)</h3>
+          <div className="space-y-1">
+            <div className="flex items-start justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex-1 pr-4">
+                <label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                  Dynamic Actions
+                </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Let the AI surface CTAs marked as "AI Available" based on conversation context
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={featureFlags.DYNAMIC_ACTIONS || false}
+                onChange={(e) => updateFeatureFlag('DYNAMIC_ACTIONS', e.target.checked)}
+                className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer"
+              />
+            </div>
+            <div className="flex items-start justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex-1 pr-4">
+                <label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                  Dynamic Chips
+                </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  AI generates contextual follow-up suggestion chips after each response
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={featureFlags.DYNAMIC_CHIPS || false}
+                onChange={(e) => updateFeatureFlag('DYNAMIC_CHIPS', e.target.checked)}
+                className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer"
+              />
+            </div>
+            <div className="flex items-start justify-between py-2 border-b border-gray-200 dark:border-gray-700 last:border-0">
+              <div className="flex-1 pr-4">
+                <label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                  Guidance Modules
+                </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Topic-specific tone and behavior instructions injected based on conversation context
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={featureFlags.GUIDANCE_MODULES || false}
+                onChange={(e) => updateFeatureFlag('GUIDANCE_MODULES', e.target.checked)}
+                className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer"
+              />
+            </div>
           </div>
         </div>
 

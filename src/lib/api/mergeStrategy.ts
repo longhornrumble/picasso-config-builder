@@ -16,7 +16,6 @@ export const EDITABLE_SECTIONS = [
   'content_showcase',
   'cta_settings',
   'feature_flags',
-  'available_actions',
 ] as const;
 
 /**

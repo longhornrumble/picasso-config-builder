@@ -177,6 +177,13 @@ export interface CTADefinition {
    * Optional field for organizational purposes.
    */
   program_id?: string;
+
+  /**
+   * When true, the AI can surface this CTA autonomously based on conversation context.
+   * Used by V3.5 DYNAMIC_ACTIONS to build the AI's action vocabulary.
+   * CTAs without this flag only appear when explicitly assigned to a branch.
+   */
+  ai_available?: boolean;
 }
 
 // ============================================================================
@@ -472,31 +479,6 @@ export interface FeatureFlagsConfig {
 }
 
 // ============================================================================
-// AVAILABLE ACTIONS — AI Vocabulary (V3.5)
-// ============================================================================
-
-export type AvailableActionType = 'form' | 'link';
-
-export interface AvailableActionEntry {
-  type: AvailableActionType;
-  label: string;
-  // Form-specific
-  description?: string;
-  direct_cta?: boolean;
-  show_info?: boolean;
-  prompt?: string;
-  target_branch?: string;
-  // Link-specific
-  url?: string;
-}
-
-export interface AvailableActions {
-  forms?: Record<string, Omit<AvailableActionEntry, 'type'>>;
-  links?: Record<string, Omit<AvailableActionEntry, 'type'>>;
-  queries?: Record<string, unknown>;
-}
-
-// ============================================================================
 // BEDROCK INSTRUCTIONS (Multi-Tenant Prompt Customization)
 // ============================================================================
 
@@ -571,5 +553,4 @@ export interface TenantConfig {
 
   // V3.5 features
   feature_flags?: FeatureFlagsConfig;
-  available_actions?: AvailableActions;
 }

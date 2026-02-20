@@ -108,30 +108,6 @@ export const featureFlagsSchema = z.object({
 });
 
 // ============================================================================
-// AVAILABLE ACTIONS SCHEMA (V3.5)
-// ============================================================================
-
-export const availableActionFormSchema = z.object({
-  label: z.string().min(1, 'Label is required'),
-  description: z.string().optional(),
-  direct_cta: z.boolean().optional(),
-  show_info: z.boolean().optional(),
-  prompt: z.string().max(1000, 'Prompt must be 1000 characters or less').optional(),
-  target_branch: z.string().optional(),
-});
-
-export const availableActionLinkSchema = z.object({
-  label: z.string().min(1, 'Label is required'),
-  url: z.string().url('Must be a valid URL'),
-});
-
-export const availableActionsSchema = z.object({
-  forms: z.record(z.string(), availableActionFormSchema).optional(),
-  links: z.record(z.string(), availableActionLinkSchema).optional(),
-  queries: z.record(z.string(), z.unknown()).optional(),
-});
-
-// ============================================================================
 // AWS CONFIGURATION SCHEMA
 // ============================================================================
 
@@ -268,7 +244,6 @@ export const tenantConfigSchema = z.object({
 
   // V3.5 features
   feature_flags: featureFlagsSchema.optional(),
-  available_actions: availableActionsSchema.optional(),
 }).superRefine((data, ctx) => {
   // Validate feature dependencies
   if (data.features.conversational_forms && Object.keys(data.conversational_forms).length === 0) {

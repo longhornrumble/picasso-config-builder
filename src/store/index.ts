@@ -12,7 +12,6 @@ import { createProgramsSlice } from './slices/programs';
 import { createFormsSlice } from './slices/forms';
 import { createCTAsSlice } from './slices/ctas';
 import { createBranchesSlice } from './slices/branches';
-import { createAvailableActionsSlice } from './slices/availableActions';
 import { createContentShowcaseSlice } from './slices/contentShowcase';
 import { createUISlice } from './slices/ui';
 import { createValidationSlice } from './slices/validation';
@@ -40,7 +39,6 @@ export const useConfigStore = create<ConfigBuilderState>()(
       forms: createFormsSlice(set, get, api),
       ctas: createCTAsSlice(set, get, api),
       branches: createBranchesSlice(set, get, api),
-      availableActions: createAvailableActionsSlice(set, get, api),
       contentShowcase: createContentShowcaseSlice(set, get, api),
 
       // Application state
@@ -79,11 +77,6 @@ export const useCTAs = () => useConfigStore((state) => state.ctas);
  * Hook to access branches slice
  */
 export const useBranches = () => useConfigStore((state) => state.branches);
-
-/**
- * Hook to access available actions slice
- */
-export const useAvailableActions = () => useConfigStore((state) => state.availableActions);
 
 /**
  * Hook to access content showcase slice
@@ -199,7 +192,6 @@ export type {
   FormsSlice,
   CTAsSlice,
   BranchesSlice,
-  AvailableActionsSlice,
   ContentShowcaseSlice,
   UISlice,
   ValidationSlice,
