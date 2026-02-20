@@ -18,6 +18,7 @@ import {
   QuickHelpSettings,
   WidgetBehaviorSettings,
   AWSSettings,
+  FeatureFlagsSettings,
 } from '@/components/settings';
 
 /**
@@ -45,7 +46,7 @@ export const SettingsPage: React.FC = () => {
   const clearTenant = useConfigStore((state) => state.config.clearTenant);
   const addToast = useConfigStore((state) => state.ui.addToast);
 
-  const isDemo = baseConfig?.tenant_type === 'demo';
+  const isDemo = baseConfig?.tenant_type === 'demo' || tenantId?.startsWith('demo_');
 
   const handleTenantDeleted = () => {
     clearTenant();
@@ -128,6 +129,40 @@ export const SettingsPage: React.FC = () => {
             </CardContent>
           </Card>
 
+          {/* Danger Zone — only for demo tenants */}
+          {isDemo && (
+            <Card className="border-red-300 dark:border-red-800">
+              <CardHeader>
+                <CardTitle className="text-red-600 dark:text-red-400 flex items-center gap-2">
+                  <Trash2 className="w-5 h-5" />
+                  Danger Zone
+                </CardTitle>
+                <CardDescription>
+                  Irreversible actions for this demo tenant
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      Delete this demo tenant
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Permanently remove configuration, backups, and widget mapping
+                    </p>
+                  </div>
+                  <Button
+                    variant="danger"
+                    onClick={() => setShowDeleteModal(true)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Tenant
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Tabbed Settings */}
           <Tabs defaultValue="general" className="w-full">
             <TabsList className="w-full justify-start">
@@ -157,6 +192,7 @@ export const SettingsPage: React.FC = () => {
 
             {/* AI & AWS Tab */}
             <TabsContent value="ai-aws" className="space-y-6 mt-6">
+              <FeatureFlagsSettings />
               <BedrockInstructionsSettings />
               <AWSSettings />
             </TabsContent>
@@ -261,40 +297,6 @@ export const SettingsPage: React.FC = () => {
               </p>
             </CardContent>
           </Card>
-
-          {/* Danger Zone — only for demo tenants */}
-          {isDemo && (
-            <Card className="border-red-300 dark:border-red-800">
-              <CardHeader>
-                <CardTitle className="text-red-600 dark:text-red-400 flex items-center gap-2">
-                  <Trash2 className="w-5 h-5" />
-                  Danger Zone
-                </CardTitle>
-                <CardDescription>
-                  Irreversible actions for this demo tenant
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      Delete this demo tenant
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Permanently remove configuration, backups, and widget mapping
-                    </p>
-                  </div>
-                  <Button
-                    variant="danger"
-                    onClick={() => setShowDeleteModal(true)}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Tenant
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           <DeleteTenantModal
             open={showDeleteModal}

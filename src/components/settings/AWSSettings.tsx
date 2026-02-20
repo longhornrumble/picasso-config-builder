@@ -39,6 +39,16 @@ export const AWSSettings: React.FC = () => {
     });
   };
 
+  // Update top-level baseConfig field
+  const updateBaseConfig = (field: string, value: any) => {
+    useConfigStore.setState((state) => {
+      if (state.config.baseConfig) {
+        (state.config.baseConfig as any)[field] = value;
+        state.config.isDirty = true;
+      }
+    });
+  };
+
   const aws: Partial<AWSConfig> = baseConfig?.aws || {};
 
   return (
@@ -58,6 +68,15 @@ export const AWSSettings: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Bedrock Model ID */}
+        <Input
+          label="Bedrock Model ID"
+          value={(baseConfig as any)?.model_id || ''}
+          onChange={(e) => updateBaseConfig('model_id', e.target.value)}
+          placeholder="us.anthropic.claude-haiku-4-5-20251001-v1:0"
+          helperText="Override the default Bedrock model for this tenant. Leave empty to use system default."
+        />
+
         {/* Knowledge Base ID */}
         <Input
           label="Knowledge Base ID"

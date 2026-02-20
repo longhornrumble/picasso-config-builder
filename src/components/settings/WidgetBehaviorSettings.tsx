@@ -99,6 +99,44 @@ export const WidgetBehaviorSettings: React.FC = () => {
           placeholder="0"
           helperText="Delay before auto-opening widget (milliseconds). 0 = no auto-open"
         />
+
+        {/* Mobile Overrides */}
+        {widgetBehavior.start_open && (
+          <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              Mobile Overrides
+            </h4>
+            <div className="flex items-start justify-between py-2">
+              <div className="flex-1 pr-4">
+                <label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                  Start Open on Mobile
+                </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Override start_open behavior on mobile devices. Uncheck to keep the widget collapsed on mobile even when desktop starts open.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={widgetBehavior.mobile?.start_open ?? widgetBehavior.start_open ?? false}
+                onChange={(e) => {
+                  useConfigStore.setState((state) => {
+                    if (state.config.baseConfig) {
+                      if (!state.config.baseConfig.widget_behavior) {
+                        state.config.baseConfig.widget_behavior = {} as any;
+                      }
+                      if (!state.config.baseConfig.widget_behavior!.mobile) {
+                        (state.config.baseConfig.widget_behavior as any).mobile = {};
+                      }
+                      (state.config.baseConfig.widget_behavior as any).mobile.start_open = e.target.checked;
+                      state.config.isDirty = true;
+                    }
+                  });
+                }}
+                className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer"
+              />
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

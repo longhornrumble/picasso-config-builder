@@ -92,6 +92,43 @@ export const widgetBehaviorConfigSchema = z.object({
   remember_state: z.boolean(),
   persist_conversations: z.boolean(),
   session_timeout_minutes: z.number().int().min(5).max(1440, 'Timeout must be between 5 and 1440 minutes (24 hours)'),
+  mobile: z.object({
+    start_open: z.boolean().optional(),
+  }).optional(),
+});
+
+// ============================================================================
+// FEATURE FLAGS SCHEMA (V3.5)
+// ============================================================================
+
+export const featureFlagsSchema = z.object({
+  DYNAMIC_ACTIONS: z.boolean().optional(),
+  DYNAMIC_CHIPS: z.boolean().optional(),
+  GUIDANCE_MODULES: z.boolean().optional(),
+});
+
+// ============================================================================
+// AVAILABLE ACTIONS SCHEMA (V3.5)
+// ============================================================================
+
+export const availableActionFormSchema = z.object({
+  label: z.string().min(1, 'Label is required'),
+  description: z.string().optional(),
+  direct_cta: z.boolean().optional(),
+  show_info: z.boolean().optional(),
+  prompt: z.string().max(1000, 'Prompt must be 1000 characters or less').optional(),
+  target_branch: z.string().optional(),
+});
+
+export const availableActionLinkSchema = z.object({
+  label: z.string().min(1, 'Label is required'),
+  url: z.string().url('Must be a valid URL'),
+});
+
+export const availableActionsSchema = z.object({
+  forms: z.record(z.string(), availableActionFormSchema).optional(),
+  links: z.record(z.string(), availableActionLinkSchema).optional(),
+  queries: z.record(z.string(), z.unknown()).optional(),
 });
 
 // ============================================================================
@@ -228,6 +265,10 @@ export const tenantConfigSchema = z.object({
   widget_behavior: widgetBehaviorConfigSchema.optional(),
   cta_settings: ctaSettingsSchema.optional(),
   aws: awsConfigSchema,
+
+  // V3.5 features
+  feature_flags: featureFlagsSchema.optional(),
+  available_actions: availableActionsSchema.optional(),
 }).superRefine((data, ctx) => {
   // Validate feature dependencies
   if (data.features.conversational_forms && Object.keys(data.conversational_forms).length === 0) {

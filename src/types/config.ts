@@ -448,12 +448,52 @@ export interface ActionChipsConfig {
 // WIDGET BEHAVIOR
 // ============================================================================
 
+export interface WidgetBehaviorMobileConfig {
+  start_open?: boolean;
+}
+
 export interface WidgetBehaviorConfig {
   start_open: boolean;
   remember_state: boolean;
   persist_conversations: boolean;
   session_timeout_minutes: number;
   auto_open_delay?: number;
+  mobile?: WidgetBehaviorMobileConfig;
+}
+
+// ============================================================================
+// FEATURE FLAGS (V3.5)
+// ============================================================================
+
+export interface FeatureFlagsConfig {
+  DYNAMIC_ACTIONS?: boolean;
+  DYNAMIC_CHIPS?: boolean;
+  GUIDANCE_MODULES?: boolean;
+}
+
+// ============================================================================
+// AVAILABLE ACTIONS — AI Vocabulary (V3.5)
+// ============================================================================
+
+export type AvailableActionType = 'form' | 'link';
+
+export interface AvailableActionEntry {
+  type: AvailableActionType;
+  label: string;
+  // Form-specific
+  description?: string;
+  direct_cta?: boolean;
+  show_info?: boolean;
+  prompt?: string;
+  target_branch?: string;
+  // Link-specific
+  url?: string;
+}
+
+export interface AvailableActions {
+  forms?: Record<string, Omit<AvailableActionEntry, 'type'>>;
+  links?: Record<string, Omit<AvailableActionEntry, 'type'>>;
+  queries?: Record<string, unknown>;
 }
 
 // ============================================================================
@@ -528,4 +568,8 @@ export interface TenantConfig {
   cta_settings?: CTASettings;
   bedrock_instructions?: BedrockInstructions;
   aws: AWSConfig;
+
+  // V3.5 features
+  feature_flags?: FeatureFlagsConfig;
+  available_actions?: AvailableActions;
 }

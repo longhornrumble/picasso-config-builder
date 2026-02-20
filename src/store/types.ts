@@ -11,6 +11,8 @@ import type {
   ConversationBranch,
   ShowcaseItem,
   TenantConfig,
+  AvailableActionEntry,
+  AvailableActionType,
 } from '@/types/config';
 
 // ============================================================================
@@ -145,6 +147,29 @@ export interface BranchesSlice {
 }
 
 // ============================================================================
+// AVAILABLE ACTIONS SLICE (V3.5)
+// ============================================================================
+
+export interface AvailableActionsSlice {
+  // State
+  actions: Record<string, AvailableActionEntry>;
+  activeActionId: string | null;
+
+  // Actions
+  createAction: (action: AvailableActionEntry, actionId: string) => void;
+  updateAction: (actionId: string, updates: Partial<AvailableActionEntry>) => void;
+  deleteAction: (actionId: string) => void;
+  duplicateAction: (actionId: string) => void;
+  setActiveAction: (actionId: string | null) => void;
+
+  // Selectors
+  getAction: (actionId: string) => AvailableActionEntry | undefined;
+  getAllActions: () => Array<{ id: string; action: AvailableActionEntry }>;
+  getActionsByType: (type: AvailableActionType) => Array<{ id: string; action: AvailableActionEntry }>;
+  getActionDependencies: (actionId: string) => Dependencies;
+}
+
+// ============================================================================
 // CONTENT SHOWCASE SLICE
 // ============================================================================
 
@@ -269,6 +294,7 @@ export interface ConfigBuilderState {
   forms: FormsSlice;
   ctas: CTAsSlice;
   branches: BranchesSlice;
+  availableActions: AvailableActionsSlice;
   contentShowcase: ContentShowcaseSlice;
   ui: UISlice;
   validation: ValidationSlice;

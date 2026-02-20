@@ -13,6 +13,7 @@ import {
   MousePointerClick,
   GitBranch,
   Zap,
+  BookOpen,
   Sparkles,
   Settings,
   ChevronLeft,
@@ -88,6 +89,11 @@ export const Sidebar: React.FC = () => {
       to: '/action-chips',
       label: 'Action Chips',
       icon: <Zap className="w-5 h-5" />,
+    },
+    {
+      to: '/available-actions',
+      label: 'Vocabulary',
+      icon: <BookOpen className="w-5 h-5" />,
     },
     {
       to: '/cards',

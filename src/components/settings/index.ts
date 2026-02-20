@@ -11,3 +11,4 @@ export { FeaturesSettings } from './FeaturesSettings';
 export { QuickHelpSettings } from './QuickHelpSettings';
 export { WidgetBehaviorSettings } from './WidgetBehaviorSettings';
 export { AWSSettings } from './AWSSettings';
+export { FeatureFlagsSettings } from './FeatureFlagsSettings';
