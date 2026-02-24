@@ -25,6 +25,14 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
   const forms = useConfigStore((state) => state.forms.getAllForms());
   const branches = useConfigStore((state) => state.branches.getAllBranches());
   const programs = useConfigStore((state) => state.programs.getAllPrograms());
+  const baseConfig = useConfigStore((state) => state.config.baseConfig);
+
+  // Build category options from tenant's cta_categories
+  const categories = baseConfig?.cta_categories || {};
+  const categoryOptions = Object.entries(categories).map(([key, description]) => ({
+    value: key,
+    label: `${key} — ${description.length > 60 ? description.substring(0, 60) + '...' : description}`,
+  }));
 
   // Options for dropdowns
   const actionOptions = [
@@ -154,23 +162,23 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
         )}
       </div>
 
-      {/* AI Available */}
-      <div className="flex items-start justify-between py-3 px-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg w-full">
-        <div className="flex-1 pr-4">
-          <label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
-            AI Can Offer This CTA
-          </label>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            When enabled, the AI can surface this CTA based on conversation context.
-            Otherwise, it only appears when explicitly assigned to a branch.
-          </p>
-        </div>
-        <input
-          type="checkbox"
-          checked={value.ai_available || false}
-          onChange={(e) => onChange({ ...value, ai_available: e.target.checked })}
-          className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer mt-0.5"
+      {/* AI Category (V4) */}
+      <div className="w-full">
+        <Select
+          label="AI Category"
+          value={value.category || ''}
+          onValueChange={(newValue) =>
+            onChange({ ...value, category: newValue || undefined })
+          }
+          options={categoryOptions}
+          placeholder="Not in AI vocabulary"
+          helperText="Assigns this CTA to a category the AI uses for action selection. Leave empty to exclude from AI vocabulary."
         />
+        {categoryOptions.length === 0 && (
+          <p className="mt-1.5 text-sm text-amber-600 dark:text-amber-400">
+            No categories defined. Add categories in Settings &rarr; AI &amp; AWS.
+          </p>
+        )}
       </div>
 
       {/* Conditional Fields Based on Action */}

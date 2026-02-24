@@ -49,9 +49,9 @@ export const CTACardContent: React.FC<CardContentProps<CTAEntity>> = ({
         <Badge variant="secondary" className="text-xs italic">
           Position: Auto
         </Badge>
-        {cta.ai_available && (
+        {cta.category && (
           <Badge variant="default" className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-            AI Available
+            {cta.category}
           </Badge>
         )}
       </div>

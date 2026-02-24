@@ -179,11 +179,19 @@ export interface CTADefinition {
   program_id?: string;
 
   /**
-   * When true, the AI can surface this CTA autonomously based on conversation context.
-   * Used by V3.5 DYNAMIC_ACTIONS to build the AI's action vocabulary.
-   * CTAs without this flag only appear when explicitly assigned to a branch.
+   * @deprecated Use category instead. V4 uses category for AI vocabulary.
+   * Kept for backward compatibility with V3.5 tenants.
    */
   ai_available?: boolean;
+
+  /**
+   * Category for AI action selection (V4).
+   * Must match a key in tenant's cta_categories config.
+   * If set, this CTA is in the AI vocabulary for Step 3 action selection.
+   * If not set, this CTA only appears when explicitly assigned to a branch.
+   * Replaces ai_available flag.
+   */
+  category?: string;
 }
 
 // ============================================================================
@@ -469,14 +477,26 @@ export interface WidgetBehaviorConfig {
 }
 
 // ============================================================================
-// FEATURE FLAGS (V3.5)
+// FEATURE FLAGS (V3.5 + V4)
 // ============================================================================
 
 export interface FeatureFlagsConfig {
   DYNAMIC_ACTIONS?: boolean;
   DYNAMIC_CHIPS?: boolean;
   GUIDANCE_MODULES?: boolean;
+  V4_PIPELINE?: boolean;
 }
+
+// ============================================================================
+// CTA CATEGORIES (V4)
+// ============================================================================
+
+/**
+ * Tenant-defined CTA category taxonomy.
+ * Keys are category IDs (e.g., 'learn', 'apply', 'request', 'give', 'connect').
+ * Values are descriptions the AI reads to understand when to surface CTAs in each category.
+ */
+export type CTACategoriesConfig = Record<string, string>;
 
 // ============================================================================
 // BEDROCK INSTRUCTIONS (Multi-Tenant Prompt Customization)
@@ -553,4 +573,7 @@ export interface TenantConfig {
 
   // V3.5 features
   feature_flags?: FeatureFlagsConfig;
+
+  // V4 features
+  cta_categories?: CTACategoriesConfig;
 }

@@ -36,7 +36,13 @@ export const ctaDefinitionSchema = z.object({
   ai_available: z
     .boolean()
     .optional()
-    .describe('When true, the AI can surface this CTA based on conversation context'),
+    .describe('@deprecated Use category instead. V4 uses category for AI vocabulary.'),
+  category: z
+    .string()
+    .min(1, 'Category cannot be empty')
+    .max(50, 'Category must be 50 characters or less')
+    .optional()
+    .describe('V4 category for AI action selection. Replaces ai_available.'),
 }).superRefine((data, ctx) => {
   // Validate action-specific required fields (v1.3+)
 

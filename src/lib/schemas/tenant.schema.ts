@@ -105,7 +105,16 @@ export const featureFlagsSchema = z.object({
   DYNAMIC_ACTIONS: z.boolean().optional(),
   DYNAMIC_CHIPS: z.boolean().optional(),
   GUIDANCE_MODULES: z.boolean().optional(),
+  V4_PIPELINE: z.boolean().optional(),
 });
+
+// ============================================================================
+// CTA CATEGORIES SCHEMA (V4)
+// ============================================================================
+
+export const ctaCategoriesSchema = z.record(
+  z.string().min(1).max(200, 'Category description must be 200 characters or less'),
+);
 
 // ============================================================================
 // AWS CONFIGURATION SCHEMA
@@ -244,6 +253,9 @@ export const tenantConfigSchema = z.object({
 
   // V3.5 features
   feature_flags: featureFlagsSchema.optional(),
+
+  // V4 features
+  cta_categories: ctaCategoriesSchema.optional(),
 }).superRefine((data, ctx) => {
   // Validate feature dependencies
   if (data.features.conversational_forms && Object.keys(data.conversational_forms).length === 0) {

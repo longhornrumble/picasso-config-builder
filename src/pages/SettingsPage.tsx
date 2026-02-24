@@ -18,6 +18,8 @@ import {
   QuickHelpSettings,
   WidgetBehaviorSettings,
   AWSSettings,
+  FeatureFlagsSettings,
+  CTACategoriesSettings,
 } from '@/components/settings';
 
 /**
@@ -191,6 +193,8 @@ export const SettingsPage: React.FC = () => {
 
             {/* AI & AWS Tab */}
             <TabsContent value="ai-aws" className="space-y-6 mt-6">
+              <FeatureFlagsSettings />
+              <CTACategoriesSettings />
               <BedrockInstructionsSettings />
               <AWSSettings />
             </TabsContent>
