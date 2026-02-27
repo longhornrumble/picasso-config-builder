@@ -98,19 +98,6 @@ export const widgetBehaviorConfigSchema = z.object({
 });
 
 // ============================================================================
-// FEATURE FLAGS SCHEMA (V3.5)
-// ============================================================================
-
-export const featureFlagsSchema = z.object({
-  DYNAMIC_ACTIONS: z.boolean().optional(),
-  DYNAMIC_CHIPS: z.boolean().optional(),
-  GUIDANCE_MODULES: z.boolean().optional(),
-  DYNAMIC_CTA_SELECTION: z.boolean().optional(),
-  WORKFLOW_TRACKING: z.boolean().optional(),
-  V4_PIPELINE: z.boolean().optional(),
-});
-
-// ============================================================================
 // INTENT DEFINITIONS SCHEMA (V4 Classification)
 // ============================================================================
 
@@ -275,9 +262,6 @@ export const tenantConfigSchema = z.object({
   cta_settings: ctaSettingsSchema.optional(),
   aws: awsConfigSchema,
 
-  // V3.5 features
-  feature_flags: featureFlagsSchema.optional(),
-
   // V4 classification routing
   intent_definitions: intentDefinitionsSchema.optional(),
 }).superRefine((data, ctx) => {
@@ -389,15 +373,6 @@ export const tenantConfigSchema = z.object({
         });
       }
     });
-
-    // Warn if V4_PIPELINE flag is not set but intent_definitions are present
-    if (!data.feature_flags?.V4_PIPELINE) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['feature_flags', 'V4_PIPELINE'],
-        message: 'intent_definitions are defined but V4_PIPELINE flag is not enabled — intents will be ignored',
-      });
-    }
 
     // Warn if fallback_branch is not set (critical for V4)
     if (!data.cta_settings?.fallback_branch) {

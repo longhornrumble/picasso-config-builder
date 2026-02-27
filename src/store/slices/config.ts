@@ -186,8 +186,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         action_chips: mergedConfig.action_chips,
         widget_behavior: mergedConfig.widget_behavior,
         aws: mergedConfig.aws,
-        // V3.5 features
-        feature_flags: (mergedConfig as any).feature_flags,
         // V4 classification routing
         intent_definitions: (mergedConfig as any).intent_definitions,
         // Metadata fields
@@ -335,9 +333,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       ...(state.config.baseConfig.widget_behavior && { widget_behavior: state.config.baseConfig.widget_behavior }),
       ...(state.config.baseConfig.cta_settings && { cta_settings: state.config.baseConfig.cta_settings }),
       ...(state.config.baseConfig.bedrock_instructions && { bedrock_instructions: state.config.baseConfig.bedrock_instructions }),
-
-      // V3.5: Feature flags from baseConfig
-      ...(state.config.baseConfig.feature_flags && { feature_flags: state.config.baseConfig.feature_flags }),
 
       // V4: Intent definitions from baseConfig
       ...(state.config.baseConfig.intent_definitions && { intent_definitions: state.config.baseConfig.intent_definitions }),

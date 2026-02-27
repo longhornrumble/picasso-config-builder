@@ -494,19 +494,6 @@ export interface IntentDefinition {
 }
 
 // ============================================================================
-// FEATURE FLAGS (V3.5 + V4)
-// ============================================================================
-
-export interface FeatureFlagsConfig {
-  DYNAMIC_ACTIONS?: boolean;
-  DYNAMIC_CHIPS?: boolean;
-  GUIDANCE_MODULES?: boolean;
-  DYNAMIC_CTA_SELECTION?: boolean;
-  WORKFLOW_TRACKING?: boolean;
-  V4_PIPELINE?: boolean;
-}
-
-// ============================================================================
 // BEDROCK INSTRUCTIONS (Multi-Tenant Prompt Customization)
 // ============================================================================
 
@@ -580,9 +567,6 @@ export interface TenantConfig {
   cta_settings?: CTASettings;
   bedrock_instructions?: BedrockInstructions;
   aws: AWSConfig;
-
-  // V3.5 features
-  feature_flags?: FeatureFlagsConfig;
 
   // V4 classification routing
   intent_definitions?: IntentDefinition[];
