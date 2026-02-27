@@ -105,16 +105,40 @@ export const featureFlagsSchema = z.object({
   DYNAMIC_ACTIONS: z.boolean().optional(),
   DYNAMIC_CHIPS: z.boolean().optional(),
   GUIDANCE_MODULES: z.boolean().optional(),
+  DYNAMIC_CTA_SELECTION: z.boolean().optional(),
+  WORKFLOW_TRACKING: z.boolean().optional(),
   V4_PIPELINE: z.boolean().optional(),
 });
 
 // ============================================================================
-// CTA CATEGORIES SCHEMA (V4)
+// INTENT DEFINITIONS SCHEMA (V4 Classification)
 // ============================================================================
 
-export const ctaCategoriesSchema = z.record(
-  z.string().min(1).max(200, 'Category description must be 200 characters or less'),
-);
+export const intentDefinitionSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Intent name is required')
+    .max(100, 'Intent name must be 100 characters or less')
+    .regex(/^[a-z][a-z0-9_]*$/, 'Intent name must be lowercase with underscores (e.g., mentoring_applicant)'),
+  description: z
+    .string()
+    .min(10, 'Description must be at least 10 characters — include positive and negative cases')
+    .max(1000, 'Description must be 1000 characters or less'),
+  target_branch: z
+    .string()
+    .min(1, 'Target branch cannot be empty')
+    .max(100)
+    .optional(),
+  cta_id: z
+    .string()
+    .min(1, 'CTA ID cannot be empty')
+    .max(100)
+    .optional(),
+});
+
+export const intentDefinitionsSchema = z
+  .array(intentDefinitionSchema)
+  .max(12, 'Maximum 12 intent definitions recommended — more increases misfire risk');
 
 // ============================================================================
 // AWS CONFIGURATION SCHEMA
@@ -254,8 +278,8 @@ export const tenantConfigSchema = z.object({
   // V3.5 features
   feature_flags: featureFlagsSchema.optional(),
 
-  // V4 features
-  cta_categories: ctaCategoriesSchema.optional(),
+  // V4 classification routing
+  intent_definitions: intentDefinitionsSchema.optional(),
 }).superRefine((data, ctx) => {
   // Validate feature dependencies
   if (data.features.conversational_forms && Object.keys(data.conversational_forms).length === 0) {
@@ -330,6 +354,66 @@ export const tenantConfigSchema = z.object({
       }
     });
   });
+
+  // V4: Validate intent_definitions cross-references
+  if (data.intent_definitions && data.intent_definitions.length > 0) {
+    const branchIds = new Set(Object.keys(data.conversation_branches));
+
+    // Check unique intent names
+    const intentNames = new Set<string>();
+    data.intent_definitions.forEach((intent, index) => {
+      if (intentNames.has(intent.name)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['intent_definitions', index, 'name'],
+          message: `Duplicate intent name: "${intent.name}"`,
+        });
+      }
+      intentNames.add(intent.name);
+
+      // Validate target_branch references an existing branch
+      if (intent.target_branch && !branchIds.has(intent.target_branch)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['intent_definitions', index, 'target_branch'],
+          message: `Intent "${intent.name}" references non-existent branch: "${intent.target_branch}"`,
+        });
+      }
+
+      // Validate cta_id references an existing CTA
+      if (intent.cta_id && !ctaIds.has(intent.cta_id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['intent_definitions', index, 'cta_id'],
+          message: `Intent "${intent.name}" references non-existent CTA: "${intent.cta_id}"`,
+        });
+      }
+    });
+
+    // Warn if V4_PIPELINE flag is not set but intent_definitions are present
+    if (!data.feature_flags?.V4_PIPELINE) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['feature_flags', 'V4_PIPELINE'],
+        message: 'intent_definitions are defined but V4_PIPELINE flag is not enabled — intents will be ignored',
+      });
+    }
+
+    // Warn if fallback_branch is not set (critical for V4)
+    if (!data.cta_settings?.fallback_branch) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['cta_settings', 'fallback_branch'],
+        message: 'V4 intent_definitions are defined but no fallback_branch is set — null classifications will show no CTAs',
+      });
+    } else if (!branchIds.has(data.cta_settings.fallback_branch)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['cta_settings', 'fallback_branch'],
+        message: `fallback_branch "${data.cta_settings.fallback_branch}" does not exist in conversation_branches`,
+      });
+    }
+  }
 });
 
 // ============================================================================
@@ -350,4 +434,5 @@ export type Requirement = z.infer<typeof requirementSchema>;
 export type ProgramCard = z.infer<typeof programCardSchema>;
 export type ReadinessThresholds = z.infer<typeof readinessThresholdsSchema>;
 export type CardInventory = z.infer<typeof cardInventorySchema>;
+export type IntentDefinition = z.infer<typeof intentDefinitionSchema>;
 export type TenantConfig = z.infer<typeof tenantConfigSchema>;

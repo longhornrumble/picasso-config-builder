@@ -12,8 +12,20 @@ const FLAG_DEFINITIONS = [
   {
     key: 'V4_PIPELINE',
     label: 'V4 Pipeline',
-    description: 'Enable modular conversational pipeline with separate action selection. Replaces V3.5 Tag & Map.',
+    description: 'Enable three-layer classification architecture: streaming response → intent classification → deterministic routing.',
     isV4: true,
+  },
+  {
+    key: 'WORKFLOW_TRACKING',
+    label: 'Workflow Tracking',
+    description: 'Enable session position tracking for improved loop prevention. Recommended for all tenants.',
+    isV4: true,
+  },
+  {
+    key: 'DYNAMIC_CTA_SELECTION',
+    label: 'Dynamic CTA Selection',
+    description: 'Tier 1-2 CTA scoring for action chip and button click routing. Works with both V3.5 and V4.',
+    isV4: false,
   },
   {
     key: 'DYNAMIC_ACTIONS',

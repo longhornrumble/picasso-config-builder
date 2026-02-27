@@ -13,5 +13,4 @@ import type { CTADefinition } from '@/types/config';
  */
 export interface CTAEntity extends CTADefinition {
   ctaId: string;
-  category?: string;
 }

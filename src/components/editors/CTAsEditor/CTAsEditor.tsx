@@ -61,7 +61,6 @@ export const CTAsEditor: React.FC = () => {
         prompt: '',
         target_branch: undefined,
         program_id: undefined,
-        category: undefined,
       }}
       config={{
         // Entity metadata
@@ -98,7 +97,6 @@ export const CTAsEditor: React.FC = () => {
               ...(ctaData.prompt && { prompt: ctaData.prompt }),
               ...(ctaData.target_branch && { target_branch: ctaData.target_branch }),
               ...(ctaData.program_id && { program_id: ctaData.program_id }),
-              ...(ctaData.category && { category: ctaData.category }),
             };
             createCTA(cta, ctaId);
           },
@@ -109,7 +107,6 @@ export const CTAsEditor: React.FC = () => {
               label: ctaEntity.label,
               action: ctaEntity.action,
               type: ctaEntity.type,
-              category: ctaEntity.category || undefined,
               ...(ctaEntity.formId && { formId: ctaEntity.formId }),
               ...(ctaEntity.url && { url: ctaEntity.url }),
               ...(ctaEntity.query && { query: ctaEntity.query }),

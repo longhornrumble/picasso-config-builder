@@ -188,8 +188,8 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         aws: mergedConfig.aws,
         // V3.5 features
         feature_flags: (mergedConfig as any).feature_flags,
-        // V4 features
-        cta_categories: (mergedConfig as any).cta_categories,
+        // V4 classification routing
+        intent_definitions: (mergedConfig as any).intent_definitions,
         // Metadata fields
         chat_title: mergedConfig.chat_title,
         welcome_message: mergedConfig.welcome_message,
@@ -339,8 +339,8 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       // V3.5: Feature flags from baseConfig
       ...(state.config.baseConfig.feature_flags && { feature_flags: state.config.baseConfig.feature_flags }),
 
-      // V4: CTA categories from baseConfig
-      ...(state.config.baseConfig.cta_categories && { cta_categories: state.config.baseConfig.cta_categories }),
+      // V4: Intent definitions from baseConfig
+      ...(state.config.baseConfig.intent_definitions && { intent_definitions: state.config.baseConfig.intent_definitions }),
     };
 
     return mergedConfig;

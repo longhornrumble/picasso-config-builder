@@ -179,19 +179,11 @@ export interface CTADefinition {
   program_id?: string;
 
   /**
-   * @deprecated Use category instead. V4 uses category for AI vocabulary.
-   * Kept for backward compatibility with V3.5 tenants.
+   * When true, this CTA is included in the AI vocabulary for dynamic selection
+   * (Tier 1-2 scoring via cta_selector). When false or omitted, this CTA only
+   * appears when explicitly assigned to a branch.
    */
   ai_available?: boolean;
-
-  /**
-   * Category for AI action selection (V4).
-   * Must match a key in tenant's cta_categories config.
-   * If set, this CTA is in the AI vocabulary for Step 3 action selection.
-   * If not set, this CTA only appears when explicitly assigned to a branch.
-   * Replaces ai_available flag.
-   */
-  category?: string;
 }
 
 // ============================================================================
@@ -477,6 +469,31 @@ export interface WidgetBehaviorConfig {
 }
 
 // ============================================================================
+// INTENT DEFINITIONS (V4 Classification)
+// ============================================================================
+
+/**
+ * A single intent definition for V4 classification routing.
+ * The classifier reads the description and compares it to the user's messages
+ * to determine which intent best matches.
+ *
+ * Routing priority: target_branch > cta_id > no routing (response only)
+ */
+export interface IntentDefinition {
+  /** Unique identifier for this intent. Used in routing rules and logs. */
+  name: string;
+
+  /** Natural language description read by the classifier. Quality of this field determines accuracy. */
+  description: string;
+
+  /** Key in conversation_branches to activate when this intent is matched. */
+  target_branch?: string;
+
+  /** Key in cta_definitions to surface as a single button when this intent is matched. */
+  cta_id?: string;
+}
+
+// ============================================================================
 // FEATURE FLAGS (V3.5 + V4)
 // ============================================================================
 
@@ -484,19 +501,10 @@ export interface FeatureFlagsConfig {
   DYNAMIC_ACTIONS?: boolean;
   DYNAMIC_CHIPS?: boolean;
   GUIDANCE_MODULES?: boolean;
+  DYNAMIC_CTA_SELECTION?: boolean;
+  WORKFLOW_TRACKING?: boolean;
   V4_PIPELINE?: boolean;
 }
-
-// ============================================================================
-// CTA CATEGORIES (V4)
-// ============================================================================
-
-/**
- * Tenant-defined CTA category taxonomy.
- * Keys are category IDs (e.g., 'learn', 'apply', 'request', 'give', 'connect').
- * Values are descriptions the AI reads to understand when to surface CTAs in each category.
- */
-export type CTACategoriesConfig = Record<string, string>;
 
 // ============================================================================
 // BEDROCK INSTRUCTIONS (Multi-Tenant Prompt Customization)
@@ -544,6 +552,8 @@ export interface TenantConfig {
   tenant_id: string;
   tenant_hash: string;
   subscription_tier: SubscriptionTier;
+  tenant_type?: string;
+  org_name?: string;
   chat_title: string;
   tone_prompt: string;
   welcome_message: string;
@@ -574,6 +584,6 @@ export interface TenantConfig {
   // V3.5 features
   feature_flags?: FeatureFlagsConfig;
 
-  // V4 features
-  cta_categories?: CTACategoriesConfig;
+  // V4 classification routing
+  intent_definitions?: IntentDefinition[];
 }

@@ -17,6 +17,7 @@ const EDITABLE_SECTIONS = [
   'action_chips',
   'feature_flags',
   'cta_categories',
+  'intent_definitions',
 ];
 
 /**

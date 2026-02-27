@@ -25,14 +25,6 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
   const forms = useConfigStore((state) => state.forms.getAllForms());
   const branches = useConfigStore((state) => state.branches.getAllBranches());
   const programs = useConfigStore((state) => state.programs.getAllPrograms());
-  const baseConfig = useConfigStore((state) => state.config.baseConfig);
-
-  // Build category options from tenant's cta_categories
-  const categories = baseConfig?.cta_categories || {};
-  const categoryOptions = Object.entries(categories).map(([key, description]) => ({
-    value: key,
-    label: `${key} — ${description.length > 60 ? description.substring(0, 60) + '...' : description}`,
-  }));
 
   // Options for dropdowns
   const actionOptions = [
@@ -158,25 +150,6 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
         {programs.length === 0 && (
           <p className="mt-1.5 text-sm text-amber-600 dark:text-amber-400">
             No programs available. Create a program first.
-          </p>
-        )}
-      </div>
-
-      {/* AI Category (V4) */}
-      <div className="w-full">
-        <Select
-          label="AI Category"
-          value={value.category || ''}
-          onValueChange={(newValue) =>
-            onChange({ ...value, category: newValue || undefined })
-          }
-          options={categoryOptions}
-          placeholder="Not in AI vocabulary"
-          helperText="Assigns this CTA to a category the AI uses for action selection. Leave empty to exclude from AI vocabulary."
-        />
-        {categoryOptions.length === 0 && (
-          <p className="mt-1.5 text-sm text-amber-600 dark:text-amber-400">
-            No categories defined. Add categories in Settings &rarr; AI &amp; AWS.
           </p>
         )}
       </div>
