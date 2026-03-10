@@ -79,6 +79,9 @@ function extractUserFromToken(token: string): User | null {
   };
 }
 
+// TODO: Remove this bypass once Bubble SSO workflow is built
+const AUTH_BYPASS = true;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
     isAuthenticated: false,
@@ -90,6 +93,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize auth state from storage
   useEffect(() => {
+    // Auth bypass — skip login until Bubble SSO is configured
+    if (AUTH_BYPASS) {
+      setState({
+        isAuthenticated: true,
+        user: { email: 'admin@myrecruiter.ai', name: 'Admin', role: 'super_admin' },
+        token: null,
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+
     const initAuth = () => {
       const storedToken = localStorage.getItem(TOKEN_KEY);
       const storedUser = localStorage.getItem(USER_KEY);
