@@ -106,23 +106,23 @@ export const BedrockInstructionsSettings: React.FC = () => {
 
   // Emoji usage options
   const emojiOptions: Array<{ value: EmojiUsage; label: string }> = [
-    { value: 'none', label: 'None - No emojis' },
-    { value: 'moderate', label: 'Moderate - Occasional emojis' },
-    { value: 'generous', label: 'Generous - Frequent emojis' },
+    { value: 'none', label: 'None - No emojis in responses' },
+    { value: 'moderate', label: 'Moderate - Sparingly, as subtle accents' },
+    { value: 'generous', label: 'Generous - Freely, for warmth and personality' },
   ];
 
-  // Response style options
+  // Response style options (controls FORMAT — how responses are written)
   const styleOptions: Array<{ value: ResponseStyle; label: string }> = [
-    { value: 'professional_concise', label: 'Professional & Concise' },
-    { value: 'warm_conversational', label: 'Warm & Conversational' },
-    { value: 'structured_detailed', label: 'Structured & Detailed' },
+    { value: 'professional_concise', label: 'Professional - Direct, no filler, business-appropriate' },
+    { value: 'warm_conversational', label: 'Warm & Conversational - Friendly prose, like a colleague' },
+    { value: 'structured_detailed', label: 'Structured - Organized with bullet points and lists' },
   ];
 
-  // Detail level options
+  // Detail level options (controls LENGTH — how much is written)
   const detailOptions: Array<{ value: DetailLevel; label: string }> = [
-    { value: 'concise', label: 'Concise - Brief responses' },
-    { value: 'balanced', label: 'Balanced - Moderate detail' },
-    { value: 'comprehensive', label: 'Comprehensive - Detailed responses' },
+    { value: 'concise', label: 'Concise - 1 to 2 paragraphs, key facts only' },
+    { value: 'balanced', label: 'Balanced - 2 to 3 paragraphs, relevant details' },
+    { value: 'comprehensive', label: 'Comprehensive - 3 to 5 paragraphs, full context' },
   ];
 
   return (
@@ -227,7 +227,7 @@ export const BedrockInstructionsSettings: React.FC = () => {
                 });
               }}
               options={styleOptions}
-              helperText="Overall tone and structure"
+              helperText="Controls how responses are formatted"
             />
 
             {/* Detail Level */}
@@ -240,7 +240,7 @@ export const BedrockInstructionsSettings: React.FC = () => {
                 });
               }}
               options={detailOptions}
-              helperText="How detailed should responses be?"
+              helperText="Controls how long responses are"
             />
           </div>
         </CardContent>
