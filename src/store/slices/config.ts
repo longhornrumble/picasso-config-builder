@@ -186,8 +186,12 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         action_chips: mergedConfig.action_chips,
         widget_behavior: mergedConfig.widget_behavior,
         aws: mergedConfig.aws,
-        // V4 classification routing
-        intent_definitions: (mergedConfig as any).intent_definitions,
+        // V4 classification routing (conditional to avoid sending undefined keys)
+        ...((mergedConfig as any).intent_definitions && { intent_definitions: (mergedConfig as any).intent_definitions }),
+        ...((mergedConfig as any).topic_definitions && { topic_definitions: (mergedConfig as any).topic_definitions }),
+        ...((mergedConfig as any).feature_flags && { feature_flags: (mergedConfig as any).feature_flags }),
+        ...((mergedConfig as any).form_settings && { form_settings: (mergedConfig as any).form_settings }),
+        ...((mergedConfig as any).monitor && { monitor: (mergedConfig as any).monitor }),
         // Metadata fields
         chat_title: mergedConfig.chat_title,
         welcome_message: mergedConfig.welcome_message,
@@ -334,8 +338,11 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       ...(state.config.baseConfig.cta_settings && { cta_settings: state.config.baseConfig.cta_settings }),
       ...(state.config.baseConfig.bedrock_instructions && { bedrock_instructions: state.config.baseConfig.bedrock_instructions }),
 
-      // V4: Intent definitions from baseConfig
+      // V4: Classification routing from baseConfig
       ...(state.config.baseConfig.intent_definitions && { intent_definitions: state.config.baseConfig.intent_definitions }),
+      ...((state.config.baseConfig as any).topic_definitions && { topic_definitions: (state.config.baseConfig as any).topic_definitions }),
+      ...((state.config.baseConfig as any).feature_flags && { feature_flags: (state.config.baseConfig as any).feature_flags }),
+      ...((state.config.baseConfig as any).form_settings && { form_settings: (state.config.baseConfig as any).form_settings }),
     };
 
     return mergedConfig;

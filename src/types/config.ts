@@ -570,4 +570,19 @@ export interface TenantConfig {
 
   // V4 classification routing
   intent_definitions?: IntentDefinition[];
+
+  // KB freshness monitoring
+  monitor?: MonitorConfig;
+}
+
+// ============================================================================
+// MONITOR (KB Freshness Monitoring)
+// ============================================================================
+
+export interface MonitorConfig {
+  enabled: boolean;
+  siteUrl: string;
+  keyPages: string[];
+  dubTag: string;
+  webhookUrl: string;
 }
