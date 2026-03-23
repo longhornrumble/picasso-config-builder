@@ -60,6 +60,24 @@ export const TenantIdentitySettings: React.FC = () => {
           helperText="Display name shown in the chat widget header"
         />
 
+        {/* Organization Name */}
+        <Input
+          label="Organization Name"
+          value={baseConfig?.organization_name || ''}
+          onChange={(e) => updateField('organization_name', e.target.value)}
+          placeholder="e.g., Austin Angels"
+          helperText="Official organization name used in email templates and notifications"
+        />
+
+        {/* Chat Subtitle */}
+        <Input
+          label="Chat Subtitle"
+          value={baseConfig?.chat_subtitle || ''}
+          onChange={(e) => updateField('chat_subtitle', e.target.value)}
+          placeholder="e.g., Powered by MyRecruiter AI"
+          helperText="Subtitle displayed below the chat title in the widget header"
+        />
+
         {/* Welcome Message */}
         <Textarea
           label="Welcome Message"
