@@ -66,7 +66,7 @@ export const BrandingSettings: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Secondary Color
+                Secondary Color (Legacy)
               </label>
               <input
                 type="color"
@@ -77,7 +77,7 @@ export const BrandingSettings: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Accent Color
+                Accent Color (Legacy)
               </label>
               <input
                 type="color"
@@ -232,11 +232,11 @@ export const BrandingSettings: React.FC = () => {
               helperText="CSS font-family value"
             />
             <Input
-              label="Base Font Size"
+              label="Base Font Size (Legacy)"
               value={branding.font_size_base || '14px'}
               onChange={(e) => updateBranding('font_size_base', e.target.value)}
               placeholder="e.g., 14px, 1rem"
-              helperText="Base font size for chat text"
+              helperText="Base font size — widget uses its own sizing"
             />
           </div>
         </div>
@@ -246,11 +246,11 @@ export const BrandingSettings: React.FC = () => {
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Layout</h3>
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Border Radius"
+              label="Border Radius (Legacy)"
               value={branding.border_radius || '12px'}
               onChange={(e) => updateBranding('border_radius', e.target.value)}
               placeholder="e.g., 12px, 0.75rem"
-              helperText="Border radius for UI elements"
+              helperText="Border radius — widget uses hardcoded values"
             />
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

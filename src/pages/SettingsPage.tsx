@@ -20,6 +20,7 @@ import {
   AWSSettings,
   FeatureFlagsSettings,
   NotificationSettings,
+  IntegrationSettings,
 } from '@/components/settings';
 
 /**
@@ -177,6 +178,7 @@ export const SettingsPage: React.FC = () => {
             <TabsContent value="general" className="space-y-6 mt-6">
               <TenantIdentitySettings />
               <NotificationSettings />
+              <IntegrationSettings />
               <CTASettings />
               <QuickHelpSettings />
               <WidgetBehaviorSettings />

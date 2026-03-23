@@ -222,6 +222,8 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         ...(mergedConfig.chat_subtitle && { chat_subtitle: mergedConfig.chat_subtitle }),
         // Notification configuration
         ...(mergedConfig.notification_settings && { notification_settings: mergedConfig.notification_settings }),
+        // Bubble integration
+        ...((mergedConfig as any).bubble_integration && { bubble_integration: (mergedConfig as any).bubble_integration }),
       };
 
       console.log('[DEPLOY] Filtered config keys:', Object.keys(editableConfig));
@@ -572,7 +574,24 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       ...(state.config.baseConfig.feature_flags && { feature_flags: state.config.baseConfig.feature_flags }),
       ...((state.config.baseConfig as any).form_settings && { form_settings: (state.config.baseConfig as any).form_settings }),
       ...(state.config.baseConfig.notification_settings && { notification_settings: state.config.baseConfig.notification_settings }),
+      // Bubble integration (webhook URL, API key)
+      ...((state.config.baseConfig as any).bubble_integration && { bubble_integration: (state.config.baseConfig as any).bubble_integration }),
     };
+
+    // Post-process forms: map post_submission.fulfillment → root-level fulfillment
+    // for Lambda compatibility (Lambda reads form.fulfillment.type, not form.post_submission.fulfillment.method)
+    for (const [formId, form] of Object.entries(mergedConfig.conversational_forms)) {
+      const ps = (form as any).post_submission;
+      if (ps?.fulfillment && !((form as any).fulfillment)) {
+        (mergedConfig.conversational_forms[formId] as any).fulfillment = {
+          type: ps.fulfillment.method || 'email',
+          email_to: ps.fulfillment.recipients,
+          cc: ps.fulfillment.cc,
+          webhook_url: ps.fulfillment.webhook_url,
+          template: ps.fulfillment.subject_template ? 'custom' : 'thank_you',
+        };
+      }
+    }
 
     return mergedConfig;
   },

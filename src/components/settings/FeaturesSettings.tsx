@@ -95,14 +95,14 @@ export const FeaturesSettings: React.FC = () => {
               description="Allow users to upload files"
             />
             <FeatureToggle
-              label="Photo Uploads"
+              label="Photo Uploads (Coming Soon)"
               field="photo_uploads"
-              description="Allow users to upload photos/images"
+              description="Allow users to upload photos/images — not yet implemented"
             />
             <FeatureToggle
-              label="Voice Input"
+              label="Voice Input (Coming Soon)"
               field="voice_input"
-              description="Enable voice-to-text input"
+              description="Enable voice-to-text input — not yet implemented"
             />
             <FeatureToggle
               label="Streaming Responses"
@@ -130,9 +130,9 @@ export const FeaturesSettings: React.FC = () => {
               description="Enable web-based chat interface"
             />
             <FeatureToggle
-              label="QR Code Access"
+              label="QR Code Access (Coming Soon)"
               field="qr"
-              description="Allow QR code scanning for quick access"
+              description="Allow QR code scanning for quick access — not yet implemented"
             />
           </div>
         </div>
@@ -147,14 +147,14 @@ export const FeaturesSettings: React.FC = () => {
               description="Use AWS Bedrock for knowledge retrieval"
             />
             <FeatureToggle
-              label="ATS Integration"
+              label="ATS Integration (Coming Soon)"
               field="ats"
-              description="Applicant Tracking System integration"
+              description="Applicant Tracking System integration — not yet implemented"
             />
             <FeatureToggle
-              label="Interview Scheduling"
+              label="Interview Scheduling (Coming Soon)"
               field="interview_scheduling"
-              description="Enable automated interview scheduling"
+              description="Enable automated interview scheduling — not yet implemented"
             />
           </div>
         </div>

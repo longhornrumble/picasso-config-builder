@@ -635,6 +635,15 @@ export interface NotificationSettings {
 }
 
 // ============================================================================
+// BUBBLE INTEGRATION
+// ============================================================================
+
+export interface BubbleIntegration {
+  webhook_url?: string;
+  api_key?: string;
+}
+
+// ============================================================================
 // FULL TENANT CONFIG
 // ============================================================================
 
@@ -690,6 +699,9 @@ export interface TenantConfig {
 
   // Notification delivery configuration
   notification_settings?: NotificationSettings;
+
+  // Bubble integration (legacy — being phased out)
+  bubble_integration?: BubbleIntegration;
 }
 
 // ============================================================================
