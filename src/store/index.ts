@@ -16,6 +16,7 @@ import { createContentShowcaseSlice } from './slices/contentShowcase';
 import { createUISlice } from './slices/ui';
 import { createValidationSlice } from './slices/validation';
 import { createConfigSlice } from './slices/config';
+import { createTopicDefinitionsSlice } from './slices/topicDefinitions';
 
 /**
  * Main Config Builder Store
@@ -40,6 +41,7 @@ export const useConfigStore = create<ConfigBuilderState>()(
       ctas: createCTAsSlice(set, get, api),
       branches: createBranchesSlice(set, get, api),
       contentShowcase: createContentShowcaseSlice(set, get, api),
+      topicDefinitions: createTopicDefinitionsSlice(set, get, api),
 
       // Application state
       ui: createUISlice(set, get, api),

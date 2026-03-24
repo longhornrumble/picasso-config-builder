@@ -297,29 +297,40 @@ export function prepareConfigForDeployment(
     ctas: Record<string, any>;
     branches: Record<string, any>;
     contentShowcase?: any[];
+    topicDefinitions?: any[];
   }
 ): MergeResult {
-  const editedSections: Partial<TenantConfig> = {
-    programs: currentState.programs,
-    conversational_forms: currentState.forms,
-    cta_definitions: currentState.ctas,
-    conversation_branches: currentState.branches,
-  };
+  // Start from baseConfig and overlay all editable slices
+  const merged: any = { ...baseConfig };
+
+  // Domain slices from store
+  merged.programs = currentState.programs;
+  merged.conversational_forms = currentState.forms;
+  merged.cta_definitions = currentState.ctas;
+  merged.conversation_branches = currentState.branches;
 
   if (currentState.contentShowcase) {
-    (editedSections as any).content_showcase = currentState.contentShowcase;
+    merged.content_showcase = currentState.contentShowcase;
   }
 
-  const merged = mergeConfigSections(baseConfig, editedSections);
+  // V4.1 slices — always include so they can be created/cleared
+  merged.topic_definitions = currentState.topicDefinitions || [];
+  merged.feature_flags = baseConfig.feature_flags || {};
+  merged.cta_settings = baseConfig.cta_settings || {};
+
+  // Update timestamp
+  merged.generated_at = Date.now();
 
   return {
     config: merged,
     metadata: {
       merged_at: new Date().toISOString(),
       version: merged.version || '1.3',
-      editable_sections_updated: EDITABLE_SECTIONS.filter(
-        (section) => section in editedSections
-      ),
+      editable_sections_updated: [
+        'programs', 'conversational_forms', 'cta_definitions',
+        'conversation_branches', 'content_showcase', 'topic_definitions',
+        'feature_flags', 'cta_settings',
+      ],
     },
   };
 }

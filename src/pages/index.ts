@@ -11,5 +11,6 @@ export { BranchesPage } from './BranchesPage';
 export { ActionChipsPage } from './ActionChipsPage';
 export { CardsPage } from './CardsPage';
 export { SettingsPage } from './SettingsPage';
+export { TopicDefinitionsPage } from './TopicDefinitionsPage';
 export { NotFoundPage } from './NotFoundPage';
 export { LoginPage } from './LoginPage';

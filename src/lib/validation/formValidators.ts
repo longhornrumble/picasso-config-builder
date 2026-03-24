@@ -17,6 +17,7 @@ import type { Program, ConversationalForm, CTADefinition } from '@/types/config'
 import type { BranchEntity } from '@/components/editors/BranchesEditor/types';
 import type { CTAEntity } from '@/components/editors/CTAsEditor/types';
 import type { ActionChipEntity } from '@/components/editors/ActionChipsEditor/types';
+import type { TopicEntity } from '@/components/editors/TopicDefinitionsEditor/types';
 import type { ValidationErrors } from '@/types/validation';
 import type { ValidationContext } from '@/lib/crud/types';
 
@@ -330,6 +331,50 @@ export function validateActionChip(
   } catch (error) {
     // Handle any unexpected errors
     console.error('Validation error:', error);
+  }
+
+  return errors;
+}
+
+// ============================================================================
+// TOPIC DEFINITION VALIDATION
+// ============================================================================
+
+/**
+ * Validate a topic definition entity
+ *
+ * Checks:
+ * - Topic name format (snake_case)
+ * - Description minimum length
+ * - Duplicate name check
+ */
+export function validateTopic(
+  data: TopicEntity,
+  context: ValidationContext<TopicEntity>
+): ValidationErrors {
+  const errors: ValidationErrors = {};
+
+  // Validate topic name
+  if (!data.topicName || !data.topicName.trim()) {
+    errors.topicName = 'Topic name is required';
+  } else if (!/^[a-z][a-z0-9_]*$/.test(data.topicName)) {
+    errors.topicName = 'Must be lowercase with underscores (e.g., volunteer_programs)';
+  }
+
+  // Check for duplicate name
+  if (
+    data.topicName &&
+    (!context.isEditMode || data.topicName !== context.originalEntity?.topicName) &&
+    context.existingIds.includes(data.topicName)
+  ) {
+    errors.topicName = 'A topic with this name already exists';
+  }
+
+  // Validate description
+  if (!data.description || !data.description.trim()) {
+    errors.description = 'Description is required';
+  } else if (data.description.trim().length < 20) {
+    errors.description = 'Description must be at least 20 characters for classifier accuracy';
   }
 
   return errors;

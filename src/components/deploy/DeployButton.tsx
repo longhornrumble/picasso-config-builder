@@ -47,6 +47,7 @@ export const DeployButton: React.FC<DeployButtonProps> = ({ className = '' }) =>
   const ctas = useConfigStore((state) => state.ctas.ctas);
   const branches = useConfigStore((state) => state.branches.branches);
   const contentShowcase = useConfigStore((state) => state.contentShowcase.content_showcase);
+  const topicDefinitions = useConfigStore((state) => state.topicDefinitions.topicDefinitions);
 
   const markClean = useConfigStore((state) => state.config.markClean);
   const addToast = useConfigStore((state) => state.ui.addToast);
@@ -104,6 +105,7 @@ export const DeployButton: React.FC<DeployButtonProps> = ({ className = '' }) =>
         ctas,
         branches,
         contentShowcase,
+        topicDefinitions,
       });
 
       // Deploy to S3 (or local dev server) with merge=false for full replacement

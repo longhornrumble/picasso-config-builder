@@ -14,6 +14,7 @@ import {
   GitBranch,
   Zap,
   Sparkles,
+  Tags,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -93,6 +94,11 @@ export const Sidebar: React.FC = () => {
       to: '/cards',
       label: 'Showcase Items',
       icon: <Sparkles className="w-5 h-5" />,
+    },
+    {
+      to: '/topic-definitions',
+      label: 'Topic Definitions',
+      icon: <Tags className="w-5 h-5" />,
     },
     {
       to: '/settings',

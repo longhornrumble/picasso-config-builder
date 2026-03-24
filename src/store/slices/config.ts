@@ -206,10 +206,11 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         action_chips: mergedConfig.action_chips,
         widget_behavior: mergedConfig.widget_behavior,
         aws: mergedConfig.aws,
-        // V4 classification routing (conditional to avoid sending undefined keys)
+        // V4 classification routing
         ...((mergedConfig as any).intent_definitions && { intent_definitions: (mergedConfig as any).intent_definitions }),
-        ...(mergedConfig.topic_definitions && { topic_definitions: mergedConfig.topic_definitions }),
-        ...(mergedConfig.feature_flags && { feature_flags: mergedConfig.feature_flags }),
+        // V4.1 — always send so they can be created from scratch
+        topic_definitions: mergedConfig.topic_definitions || [],
+        feature_flags: mergedConfig.feature_flags || {},
         ...((mergedConfig as any).form_settings && { form_settings: (mergedConfig as any).form_settings }),
         ...((mergedConfig as any).monitor && { monitor: (mergedConfig as any).monitor }),
         // Metadata fields
@@ -562,16 +563,16 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       ...(state.config.baseConfig.quick_help && { quick_help: state.config.baseConfig.quick_help }),
       ...(state.config.baseConfig.action_chips && { action_chips: state.config.baseConfig.action_chips }),
       ...(state.config.baseConfig.widget_behavior && { widget_behavior: state.config.baseConfig.widget_behavior }),
-      ...(state.config.baseConfig.cta_settings && { cta_settings: state.config.baseConfig.cta_settings }),
+      // CTA settings — always include so fallback_tags can be created from scratch
+      cta_settings: state.config.baseConfig.cta_settings || {},
       ...(state.config.baseConfig.bedrock_instructions && { bedrock_instructions: state.config.baseConfig.bedrock_instructions }),
 
       // V4: Classification routing from baseConfig and live slice
       ...(state.config.baseConfig.intent_definitions && { intent_definitions: state.config.baseConfig.intent_definitions }),
-      // V4.1 topic definitions come from the live slice (ordered array)
-      ...(state.topicDefinitions.topicDefinitions.length > 0 && {
-        topic_definitions: state.topicDefinitions.topicDefinitions,
-      }),
-      ...(state.config.baseConfig.feature_flags && { feature_flags: state.config.baseConfig.feature_flags }),
+      // V4.1 topic definitions — always include from the live slice
+      topic_definitions: state.topicDefinitions.topicDefinitions,
+      // Feature flags — always include so V4 flags can be set from scratch
+      feature_flags: state.config.baseConfig.feature_flags || {},
       ...((state.config.baseConfig as any).form_settings && { form_settings: (state.config.baseConfig as any).form_settings }),
       ...(state.config.baseConfig.notification_settings && { notification_settings: state.config.baseConfig.notification_settings }),
       // Bubble integration (webhook URL, API key)

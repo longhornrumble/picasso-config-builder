@@ -251,20 +251,21 @@ function checkOrphanedEntities(
     }
   });
 
-  // Check for orphaned CTAs (not used by any branch)
+  // Check for orphaned CTAs (not used by any branch AND not ai_available)
+  // V4.1: CTAs with ai_available=true are surfaced by pool selection, not branches
   const usedCTAIds = new Set<string>();
   Object.values(branches).forEach((branch) => {
     if (branch.available_ctas.primary) usedCTAIds.add(branch.available_ctas.primary);
     branch.available_ctas.secondary?.forEach((ctaId) => usedCTAIds.add(ctaId));
   });
 
-  Object.entries(ctas).forEach(([ctaId]) => {
-    if (!usedCTAIds.has(ctaId)) {
+  Object.entries(ctas).forEach(([ctaId, cta]) => {
+    if (!usedCTAIds.has(ctaId) && !cta.ai_available) {
       warnings.push(
         createWarning(messages.relationship.orphanedEntity('CTA', ctaId), 'relationship', {
           entityId: `cta-${ctaId}`,
           level: 'info',
-          suggestedFix: 'Add this CTA to a branch or remove it if no longer needed',
+          suggestedFix: 'Add this CTA to a branch, enable AI selection, or remove it if no longer needed',
         })
       );
     }

@@ -11,6 +11,7 @@ import type {
   ConversationBranch,
   ShowcaseItem,
   TenantConfig,
+  TopicDefinition,
 } from '@/types/config';
 
 // ============================================================================
@@ -163,6 +164,29 @@ export interface ContentShowcaseSlice {
 }
 
 // ============================================================================
+// TOPIC DEFINITIONS SLICE (V4.1)
+// ============================================================================
+
+export interface TopicDefinitionsSlice {
+  // State
+  topicDefinitions: TopicDefinition[];
+  activeTopicName: string | null;
+
+  // Actions
+  createTopic: (topic: TopicDefinition) => void;
+  updateTopic: (name: string, updates: Partial<TopicDefinition>) => void;
+  deleteTopic: (name: string) => void;
+  duplicateTopic: (name: string) => void;
+  reorderTopics: (fromIndex: number, toIndex: number) => void;
+  setActiveTopic: (name: string | null) => void;
+
+  // Selectors
+  getTopic: (name: string) => TopicDefinition | undefined;
+  getAllTopics: () => TopicDefinition[];
+  getTopicDependencies: (name: string) => string[];
+}
+
+// ============================================================================
 // UI SLICE
 // ============================================================================
 
@@ -241,6 +265,11 @@ export interface ConfigSlice {
   isDirty: boolean;
   lastSaved: number | null;
 
+  // Draft state
+  isDraft: boolean;
+  hasDraft: boolean;
+  draftLastSaved: number | null;
+
   // Actions
   loadConfig: (tenantId: string) => Promise<void>;
   saveConfig: () => Promise<void>;
@@ -249,6 +278,12 @@ export interface ConfigSlice {
   clearTenant: () => void;
   markDirty: () => void;
   markClean: () => void;
+
+  // Draft actions
+  saveDraft: () => Promise<void>;
+  loadDraft: () => Promise<void>;
+  discardDraft: () => Promise<void>;
+  promoteDraft: () => Promise<void>;
 
   // Merge strategy
   getMergedConfig: () => TenantConfig | null;
@@ -270,6 +305,7 @@ export interface ConfigBuilderState {
   ctas: CTAsSlice;
   branches: BranchesSlice;
   contentShowcase: ContentShowcaseSlice;
+  topicDefinitions: TopicDefinitionsSlice;
   ui: UISlice;
   validation: ValidationSlice;
   config: ConfigSlice;
