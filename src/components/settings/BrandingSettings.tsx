@@ -291,14 +291,6 @@ export const BrandingSettings: React.FC = () => {
               placeholder="https://example.com/avatar.png"
               helperText="URL to bot avatar image"
             />
-            <Input
-              label="Company Logo URL"
-              type="url"
-              value={branding.company_logo_url || ''}
-              onChange={(e) => updateBranding('company_logo_url', e.target.value)}
-              placeholder="https://example.com/company-logo.png"
-              helperText="URL to company logo for branding"
-            />
           </div>
         </div>
       </CardContent>

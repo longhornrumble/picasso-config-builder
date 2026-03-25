@@ -391,6 +391,7 @@ export interface BrandingConfig {
   // Asset URLs
   logo_url?: string;
   avatar_url?: string;
+  /** @deprecated Removed — MyRecruiter footer logo is hardcoded in the widget */
   company_logo_url?: string;
 }
 
