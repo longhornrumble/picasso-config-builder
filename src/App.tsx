@@ -17,7 +17,6 @@ import {
   BranchesPage,
   ActionChipsPage,
   CardsPage,
-  TopicDefinitionsPage,
   SettingsPage,
   NotFoundPage,
 } from './pages';
@@ -111,9 +110,6 @@ const App: React.FC = () => {
 
             {/* Card inventory section (optional) */}
             <Route path="cards" element={<CardsPage />} />
-
-            {/* V4.1 Topic Definitions */}
-            <Route path="topic-definitions" element={<TopicDefinitionsPage />} />
 
             {/* Settings section */}
             <Route path="settings" element={<SettingsPage />} />

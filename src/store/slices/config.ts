@@ -54,8 +54,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         state.ctas.ctas = response.config.cta_definitions || {};
         state.branches.branches = response.config.conversation_branches || {};
         state.contentShowcase.content_showcase = response.config.content_showcase || [];
-        state.topicDefinitions.topicDefinitions = response.config.topic_definitions || [];
-        state.topicDefinitions.activeTopicName = null;
 
         // Clear any active selections
         state.programs.activeProgramId = null;
@@ -206,10 +204,8 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         action_chips: mergedConfig.action_chips,
         widget_behavior: mergedConfig.widget_behavior,
         aws: mergedConfig.aws,
-        // V4 classification routing
-        ...((mergedConfig as any).intent_definitions && { intent_definitions: (mergedConfig as any).intent_definitions }),
-        // V4.1 — always send so they can be created from scratch
-        topic_definitions: mergedConfig.topic_definitions || [],
+        // Preserve topic_definitions from baseConfig for V4.1 Lambda compat (read-only passthrough)
+        ...(mergedConfig.topic_definitions?.length && { topic_definitions: mergedConfig.topic_definitions }),
         feature_flags: mergedConfig.feature_flags || {},
         ...((mergedConfig as any).form_settings && { form_settings: (mergedConfig as any).form_settings }),
         ...((mergedConfig as any).monitor && { monitor: (mergedConfig as any).monitor }),
@@ -283,8 +279,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         state.ctas.ctas = state.config.baseConfig.cta_definitions || {};
         state.branches.branches = state.config.baseConfig.conversation_branches || {};
         state.contentShowcase.content_showcase = state.config.baseConfig.content_showcase || [];
-        state.topicDefinitions.topicDefinitions = state.config.baseConfig.topic_definitions || [];
-        state.topicDefinitions.activeTopicName = null;
 
         state.config.isDirty = false;
 
@@ -313,8 +307,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       state.ctas.ctas = {};
       state.branches.branches = {};
       state.contentShowcase.content_showcase = [];
-      state.topicDefinitions.topicDefinitions = [];
-      state.topicDefinitions.activeTopicName = null;
       state.validation.clearAll();
     });
   },
@@ -418,8 +410,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         state.ctas.ctas = draftConfig.cta_definitions || {};
         state.branches.branches = draftConfig.conversation_branches || {};
         state.contentShowcase.content_showcase = draftConfig.content_showcase || [];
-        state.topicDefinitions.topicDefinitions = draftConfig.topic_definitions || [];
-        state.topicDefinitions.activeTopicName = null;
 
         // Clear active selections
         state.programs.activeProgramId = null;
@@ -567,10 +557,8 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       cta_settings: state.config.baseConfig.cta_settings || {},
       ...(state.config.baseConfig.bedrock_instructions && { bedrock_instructions: state.config.baseConfig.bedrock_instructions }),
 
-      // V4: Classification routing from baseConfig and live slice
-      ...(state.config.baseConfig.intent_definitions && { intent_definitions: state.config.baseConfig.intent_definitions }),
-      // V4.1 topic definitions — always include from the live slice
-      topic_definitions: state.topicDefinitions.topicDefinitions,
+      // Preserve topic_definitions from baseConfig for V4.1 Lambda compat (read-only passthrough)
+      ...(state.config.baseConfig.topic_definitions?.length && { topic_definitions: state.config.baseConfig.topic_definitions }),
       // Feature flags — always include so V4 flags can be set from scratch
       feature_flags: state.config.baseConfig.feature_flags || {},
       ...((state.config.baseConfig as any).form_settings && { form_settings: (state.config.baseConfig as any).form_settings }),

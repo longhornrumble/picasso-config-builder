@@ -98,9 +98,7 @@ export const CTAsEditor: React.FC = () => {
               ...(ctaData.prompt && { prompt: ctaData.prompt }),
               ...(ctaData.target_branch && { target_branch: ctaData.target_branch }),
               ...(ctaData.program_id && { program_id: ctaData.program_id }),
-              // V4.1 pool selection fields
               ...(ctaData.ai_available != null && { ai_available: ctaData.ai_available }),
-              ...(ctaData.selection_metadata && { selection_metadata: ctaData.selection_metadata }),
             };
             createCTA(cta, ctaId);
           },
@@ -115,9 +113,7 @@ export const CTAsEditor: React.FC = () => {
               ...(ctaEntity.url && { url: ctaEntity.url }),
               ...(ctaEntity.query && { query: ctaEntity.query }),
               ...(ctaEntity.prompt && { prompt: ctaEntity.prompt }),
-              // V4.1 pool selection fields
               ai_available: ctaEntity.ai_available || false,
-              ...(ctaEntity.selection_metadata && { selection_metadata: ctaEntity.selection_metadata }),
             };
             // Handle target_branch: include if defined, or explicitly set to undefined to remove
             if (ctaEntity.target_branch !== undefined) {
@@ -126,10 +122,6 @@ export const CTAsEditor: React.FC = () => {
             // Handle program_id: include if defined, or explicitly set to undefined to remove
             if (ctaEntity.program_id !== undefined) {
               updates.program_id = ctaEntity.program_id || undefined;
-            }
-            // Clear selection_metadata when ai_available is turned off
-            if (!ctaEntity.ai_available) {
-              updates.selection_metadata = undefined;
             }
             updateCTA(ctaId, updates);
           },

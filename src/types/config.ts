@@ -554,16 +554,10 @@ export interface TopicDefinition {
 // ============================================================================
 
 export interface FeatureFlags {
-  /** Enable V4 pipeline (topic classification + CTA pool selection) */
-  V4_PIPELINE?: boolean;
-  /** Enable dynamic CTA pool selection */
-  DYNAMIC_CTA_SELECTION?: boolean;
-  /** V3.5 legacy: enable dynamic actions */
-  DYNAMIC_ACTIONS?: boolean;
-  /** V3.5 legacy: enable dynamic chips */
-  DYNAMIC_CHIPS?: boolean;
-  /** V3.5 legacy: enable guidance modules */
-  GUIDANCE_MODULES?: boolean;
+  /** V4.0 Action Selector — LLM-based CTA selection from ai_available vocabulary */
+  V4_ACTION_SELECTOR?: boolean;
+  /** Allow additional flags from existing configs */
+  [key: string]: boolean | undefined;
 }
 
 // ============================================================================

@@ -21,32 +21,9 @@ interface FlagDefinition {
 
 const FLAG_DEFINITIONS: FlagDefinition[] = [
   {
-    key: 'V4_PIPELINE',
-    label: 'V4 Pipeline',
-    description: 'Enable V4 pipeline (topic classification + CTA pool selection)',
-  },
-  {
-    key: 'DYNAMIC_CTA_SELECTION',
-    label: 'Dynamic CTA Pool Selection',
-    description: 'Enable dynamic CTA pool selection based on classified topic',
-  },
-  {
-    key: 'DYNAMIC_ACTIONS',
-    label: 'Dynamic Actions',
-    description: 'Enable dynamic actions (V3.5 legacy)',
-    legacy: true,
-  },
-  {
-    key: 'DYNAMIC_CHIPS',
-    label: 'Dynamic Chips',
-    description: 'Enable dynamic chips (V3.5 legacy)',
-    legacy: true,
-  },
-  {
-    key: 'GUIDANCE_MODULES',
-    label: 'Guidance Modules',
-    description: 'Enable guidance modules (V3.5 legacy)',
-    legacy: true,
+    key: 'V4_ACTION_SELECTOR',
+    label: 'V4.0 Action Selector',
+    description: 'LLM-based CTA selection — AI picks 0-4 relevant CTAs per turn from ai_available vocabulary',
   },
 ];
 
@@ -57,9 +34,8 @@ const FLAG_DEFINITIONS: FlagDefinition[] = [
 /**
  * FeatureFlagsSettings Component
  *
- * Manages pipeline feature flags for V3.5 and V4 pipelines:
- * - V4_PIPELINE: Enables the V4 topic classification pipeline
- * - DYNAMIC_CTA_SELECTION: Enables dynamic CTA pool selection
+ * Manages pipeline feature flags:
+ * - V4_ACTION_SELECTOR: Enables LLM-based CTA selection (V4.0)
  * - DYNAMIC_ACTIONS: V3.5 legacy flag
  * - DYNAMIC_CHIPS: V3.5 legacy flag
  * - GUIDANCE_MODULES: V3.5 legacy flag
@@ -91,9 +67,9 @@ export const FeatureFlagsSettings: React.FC = () => {
       <CardHeader>
         <CardTitle>Pipeline Feature Flags</CardTitle>
         <CardDescription>
-          Control which pipeline behaviors are active for this tenant. V4 flags enable
-          topic classification and dynamic CTA pool selection. V3.5 legacy flags control
-          the older dynamic action and chip selection behaviors.
+          Control which pipeline behaviors are active for this tenant. V4.0 Action Selector
+          enables LLM-based CTA selection from the ai_available vocabulary. V3.5 legacy flags
+          control the older dynamic action and chip selection behaviors.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -136,9 +112,9 @@ export const FeatureFlagsSettings: React.FC = () => {
         {/* Contextual note about flag interactions */}
         <div className="mt-4 rounded-md bg-blue-50 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-800 p-3">
           <p className="text-xs text-blue-800 dark:text-blue-300">
-            <span className="font-semibold">Note:</span> V4_PIPELINE and DYNAMIC_CTA_SELECTION work
-            together — enable both to activate the full V4.1 experience. V3.5 legacy flags are
-            independent and apply only when V4_PIPELINE is off.
+            <span className="font-semibold">Note:</span> When V4_ACTION_SELECTOR is enabled, the AI
+            selects CTAs marked ai_available after each response. This is the preferred pipeline
+            for all new tenants.
           </p>
         </div>
       </CardContent>

@@ -11,7 +11,6 @@ import type {
   ConversationBranch,
   ShowcaseItem,
   TenantConfig,
-  TopicDefinition,
 } from '@/types/config';
 
 // ============================================================================
@@ -164,29 +163,6 @@ export interface ContentShowcaseSlice {
 }
 
 // ============================================================================
-// TOPIC DEFINITIONS SLICE (V4.1)
-// ============================================================================
-
-export interface TopicDefinitionsSlice {
-  // State
-  topicDefinitions: TopicDefinition[];
-  activeTopicName: string | null;
-
-  // Actions
-  createTopic: (topic: TopicDefinition) => void;
-  updateTopic: (name: string, updates: Partial<TopicDefinition>) => void;
-  deleteTopic: (name: string) => void;
-  duplicateTopic: (name: string) => void;
-  reorderTopics: (fromIndex: number, toIndex: number) => void;
-  setActiveTopic: (name: string | null) => void;
-
-  // Selectors
-  getTopic: (name: string) => TopicDefinition | undefined;
-  getAllTopics: () => TopicDefinition[];
-  getTopicDependencies: (name: string) => string[];
-}
-
-// ============================================================================
 // UI SLICE
 // ============================================================================
 
@@ -305,7 +281,6 @@ export interface ConfigBuilderState {
   ctas: CTAsSlice;
   branches: BranchesSlice;
   contentShowcase: ContentShowcaseSlice;
-  topicDefinitions: TopicDefinitionsSlice;
   ui: UISlice;
   validation: ValidationSlice;
   config: ConfigSlice;

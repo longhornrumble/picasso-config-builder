@@ -15,7 +15,6 @@ export const EDITABLE_SECTIONS = [
   'conversation_branches',
   'content_showcase',
   'cta_settings',
-  'intent_definitions',
 ] as const;
 
 /**
@@ -297,7 +296,6 @@ export function prepareConfigForDeployment(
     ctas: Record<string, any>;
     branches: Record<string, any>;
     contentShowcase?: any[];
-    topicDefinitions?: any[];
   }
 ): MergeResult {
   // Start from baseConfig and overlay all editable slices
@@ -313,8 +311,6 @@ export function prepareConfigForDeployment(
     merged.content_showcase = currentState.contentShowcase;
   }
 
-  // V4.1 slices — always include so they can be created/cleared
-  merged.topic_definitions = currentState.topicDefinitions || [];
   merged.feature_flags = baseConfig.feature_flags || {};
   merged.cta_settings = baseConfig.cta_settings || {};
 
@@ -328,7 +324,7 @@ export function prepareConfigForDeployment(
       version: merged.version || '1.3',
       editable_sections_updated: [
         'programs', 'conversational_forms', 'cta_definitions',
-        'conversation_branches', 'content_showcase', 'topic_definitions',
+        'conversation_branches', 'content_showcase',
         'feature_flags', 'cta_settings',
       ],
     },
