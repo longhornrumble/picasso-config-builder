@@ -561,29 +561,6 @@ export interface FeatureFlags {
 }
 
 // ============================================================================
-// INTENT DEFINITIONS (V4.0 — deprecated, use TopicDefinition)
-// ============================================================================
-
-/**
- * @deprecated Use TopicDefinition for V4.1 pool selection.
- * V4.0 intent definition with branch/CTA routing.
- * Kept for backwards compatibility with existing configs.
- */
-export interface IntentDefinition {
-  /** Unique identifier for this intent. Used in routing rules and logs. */
-  name: string;
-
-  /** Natural language description read by the classifier. Quality of this field determines accuracy. */
-  description: string;
-
-  /** Key in conversation_branches to activate when this intent is matched. */
-  target_branch?: string;
-
-  /** Key in cta_definitions to surface as a single button when this intent is matched. */
-  cta_id?: string;
-}
-
-// ============================================================================
 // BEDROCK INSTRUCTIONS (Multi-Tenant Prompt Customization)
 // ============================================================================
 
@@ -685,9 +662,6 @@ export interface TenantConfig {
 
   // V4.1 pipeline feature flags
   feature_flags?: FeatureFlags;
-
-  // V4.0 classification routing (deprecated — use topic_definitions)
-  intent_definitions?: IntentDefinition[];
 
   // KB freshness monitoring
   monitor?: MonitorConfig;

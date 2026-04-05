@@ -66,28 +66,6 @@ export const BrandingSettings: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Secondary Color (Legacy)
-              </label>
-              <input
-                type="color"
-                value={branding.secondary_color || '#059669'}
-                onChange={(e) => updateBranding('secondary_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Accent Color (Legacy)
-              </label>
-              <input
-                type="color"
-                value={branding.accent_color || '#3b82f6'}
-                onChange={(e) => updateBranding('accent_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Background Color
               </label>
               <input
@@ -223,35 +201,19 @@ export const BrandingSettings: React.FC = () => {
         {/* Typography */}
         <div>
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Typography</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Font Family"
-              value={branding.font_family || 'system-ui, -apple-system, sans-serif'}
-              onChange={(e) => updateBranding('font_family', e.target.value)}
-              placeholder="e.g., Inter, sans-serif"
-              helperText="CSS font-family value"
-            />
-            <Input
-              label="Base Font Size (Legacy)"
-              value={branding.font_size_base || '14px'}
-              onChange={(e) => updateBranding('font_size_base', e.target.value)}
-              placeholder="e.g., 14px, 1rem"
-              helperText="Base font size — widget uses its own sizing"
-            />
-          </div>
+          <Input
+            label="Font Family"
+            value={branding.font_family || 'system-ui, -apple-system, sans-serif'}
+            onChange={(e) => updateBranding('font_family', e.target.value)}
+            placeholder="e.g., Inter, sans-serif"
+            helperText="CSS font-family value"
+          />
         </div>
 
         {/* Layout */}
         <div>
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Layout</h3>
           <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Border Radius (Legacy)"
-              value={branding.border_radius || '12px'}
-              onChange={(e) => updateBranding('border_radius', e.target.value)}
-              placeholder="e.g., 12px, 0.75rem"
-              helperText="Border radius — widget uses hardcoded values"
-            />
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Chat Position
