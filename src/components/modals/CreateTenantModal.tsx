@@ -35,18 +35,6 @@ interface CreateTenantResponse {
   config: any;
 }
 
-/**
- * Generate a URL-safe slug from an organization name
- */
-function generateSlug(orgName: string): string {
-  return orgName
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
 
 export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onClose, onCreated }) => {
   const [viewState, setViewState] = useState<ViewState>('form');
@@ -54,7 +42,6 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
   const [response, setResponse] = useState<CreateTenantResponse | null>(null);
   const [submittedOrgName, setSubmittedOrgName] = useState('');
   const [copied, setCopied] = useState(false);
-  const [copiedSandbox, setCopiedSandbox] = useState(false);
 
   const {
     register,
@@ -86,7 +73,6 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
     setResponse(null);
     setSubmittedOrgName('');
     setCopied(false);
-    setCopiedSandbox(false);
     onClose();
   };
 
@@ -127,15 +113,6 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
     }
   };
 
-  const sandboxEntry = response
-    ? `{ slug: '${generateSlug(submittedOrgName)}', orgName: '${submittedOrgName}', tenantId: '${response.tenant_hash}' }`
-    : '';
-
-  const handleCopySandboxEntry = async () => {
-    await navigator.clipboard.writeText(sandboxEntry);
-    setCopiedSandbox(true);
-    setTimeout(() => setCopiedSandbox(false), 2000);
-  };
 
   const handleLoadTenant = () => {
     if (response?.tenant_id) {
@@ -149,12 +126,12 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
       <ModalContent className="max-w-2xl">
         <ModalHeader>
           <ModalTitle>
-            {viewState === 'success' ? 'Demo Tenant Created' : 'Create Demo Tenant'}
+            {viewState === 'success' ? 'Tenant Created' : 'Create New Tenant'}
           </ModalTitle>
           <ModalDescription>
             {viewState === 'success'
-              ? 'Your tenant has been created. Copy the embed code to add to your website.'
-              : 'Configure a demo tenant for the Picasso chat widget'}
+              ? 'Your tenant has been created. Copy the embed code to add to the client website.'
+              : 'Set up a new tenant for the Picasso chat widget'}
           </ModalDescription>
         </ModalHeader>
 
@@ -170,7 +147,7 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
               label="Organization Name"
               placeholder="Habitat for Humanity"
               required
-              helperText="Prospect's organization name (shown on demo page)"
+              helperText="Client's organization name"
               error={errors.org_name?.message}
               {...register('org_name')}
             />
@@ -257,7 +234,7 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
               </Button>
               <Button type="submit">
                 <Plus className="w-4 h-4 mr-2" />
-                Create Demo Tenant
+                Create Tenant
               </Button>
             </ModalFooter>
           </form>
@@ -266,7 +243,7 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
         {viewState === 'loading' && (
           <div className="py-12 flex flex-col items-center justify-center space-y-4">
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
-            <p className="text-sm text-gray-600">Creating demo tenant...</p>
+            <p className="text-sm text-gray-600">Creating tenant...</p>
           </div>
         )}
 
@@ -281,7 +258,6 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
                   { label: 'Organization', value: submittedOrgName },
                   { label: 'Tenant ID', value: response.tenant_id, mono: true },
                   { label: 'Tenant Hash', value: response.tenant_hash, mono: true },
-                  { label: 'Demo URL', value: `/sandbox/${generateSlug(submittedOrgName)}`, mono: true },
                 ].map(({ label, value, mono }) => (
                   <div key={label}>
                     <span className="text-gray-600 dark:text-gray-400 text-xs">{label}</span>
@@ -311,26 +287,6 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
               >
                 {response.embed_code}
               </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Sandbox Demo Entry
-                </label>
-                <Button type="button" size="sm" variant="outline" onClick={handleCopySandboxEntry}>
-                  {copiedSandbox ? <><Check className="w-3 h-3 mr-1" /> Copied</> : <><Copy className="w-3 h-3 mr-1" /> Copy</>}
-                </Button>
-              </div>
-              <div
-                className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-3 font-mono text-xs"
-                style={{ wordBreak: 'break-all', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}
-              >
-                {sandboxEntry}
-              </div>
-              <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-                Add this to sandbox-demos.ts to create the demo page
-              </p>
             </div>
 
             <ModalFooter>

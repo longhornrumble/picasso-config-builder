@@ -22,6 +22,7 @@ import {
   NotificationSettings,
   IntegrationSettings,
 } from '@/components/settings';
+import { EmbedCodeSettings } from '@/components/settings/EmbedCodeSettings';
 
 /**
  * Settings Page
@@ -177,6 +178,7 @@ export const SettingsPage: React.FC = () => {
             {/* General Tab */}
             <TabsContent value="general" className="space-y-6 mt-6">
               <TenantIdentitySettings />
+              <EmbedCodeSettings />
               <NotificationSettings />
               <IntegrationSettings />
               <CTASettings />
