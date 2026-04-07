@@ -553,7 +553,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       ...(state.config.baseConfig.quick_help && { quick_help: state.config.baseConfig.quick_help }),
       ...(state.config.baseConfig.action_chips && { action_chips: state.config.baseConfig.action_chips }),
       ...(state.config.baseConfig.widget_behavior && { widget_behavior: state.config.baseConfig.widget_behavior }),
-      // CTA settings — always include so fallback_tags can be created from scratch
+      // CTA settings — always include for fallback_branch and max_ctas_per_response
       cta_settings: state.config.baseConfig.cta_settings || {},
       ...(state.config.baseConfig.bedrock_instructions && { bedrock_instructions: state.config.baseConfig.bedrock_instructions }),
 

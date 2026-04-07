@@ -228,16 +228,9 @@ export interface CTADefinition {
  */
 export interface CTASettings {
   /**
-   * V3.5: Branch ID to show when no keyword match is found.
-   * @deprecated Use fallback_tags for V4.1 tenants.
+   * Branch ID to show when no keyword match is found (routing fallback).
    */
   fallback_branch?: string;
-
-  /**
-   * V4.1: Tags used when the classifier returns null (no topic matched).
-   * Pool selector filters CTAs by these tags as a fallback.
-   */
-  fallback_tags?: string[];
 
   /**
    * Maximum number of CTAs to display per response.
@@ -363,8 +356,6 @@ export interface ContentShowcase {
 export interface BrandingConfig {
   // Primary colors
   primary_color: string;
-  secondary_color?: string;
-  accent_color?: string;
   background_color?: string;
   // Header
   header_background?: string;
@@ -379,20 +370,13 @@ export interface BrandingConfig {
   widget_color?: string;
   widget_text_color?: string;
   widget_icon_color?: string;
-  // Legacy
-  logo_background_color?: string;
-  avatar_background_color?: string;
   // Typography
   font_family: string;
-  font_size_base?: string;
   // Layout
-  border_radius?: string;
   chat_position?: 'bottom-right' | 'bottom-left';
   // Asset URLs
   logo_url?: string;
   avatar_url?: string;
-  /** @deprecated Removed — MyRecruiter footer logo is hardcoded in the widget */
-  company_logo_url?: string;
 }
 
 // ============================================================================
@@ -501,8 +485,6 @@ export interface WidgetBehaviorMobileConfig {
 export interface WidgetBehaviorConfig {
   start_open: boolean;
   remember_state: boolean;
-  persist_conversations: boolean;
-  session_timeout_minutes: number;
   auto_open_delay?: number;
   mobile?: WidgetBehaviorMobileConfig;
 }
@@ -578,7 +560,6 @@ export interface FormattingPreferences {
 export interface BedrockInstructions {
   _version: string;
   _updated: string; // ISO timestamp
-  role_instructions: string;
   formatting_preferences: FormattingPreferences;
   custom_constraints: string[];
   fallback_message: string;
@@ -591,8 +572,6 @@ export interface BedrockInstructions {
 export interface AWSConfig {
   knowledge_base_id: string;
   aws_region: string;
-  bot_id?: string;
-  bot_alias_id?: string;
 }
 
 // ============================================================================

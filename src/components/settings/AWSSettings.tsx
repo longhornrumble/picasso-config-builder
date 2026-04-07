@@ -15,8 +15,6 @@ import { Shield } from 'lucide-react';
  * Manages AWS service configuration:
  * - knowledge_base_id: Bedrock Knowledge Base ID
  * - aws_region: AWS region
- * - bot_id: Lex bot ID (optional)
- * - bot_alias_id: Lex bot alias ID (optional)
  *
  * @example
  * ```tsx
@@ -95,23 +93,6 @@ export const AWSSettings: React.FC = () => {
           helperText="AWS region for services"
         />
 
-        {/* Bot ID (Optional) */}
-        <Input
-          label="Bot ID (Optional)"
-          value={aws.bot_id || ''}
-          onChange={(e) => updateAWS('bot_id', e.target.value)}
-          placeholder="e.g., LEX_BOT_ID"
-          helperText="AWS Lex bot identifier (if using Lex)"
-        />
-
-        {/* Bot Alias ID (Optional) */}
-        <Input
-          label="Bot Alias ID (Optional)"
-          value={aws.bot_alias_id || ''}
-          onChange={(e) => updateAWS('bot_alias_id', e.target.value)}
-          placeholder="e.g., LEX_ALIAS_ID"
-          helperText="AWS Lex bot alias identifier (if using Lex)"
-        />
       </CardContent>
     </Card>
   );

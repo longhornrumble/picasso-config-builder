@@ -36,9 +36,6 @@ const FLAG_DEFINITIONS: FlagDefinition[] = [
  *
  * Manages pipeline feature flags:
  * - V4_ACTION_SELECTOR: Enables LLM-based CTA selection (V4.0)
- * - DYNAMIC_ACTIONS: V3.5 legacy flag
- * - DYNAMIC_CHIPS: V3.5 legacy flag
- * - GUIDANCE_MODULES: V3.5 legacy flag
  *
  * @example
  * ```tsx

@@ -16,7 +16,6 @@ import type { BedrockInstructions, EmojiUsage, ResponseStyle, DetailLevel } from
 const DEFAULT_BEDROCK_INSTRUCTIONS: BedrockInstructions = {
   _version: '1.0',
   _updated: new Date().toISOString(),
-  role_instructions: 'You are a helpful virtual assistant for a nonprofit organization. Your primary goal is to provide accurate information about programs and services based on the knowledge base, while maintaining a warm and supportive tone.',
   formatting_preferences: {
     emoji_usage: 'moderate',
     max_emojis_per_response: 3,
@@ -52,7 +51,6 @@ export const BedrockInstructionsSettings: React.FC = () => {
   const [newConstraint, setNewConstraint] = useState('');
 
   // Character counters
-  const roleCharsRemaining = 1000 - bedrockInstructions.role_instructions.length;
   const fallbackCharsRemaining = 500 - bedrockInstructions.fallback_message.length;
 
   // Update Bedrock instructions in baseConfig
@@ -140,38 +138,6 @@ export const BedrockInstructionsSettings: React.FC = () => {
                 and cannot be modified here.
               </p>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Role Instructions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Role Instructions</CardTitle>
-          <CardDescription>
-            Define who the AI is and its primary purpose (max 1000 characters)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            value={bedrockInstructions.role_instructions}
-            onChange={(e) => {
-              if (e.target.value.length <= 1000) {
-                updateBedrockInstructions({
-                  role_instructions: e.target.value,
-                });
-              }
-            }}
-            rows={6}
-            placeholder="Example: You are a helpful virtual assistant for a nonprofit organization..."
-          />
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-500 dark:text-gray-400">
-              Characters remaining: {roleCharsRemaining}
-            </span>
-            {roleCharsRemaining < 100 && (
-              <Badge variant="warning">Near limit</Badge>
-            )}
           </div>
         </CardContent>
       </Card>
