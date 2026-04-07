@@ -178,6 +178,11 @@ export const FeaturesSettings: React.FC = () => {
               field="dashboard_attribution"
               description="Access to attribution tracking"
             />
+            <FeatureToggle
+              label="Notifications Dashboard"
+              field="dashboard_notifications"
+              description="Access to notification delivery tracking, recipient management, and template editing"
+            />
           </div>
         </div>
 
