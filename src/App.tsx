@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Show, SignIn, UserButton } from '@clerk/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer } from './components/ToastContainer';
 import { Layout } from './components/layout';
@@ -20,9 +21,7 @@ import {
   SettingsPage,
   NotFoundPage,
 } from './pages';
-import { LoginPage } from './pages/LoginPage';
 import { useAutoSave } from './hooks/useAutoSave';
-import { useAuth } from '@/context/AuthContext';
 import { Spinner } from './components/ui';
 
 /**
@@ -54,29 +53,45 @@ import { Spinner } from './components/ui';
  * ```
  */
 const App: React.FC = () => {
-  const { isAuthenticated, loading } = useAuth();
-
   // Enable auto-save functionality
   useAutoSave();
 
-  // Show loading spinner while checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Spinner size="lg" className="mb-4" />
-          <p className="text-gray-600 font-medium">Loading...</p>
+  return (
+    <>
+      {/* Clerk sign-in gate */}
+      <Show when="signed-out">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+          <div className="w-full max-w-sm space-y-6">
+            <div className="text-center space-y-2">
+              <h1 className="text-xl font-bold text-gray-800">Picasso Config Builder</h1>
+              <p className="text-sm text-gray-500">Internal tool — authorized access only</p>
+            </div>
+            <div className="flex justify-center">
+              <SignIn
+                routing="hash"
+                appearance={{
+                  elements: {
+                    rootBox: 'w-full',
+                    card: 'shadow-xl border border-gray-100 w-full',
+                    footer: 'hidden',
+                  },
+                }}
+              />
+            </div>
+          </div>
         </div>
-      </div>
-    );
-  }
+      </Show>
 
-  // Show login page if not authenticated
-  if (!isAuthenticated) {
-    return <LoginPage />;
-  }
+      {/* Authenticated — show main app */}
+      <Show when="signed-in">
+        {renderApp()}
+      </Show>
+    </>
+  );
+};
 
-  // Authenticated - show main app
+/** Main app content — only rendered when Clerk is signed in */
+function renderApp() {
   return (
     <ErrorBoundary>
       <BrowserRouter>

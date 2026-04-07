@@ -51,6 +51,24 @@ export const TenantIdentitySettings: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Active Status */}
+        <div className="flex items-start justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex-1 pr-4">
+            <label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+              Active
+            </label>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Active tenants appear in the portal tenant list and have a live widget
+            </p>
+          </div>
+          <input
+            type="checkbox"
+            checked={baseConfig?.active ?? false}
+            onChange={(e) => updateField('active', e.target.checked)}
+            className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer"
+          />
+        </div>
+
         {/* Chat Title */}
         <Input
           label="Chat Title"

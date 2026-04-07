@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,9 +12,7 @@
     min-height: 100vh;
     width: 100%;
     overflow: hidden; /* Prevent body scrolling - app handles its own scroll */
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -121,21 +121,21 @@
   }
 }
 
-/* Header Container - Sticky at top with gradient */
+/* Header Container - Sticky at top */
 .app-header {
   position: sticky;
   top: 0;
   z-index: 50;
   flex-shrink: 0;
   height: var(--header-height);
-  background: var(--button-gradient-primary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: var(--button-shadow-primary);
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 @media (prefers-color-scheme: dark) {
   .app-header {
-    background: var(--button-gradient-primary);
+    background: #1f2937;
     border-bottom-color: rgba(255, 255, 255, 0.1);
   }
 }

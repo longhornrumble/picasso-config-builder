@@ -525,6 +525,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       // Core metadata from baseConfig
       tenant_id: state.config.baseConfig.tenant_id,
       tenant_hash: state.config.baseConfig.tenant_hash,
+      active: state.config.baseConfig.active ?? false,
       subscription_tier: state.config.baseConfig.subscription_tier,
       chat_title: state.config.baseConfig.chat_title,
       tone_prompt: state.config.baseConfig.tone_prompt,

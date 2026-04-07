@@ -4,7 +4,9 @@
  */
 
 import React, { useState } from 'react';
-import { Save, Eye, Menu, LogOut } from 'lucide-react';
+import { Save, Eye, Menu } from 'lucide-react';
+import { UserButton } from '@clerk/react';
+import logoImg from '@/assets/myrecruiter-logo.png';
 import { TenantSelector } from '../TenantSelector';
 import { Button, Badge } from '../ui';
 import { PreviewConfigModal } from '../preview/PreviewConfigModal';
@@ -12,7 +14,6 @@ import { ValidationSummary } from './ValidationSummary';
 import { DeployButton } from '../deploy';
 import { useConfigStore } from '@/store';
 import { useSaveShortcut } from '@/hooks/useKeyboardShortcuts';
-import { useAuth } from '@/context/AuthContext';
 
 /**
  * Application Header
@@ -40,7 +41,6 @@ export const Header: React.FC = () => {
   const loading = useConfigStore((state) => state.ui.loading);
   const toggleSidebar = useConfigStore((state) => state.ui.toggleSidebar);
 
-  const { isAuthenticated, user, logout } = useAuth();
 
   const isSaving = loading?.save || false;
 
@@ -73,10 +73,9 @@ export const Header: React.FC = () => {
               <Menu className="w-5 h-5" />
             </Button>
 
-            <h1 className="text-lg sm:text-xl font-bold text-white flex items-center gap-1 sm:gap-2 truncate">
-              <span className="text-xl sm:text-2xl flex-shrink-0">🎨</span>
-              <span className="hide-mobile">Picasso Config Builder</span>
-              <span className="hide-desktop">Picasso</span>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-1 sm:gap-2 truncate">
+              <img src={logoImg} alt="MyRecruiter" className="h-8 w-auto flex-shrink-0" />
+              <span className="hide-mobile">Config Builder</span>
             </h1>
             {tenantId && (
               <Badge variant="outline" className="text-xs show-tablet-up">
@@ -134,24 +133,8 @@ export const Header: React.FC = () => {
             {/* Deploy Button - New Component */}
             <DeployButton />
 
-            {/* User Info and Sign Out - Only show when authenticated */}
-            {isAuthenticated && (
-              <>
-                <div className="flex items-center gap-2 text-sm text-gray-400 hide-mobile">
-                  <span>{user?.name || user?.email || 'User'}</span>
-                </div>
-                <Button
-                  onClick={logout}
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-1 sm:gap-2 text-gray-300 hover:text-white"
-                  title={user?.email ? `Sign out (${user.email})` : 'Sign out'}
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="hidden lg:inline">Sign Out</span>
-                </Button>
-              </>
-            )}
+            {/* Clerk User Button */}
+            <UserButton />
           </div>
         </div>
       </header>

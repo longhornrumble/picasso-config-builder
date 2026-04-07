@@ -604,6 +604,7 @@ export interface TenantConfig {
   // Core identity
   tenant_id: string;
   tenant_hash: string;
+  active?: boolean;
   subscription_tier: SubscriptionTier;
   tenant_type?: string;
   org_name?: string;
