@@ -107,9 +107,11 @@ export type FulfillmentMethod = 'email' | 'webhook' | 'dynamodb' | 'sheets';
 
 export interface Fulfillment {
   method: FulfillmentMethod;
+  webhook_url?: string;
+  // Legacy fields preserved for existing configs — no longer editable in UI.
+  // Email notifications are managed in the portal's Notifications tab.
   recipients?: string[];
   cc?: string[];
-  webhook_url?: string;
   subject_template?: string;
   notification_enabled?: boolean;
 }
@@ -125,8 +127,10 @@ export interface FormNotificationConfig {
   internal: {
     enabled: boolean;
     recipients: string[];
+    sms_recipients?: string[];
     subject: string;
     body_template: string;
+    sms_template?: string;
     channels: {
       email: boolean;
       sms: boolean;
@@ -579,19 +583,7 @@ export interface AWSConfig {
 // ============================================================================
 
 export interface NotificationSettings {
-  bubble_forwarding?: {
-    enabled: boolean;
-  };
   from_email?: string;
-}
-
-// ============================================================================
-// BUBBLE INTEGRATION
-// ============================================================================
-
-export interface BubbleIntegration {
-  webhook_url?: string;
-  api_key?: string;
 }
 
 // ============================================================================
@@ -648,9 +640,6 @@ export interface TenantConfig {
 
   // Notification delivery configuration
   notification_settings?: NotificationSettings;
-
-  // Bubble integration (legacy — being phased out)
-  bubble_integration?: BubbleIntegration;
 }
 
 // ============================================================================

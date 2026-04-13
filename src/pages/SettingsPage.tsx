@@ -20,7 +20,6 @@ import {
   AWSSettings,
   FeatureFlagsSettings,
   NotificationSettings,
-  IntegrationSettings,
 } from '@/components/settings';
 import { EmbedCodeSettings } from '@/components/settings/EmbedCodeSettings';
 
@@ -180,7 +179,6 @@ export const SettingsPage: React.FC = () => {
               <TenantIdentitySettings />
               <EmbedCodeSettings />
               <NotificationSettings />
-              <IntegrationSettings />
               <CTASettings />
               <QuickHelpSettings />
               <WidgetBehaviorSettings />

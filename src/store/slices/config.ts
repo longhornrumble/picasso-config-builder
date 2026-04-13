@@ -219,8 +219,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         ...(mergedConfig.chat_subtitle && { chat_subtitle: mergedConfig.chat_subtitle }),
         // Notification configuration
         ...(mergedConfig.notification_settings && { notification_settings: mergedConfig.notification_settings }),
-        // Bubble integration
-        ...((mergedConfig as any).bubble_integration && { bubble_integration: (mergedConfig as any).bubble_integration }),
       };
 
       console.log('[DEPLOY] Filtered config keys:', Object.keys(editableConfig));
@@ -564,8 +562,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       feature_flags: state.config.baseConfig.feature_flags || {},
       ...((state.config.baseConfig as any).form_settings && { form_settings: (state.config.baseConfig as any).form_settings }),
       ...(state.config.baseConfig.notification_settings && { notification_settings: state.config.baseConfig.notification_settings }),
-      // Bubble integration (webhook URL, API key)
-      ...((state.config.baseConfig as any).bubble_integration && { bubble_integration: (state.config.baseConfig as any).bubble_integration }),
     };
 
     // Post-process forms: map post_submission.fulfillment → root-level fulfillment

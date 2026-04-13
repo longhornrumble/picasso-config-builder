@@ -18,6 +18,12 @@ import {
   createTenantMapping,
 } from './s3Operations.mjs';
 
+import {
+  putTenantRecord,
+  updateTenantTimestamp,
+  updateTenantStatus,
+} from './registryOperations.mjs';
+
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const demoTemplate = require('./demo-template.json');
@@ -200,6 +206,13 @@ export const handler = async (event) => {
       // Save the config
       const result = await saveConfig(tenantId, finalConfig, create_backup);
 
+      // Update registry timestamp (non-blocking — don't fail the request)
+      try {
+        await updateTenantTimestamp(tenantId);
+      } catch (registryErr) {
+        console.warn('Registry timestamp update failed (non-blocking):', registryErr.message);
+      }
+
       return {
         statusCode: 200,
         headers,
@@ -219,6 +232,19 @@ export const handler = async (event) => {
       const result = fullDelete
         ? await deleteTenantCompletely(tenantId)
         : await deleteConfig(tenantId);
+
+      // Update registry status (non-blocking — don't fail the request)
+      try {
+        if (fullDelete) {
+          // Hard delete: mark churned and null out s3ConfigPath (files are gone)
+          await updateTenantStatus(tenantId, 'churned', { s3ConfigPath: null });
+        } else {
+          // Soft delete: mark churned, preserve s3ConfigPath (config archived to backup)
+          await updateTenantStatus(tenantId, 'churned');
+        }
+      } catch (registryErr) {
+        console.warn('Registry status update failed (non-blocking):', registryErr.message);
+      }
 
       return {
         statusCode: 200,
@@ -346,6 +372,26 @@ export const handler = async (event) => {
 
       // Create hash mapping
       await createTenantMapping(tenant_id, tenant_hash);
+
+      // Seed tenant registry record (non-blocking — don't fail the request)
+      try {
+        await putTenantRecord({
+          tenantId: tenant_id,
+          tenantHash: tenant_hash,
+          companyName: org_name || chat_title || tenant_id,
+          s3ConfigPath: `tenants/${tenant_id}/${tenant_id}-config.json`,
+          subscriptionTier: subscription_tier || 'free',
+          status: 'active',
+          onboardedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          networkId: null,
+          networkName: null,
+          clerkOrgId: '',
+          stripeCustomerId: '',
+        });
+      } catch (registryErr) {
+        console.warn('Registry seed failed (non-blocking):', registryErr.message);
+      }
 
       // Build embed code
       const embedCode = `<script src="https://chat.myrecruiter.ai/widget.js" data-tenant="${tenant_hash}" async></script>`;

@@ -13,4 +13,3 @@ export { WidgetBehaviorSettings } from './WidgetBehaviorSettings';
 export { AWSSettings } from './AWSSettings';
 export { FeatureFlagsSettings } from './FeatureFlagsSettings';
 export { NotificationSettings } from './NotificationSettings';
-export { IntegrationSettings } from './IntegrationSettings';
