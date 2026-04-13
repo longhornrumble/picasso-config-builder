@@ -147,22 +147,15 @@ export const postSubmissionActionSchema = z.object({
 });
 
 export const fulfillmentSchema = z.object({
+  // 'email' kept for backward compat with existing configs — no longer selectable in UI.
+  // Email notifications are managed in the portal's Notifications tab.
   method: z.enum(['email', 'webhook', 'dynamodb', 'sheets']),
-  recipients: z.array(z.string().email('Must be a valid email address')).optional(),
-  cc: z.array(z.string().email('Must be a valid email address')).optional(),
   webhook_url: z.string().url('Must be a valid URL').optional(),
-  subject_template: z.string().max(200, 'Subject template must be 200 characters or less').optional(),
+  recipients: z.array(z.string()).optional(),
+  cc: z.array(z.string()).optional(),
+  subject_template: z.string().optional(),
   notification_enabled: z.boolean().optional(),
 }).superRefine((data, ctx) => {
-  // Validate method-specific required fields
-  if (data.method === 'email' && (!data.recipients || data.recipients.length === 0)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['recipients'],
-      message: 'At least one recipient is required when method is "email"',
-    });
-  }
-
   if (data.method === 'webhook' && !data.webhook_url) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
