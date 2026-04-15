@@ -6,6 +6,7 @@
 import type { TenantConfig } from '@/types/config';
 import type { SliceCreator, ConfigSlice } from '../types';
 import * as configAPI from '@/lib/api/config-operations';
+import { configApiClient } from '@/lib/api/client';
 
 export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
   // State
@@ -13,6 +14,11 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
   baseConfig: null,
   isDirty: false,
   lastSaved: null,
+
+  // Draft state
+  isDraft: false,
+  hasDraft: false,
+  draftLastSaved: null,
 
   // History state (stubbed for MVP)
   canUndo: false,
@@ -58,6 +64,18 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         // Clear validation state
         state.validation.clearAll();
       });
+
+      // After loading live config, check whether a draft exists (don't load it yet)
+      try {
+        const draftCheck = await configApiClient.loadDraft(tenantId);
+        set((state) => {
+          state.config.hasDraft = draftCheck.hasDraft;
+          state.config.isDraft = false;
+          state.config.draftLastSaved = null;
+        });
+      } catch {
+        // Non-fatal: draft check failure should not block loading the live config
+      }
 
       get().ui.addToast({
         type: 'success',
@@ -179,6 +197,28 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         content_showcase: mergedConfig.content_showcase,
         cta_settings: mergedConfig.cta_settings,
         bedrock_instructions: mergedConfig.bedrock_instructions,
+        // Newly editable sections
+        branding: mergedConfig.branding,
+        features: mergedConfig.features,
+        quick_help: mergedConfig.quick_help,
+        action_chips: mergedConfig.action_chips,
+        widget_behavior: mergedConfig.widget_behavior,
+        aws: mergedConfig.aws,
+        // Preserve topic_definitions from baseConfig for V4.1 Lambda compat (read-only passthrough)
+        ...(mergedConfig.topic_definitions?.length && { topic_definitions: mergedConfig.topic_definitions }),
+        feature_flags: mergedConfig.feature_flags || {},
+        ...((mergedConfig as any).form_settings && { form_settings: (mergedConfig as any).form_settings }),
+        ...((mergedConfig as any).monitor && { monitor: (mergedConfig as any).monitor }),
+        // Metadata fields
+        chat_title: mergedConfig.chat_title,
+        welcome_message: mergedConfig.welcome_message,
+        subscription_tier: mergedConfig.subscription_tier,
+        tone_prompt: mergedConfig.tone_prompt,
+        // Optional identity fields
+        ...(mergedConfig.organization_name && { organization_name: mergedConfig.organization_name }),
+        ...(mergedConfig.chat_subtitle && { chat_subtitle: mergedConfig.chat_subtitle }),
+        // Notification configuration
+        ...(mergedConfig.notification_settings && { notification_settings: mergedConfig.notification_settings }),
       };
 
       console.log('[DEPLOY] Filtered config keys:', Object.keys(editableConfig));
@@ -251,6 +291,24 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
     });
   },
 
+  clearTenant: () => {
+    set((state) => {
+      state.config.tenantId = null;
+      state.config.baseConfig = null;
+      state.config.isDirty = false;
+      state.config.lastSaved = null;
+      state.config.isDraft = false;
+      state.config.hasDraft = false;
+      state.config.draftLastSaved = null;
+      state.programs.programs = {};
+      state.forms.forms = {};
+      state.ctas.ctas = {};
+      state.branches.branches = {};
+      state.contentShowcase.content_showcase = [];
+      state.validation.clearAll();
+    });
+  },
+
   markDirty: () => {
     set((state) => {
       state.config.isDirty = true;
@@ -260,6 +318,194 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
   markClean: () => {
     set((state) => {
       state.config.isDirty = false;
+    });
+  },
+
+  saveDraft: async () => {
+    const state = get();
+
+    if (!state.config.tenantId) {
+      state.ui.addToast({
+        type: 'error',
+        message: 'No tenant loaded',
+      });
+      return;
+    }
+
+    state.ui.setLoading('saveDraft', true);
+
+    try {
+      const mergedConfig = state.config.getMergedConfig();
+
+      if (!mergedConfig) {
+        throw new Error('Failed to merge configuration');
+      }
+
+      await configApiClient.saveDraft(state.config.tenantId, mergedConfig);
+
+      set((state) => {
+        state.config.isDraft = true;
+        state.config.hasDraft = true;
+        state.config.draftLastSaved = Date.now();
+        state.config.isDirty = false;
+      });
+
+      state.ui.addToast({
+        type: 'success',
+        message: 'Draft saved successfully',
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save draft';
+      state.ui.addToast({
+        type: 'error',
+        message: errorMessage,
+      });
+      throw error;
+    } finally {
+      state.ui.setLoading('saveDraft', false);
+    }
+  },
+
+  loadDraft: async () => {
+    const state = get();
+
+    if (!state.config.tenantId) {
+      state.ui.addToast({
+        type: 'error',
+        message: 'No tenant loaded',
+      });
+      return;
+    }
+
+    state.ui.setLoading('loadDraft', true);
+
+    try {
+      const response = await configApiClient.loadDraft(state.config.tenantId);
+
+      if (!response.hasDraft || !response.config) {
+        state.ui.addToast({
+          type: 'info',
+          message: 'No draft found for this tenant',
+        });
+        return;
+      }
+
+      const draftConfig = response.config;
+
+      // Populate all domain slices from the draft config (same pattern as loadConfig)
+      set((state) => {
+        state.programs.programs = draftConfig.programs || {};
+
+        // Normalize forms: ensure form_id matches the dictionary key
+        const forms = draftConfig.conversational_forms || {};
+        state.forms.forms = Object.fromEntries(
+          Object.entries(forms).map(([key, form]: [string, any]) => [
+            key,
+            { ...form, form_id: key },
+          ])
+        );
+
+        state.ctas.ctas = draftConfig.cta_definitions || {};
+        state.branches.branches = draftConfig.conversation_branches || {};
+        state.contentShowcase.content_showcase = draftConfig.content_showcase || [];
+
+        // Clear active selections
+        state.programs.activeProgramId = null;
+        state.forms.activeFormId = null;
+        state.ctas.activeCtaId = null;
+        state.branches.activeBranchId = null;
+
+        // Mark as draft, clean (no unsaved changes on top of the draft)
+        state.config.isDraft = true;
+        state.config.hasDraft = true;
+        state.config.isDirty = false;
+
+        // Clear validation state
+        state.validation.clearAll();
+      });
+
+      state.ui.addToast({
+        type: 'success',
+        message: 'Draft loaded successfully',
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load draft';
+      state.ui.addToast({
+        type: 'error',
+        message: errorMessage,
+      });
+      throw error;
+    } finally {
+      state.ui.setLoading('loadDraft', false);
+    }
+  },
+
+  discardDraft: async () => {
+    const state = get();
+
+    if (!state.config.tenantId) {
+      state.ui.addToast({
+        type: 'error',
+        message: 'No tenant loaded',
+      });
+      return;
+    }
+
+    state.ui.setLoading('discardDraft', true);
+
+    try {
+      await configApiClient.deleteDraft(state.config.tenantId);
+
+      set((state) => {
+        state.config.isDraft = false;
+        state.config.hasDraft = false;
+        state.config.draftLastSaved = null;
+      });
+
+      // Reload the live config to restore state
+      await get().config.loadConfig(state.config.tenantId!);
+
+      state.ui.addToast({
+        type: 'info',
+        message: 'Draft discarded. Live configuration restored.',
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to discard draft';
+      state.ui.addToast({
+        type: 'error',
+        message: errorMessage,
+      });
+      throw error;
+    } finally {
+      state.ui.setLoading('discardDraft', false);
+    }
+  },
+
+  promoteDraft: async () => {
+    const state = get();
+
+    if (!state.config.tenantId) {
+      state.ui.addToast({
+        type: 'error',
+        message: 'No tenant loaded',
+      });
+      return;
+    }
+
+    // Run the existing deployConfig flow (validates and writes to live S3)
+    await get().config.deployConfig();
+
+    // Clean up the draft file now that it is live
+    try {
+      await configApiClient.deleteDraft(state.config.tenantId!);
+    } catch {
+      // Non-fatal: draft cleanup failure should not surface as an error to the user
+    }
+
+    set((state) => {
+      state.config.isDraft = false;
+      state.config.hasDraft = false;
+      state.config.draftLastSaved = null;
     });
   },
 
@@ -277,12 +523,16 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       // Core metadata from baseConfig
       tenant_id: state.config.baseConfig.tenant_id,
       tenant_hash: state.config.baseConfig.tenant_hash,
+      active: state.config.baseConfig.active ?? false,
       subscription_tier: state.config.baseConfig.subscription_tier,
       chat_title: state.config.baseConfig.chat_title,
       tone_prompt: state.config.baseConfig.tone_prompt,
       welcome_message: state.config.baseConfig.welcome_message,
       version: state.config.baseConfig.version,
       generated_at: Date.now(),
+      // Optional core identity fields
+      ...(state.config.baseConfig.organization_name && { organization_name: state.config.baseConfig.organization_name }),
+      ...(state.config.baseConfig.chat_subtitle && { chat_subtitle: state.config.baseConfig.chat_subtitle }),
 
       // Domain slices from their respective stores
       programs: state.programs.programs,
@@ -302,9 +552,32 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       ...(state.config.baseConfig.quick_help && { quick_help: state.config.baseConfig.quick_help }),
       ...(state.config.baseConfig.action_chips && { action_chips: state.config.baseConfig.action_chips }),
       ...(state.config.baseConfig.widget_behavior && { widget_behavior: state.config.baseConfig.widget_behavior }),
-      ...(state.config.baseConfig.cta_settings && { cta_settings: state.config.baseConfig.cta_settings }),
+      // CTA settings — always include for fallback_branch and max_ctas_per_response
+      cta_settings: state.config.baseConfig.cta_settings || {},
       ...(state.config.baseConfig.bedrock_instructions && { bedrock_instructions: state.config.baseConfig.bedrock_instructions }),
+
+      // Preserve topic_definitions from baseConfig for V4.1 Lambda compat (read-only passthrough)
+      ...(state.config.baseConfig.topic_definitions?.length && { topic_definitions: state.config.baseConfig.topic_definitions }),
+      // Feature flags — always include so V4 flags can be set from scratch
+      feature_flags: state.config.baseConfig.feature_flags || {},
+      ...((state.config.baseConfig as any).form_settings && { form_settings: (state.config.baseConfig as any).form_settings }),
+      ...(state.config.baseConfig.notification_settings && { notification_settings: state.config.baseConfig.notification_settings }),
     };
+
+    // Post-process forms: map post_submission.fulfillment → root-level fulfillment
+    // for Lambda compatibility (Lambda reads form.fulfillment.type, not form.post_submission.fulfillment.method)
+    for (const [formId, form] of Object.entries(mergedConfig.conversational_forms)) {
+      const ps = (form as any).post_submission;
+      if (ps?.fulfillment && !((form as any).fulfillment)) {
+        (mergedConfig.conversational_forms[formId] as any).fulfillment = {
+          type: ps.fulfillment.method || 'email',
+          email_to: ps.fulfillment.recipients,
+          cc: ps.fulfillment.cc,
+          webhook_url: ps.fulfillment.webhook_url,
+          template: ps.fulfillment.subject_template ? 'custom' : 'thank_you',
+        };
+      }
+    }
 
     return mergedConfig;
   },

@@ -23,9 +23,46 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.yourapi.com/ap
  */
 export class ConfigAPIClient {
   private baseUrl: string;
+  private tokenProvider: (() => Promise<string | null>) | null = null;
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
+  }
+
+  /**
+   * Set the token provider function (typically from Clerk's getToken)
+   * Called once during app initialization to wire auth context into the API client
+   */
+  setTokenProvider(provider: () => Promise<string | null>): void {
+    this.tokenProvider = provider;
+  }
+
+  /**
+   * Get authentication headers from Clerk session token
+   * Token is fetched on-demand from Clerk — never stored in localStorage
+   */
+  async getAuthHeaders(): Promise<Record<string, string>> {
+    if (!this.tokenProvider) {
+      return {};
+    }
+    try {
+      const token = await this.tokenProvider();
+      if (!token) {
+        return {};
+      }
+      return {
+        'Authorization': `Bearer ${token}`,
+      };
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Handle 401 responses by dispatching session expired event
+   */
+  private handle401Response(): void {
+    window.dispatchEvent(new CustomEvent('auth:session-expired'));
   }
 
   /**
@@ -37,8 +74,14 @@ export class ConfigAPIClient {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...(await this.getAuthHeaders()),
         },
       });
+
+      if (response.status === 401) {
+        this.handle401Response();
+        throw await parseHTTPError(response);
+      }
 
       if (!response.ok) {
         throw await parseHTTPError(response);
@@ -62,8 +105,14 @@ export class ConfigAPIClient {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...(await this.getAuthHeaders()),
         },
       });
+
+      if (response.status === 401) {
+        this.handle401Response();
+        throw await parseHTTPError(response);
+      }
 
       if (!response.ok) {
         throw await parseHTTPError(response);
@@ -86,8 +135,14 @@ export class ConfigAPIClient {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...(await this.getAuthHeaders()),
         },
       });
+
+      if (response.status === 401) {
+        this.handle401Response();
+        throw await parseHTTPError(response);
+      }
 
       if (!response.ok) {
         throw await parseHTTPError(response);
@@ -151,9 +206,15 @@ export class ConfigAPIClient {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            ...(await this.getAuthHeaders()),
           },
           body: JSON.stringify(requestBody),
         });
+
+        if (response.status === 401) {
+          this.handle401Response();
+          throw await parseHTTPError(response);
+        }
 
         if (!response.ok) {
           throw await parseHTTPError(response);
@@ -185,6 +246,7 @@ export class ConfigAPIClient {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            ...(await this.getAuthHeaders()),
           },
           body: JSON.stringify({
             config,
@@ -192,6 +254,11 @@ export class ConfigAPIClient {
             create_backup: true,
           }),
         });
+
+        if (response.status === 401) {
+          this.handle401Response();
+          throw await parseHTTPError(response);
+        }
 
         if (!response.ok) {
           throw await parseHTTPError(response);
@@ -207,20 +274,31 @@ export class ConfigAPIClient {
 
   /**
    * Delete tenant configuration (admin operation)
+   * @param full - If true, permanently deletes config, all backups, and hash mapping
    */
-  async deleteConfig(tenantId: string): Promise<void> {
+  async deleteConfig(tenantId: string, full: boolean = false): Promise<void> {
     if (!tenantId || tenantId.trim() === '') {
       throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
     }
 
+    const url = full
+      ? `${this.baseUrl}/config/${tenantId}?full=true`
+      : `${this.baseUrl}/config/${tenantId}`;
+
     return fetchWithRetry(
       async () => {
-        const response = await fetch(`${this.baseUrl}/config/${tenantId}`, {
+        const response = await fetch(url, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
+            ...(await this.getAuthHeaders()),
           },
         });
+
+        if (response.status === 401) {
+          this.handle401Response();
+          throw await parseHTTPError(response);
+        }
 
         if (!response.ok) {
           throw await parseHTTPError(response);
@@ -228,6 +306,53 @@ export class ConfigAPIClient {
       },
       {
         maxRetries: 1, // Delete operations should not retry multiple times
+      }
+    );
+  }
+
+  /**
+   * Create a new tenant configuration
+   */
+  async createTenant(request: {
+    org_name: string;
+    tenant_id: string;
+    chat_title?: string;
+    chat_subtitle?: string;
+    subscription_tier?: string;
+    primary_color?: string;
+    welcome_message?: string;
+    knowledge_base_id?: string;
+  }): Promise<{
+    success: boolean;
+    tenant_id: string;
+    tenant_hash: string;
+    embed_code: string;
+    config: any;
+  }> {
+    return fetchWithRetry(
+      async () => {
+        const response = await fetch(`${this.baseUrl}/config`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(await this.getAuthHeaders()),
+          },
+          body: JSON.stringify(request),
+        });
+
+        if (response.status === 401) {
+          this.handle401Response();
+          throw await parseHTTPError(response);
+        }
+
+        if (!response.ok) {
+          throw await parseHTTPError(response);
+        }
+
+        return response.json();
+      },
+      {
+        maxRetries: 2,
       }
     );
   }

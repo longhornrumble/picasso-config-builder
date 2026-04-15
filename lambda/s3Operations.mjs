@@ -9,7 +9,10 @@ import {
   PutObjectCommand,
   ListObjectsV2Command,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
 } from '@aws-sdk/client-s3';
+
+import crypto from 'crypto';
 
 const BUCKET = process.env.S3_BUCKET || 'myrecruiter-picasso';
 const REGION = process.env.AWS_REGION || 'us-east-1';
@@ -237,6 +240,62 @@ export async function deleteConfig(tenantId) {
 }
 
 /**
+ * Permanently delete a tenant and all associated data
+ * Removes config, all backups, and the hash mapping file
+ * @param {string} tenantId - The tenant ID
+ * @returns {Promise<Object>} Delete result summary
+ */
+export async function deleteTenantCompletely(tenantId) {
+  try {
+    // Regenerate the hash to find the mapping file
+    const tenantHash = generateTenantHash(tenantId);
+
+    // List ALL objects under tenants/{tenantId}/
+    const listCommand = new ListObjectsV2Command({
+      Bucket: BUCKET,
+      Prefix: `tenants/${tenantId}/`,
+    });
+    const listResponse = await s3Client.send(listCommand);
+
+    let deletedFiles = 0;
+
+    // Batch-delete all tenant files (config + backups)
+    if (listResponse.Contents && listResponse.Contents.length > 0) {
+      const deleteCommand = new DeleteObjectsCommand({
+        Bucket: BUCKET,
+        Delete: {
+          Objects: listResponse.Contents.map((obj) => ({ Key: obj.Key })),
+          Quiet: false,
+        },
+      });
+      const deleteResult = await s3Client.send(deleteCommand);
+      deletedFiles = deleteResult.Deleted?.length || 0;
+      console.log(`Deleted ${deletedFiles} files from tenants/${tenantId}/`);
+    }
+
+    // Delete the hash mapping file
+    const mappingKey = `mappings/${tenantHash}.json`;
+    const deleteMappingCommand = new DeleteObjectCommand({
+      Bucket: BUCKET,
+      Key: mappingKey,
+    });
+    await s3Client.send(deleteMappingCommand);
+    console.log(`Deleted mapping: ${mappingKey}`);
+
+    return {
+      success: true,
+      tenantId,
+      tenantHash,
+      deletedFiles,
+      deletedMapping: mappingKey,
+    };
+  } catch (error) {
+    console.error(`Error completely deleting tenant ${tenantId}:`, error);
+    throw new Error(`Failed to delete tenant completely: ${error.message}`);
+  }
+}
+
+/**
  * List backups for a tenant
  * Reads backups from tenant's folder (new location)
  * @param {string} tenantId - The tenant ID
@@ -272,5 +331,58 @@ export async function listBackups(tenantId) {
   } catch (error) {
     console.error(`Error listing backups for ${tenantId}:`, error);
     throw new Error(`Failed to list backups: ${error.message}`);
+  }
+}
+
+/**
+ * Generate a tenant hash from a tenant ID
+ * Must produce identical output to deploy_tenant_stack/lambda_function.py:generate_tenant_hash
+ * @param {string} tenantId - The tenant ID
+ * @returns {string} The tenant hash (e.g., "de1a2b3c4d5e6f")
+ */
+export function generateTenantHash(tenantId) {
+  const salt = 'picasso-2024-universal-widget';
+  const hashInput = `${tenantId}${salt}`;
+  const fullHash = crypto.createHash('sha256').update(hashInput, 'utf-8').digest('hex');
+  const shortHash = fullHash.slice(0, 12);
+  const prefix = tenantId.slice(0, 2).toLowerCase();
+  return `${prefix}${shortHash}`;
+}
+
+/**
+ * Create a tenant hash mapping file in S3
+ * Maps tenant_hash → tenant_id for reverse lookup by the widget
+ * @param {string} tenantId - The tenant ID
+ * @param {string} tenantHash - The generated tenant hash
+ * @returns {Promise<Object>} Result with mapping key
+ */
+export async function createTenantMapping(tenantId, tenantHash) {
+  try {
+    const mappingData = {
+      tenant_id: tenantId,
+      tenant_hash: tenantHash,
+      created_at: Math.floor(Date.now() / 1000),
+      created_by: 'config_manager',
+      version: '1.0',
+    };
+
+    const mappingKey = `mappings/${tenantHash}.json`;
+
+    const command = new PutObjectCommand({
+      Bucket: BUCKET,
+      Key: mappingKey,
+      Body: JSON.stringify(mappingData, null, 2),
+      ContentType: 'application/json',
+    });
+
+    await s3Client.send(command);
+
+    return {
+      success: true,
+      mappingKey,
+    };
+  } catch (error) {
+    console.error(`Error creating mapping for ${tenantId}:`, error);
+    throw new Error(`Failed to create tenant mapping: ${error.message}`);
   }
 }

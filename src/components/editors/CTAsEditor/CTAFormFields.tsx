@@ -154,9 +154,6 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
         )}
       </div>
 
-      {/* Note: Style field removed - CTAs now use position-based styling */}
-      {/* Backend automatically assigns _position: 'primary' or 'secondary' based on CTA placement in branches */}
-
       {/* Conditional Fields Based on Action */}
 
       {/* start_form action → formId field */}
@@ -260,8 +257,8 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
         </div>
       )}
 
-      {/* Target Branch - Show for navigation CTAs */}
-      {(value.action === 'show_info' || value.action === 'send_query') && (
+      {/* Target Branch - Only when NOT using V4.1 pool selection */}
+      {!value.ai_available && (value.action === 'show_info' || value.action === 'send_query') && (
         <div className="w-full">
           <Select
             label="Target Branch"
@@ -286,6 +283,23 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
           )}
         </div>
       )}
+
+      {/* AI Available */}
+      <div className="flex items-center gap-2 w-full">
+        <input
+          type="checkbox"
+          id="ai_available"
+          checked={value.ai_available || false}
+          onChange={(e) => onChange({ ...value, ai_available: e.target.checked })}
+          className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+        />
+        <label
+          htmlFor="ai_available"
+          className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+        >
+          Include in AI selection pool
+        </label>
+      </div>
 
       {/* Live Preview */}
       <div className="w-full mt-6">

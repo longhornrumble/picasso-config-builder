@@ -5,6 +5,8 @@
 
 import React, { useState } from 'react';
 import { Save, Eye, Menu } from 'lucide-react';
+import { UserButton } from '@clerk/react';
+import logoImg from '@/assets/myrecruiter-logo.png';
 import { TenantSelector } from '../TenantSelector';
 import { Button, Badge } from '../ui';
 import { PreviewConfigModal } from '../preview/PreviewConfigModal';
@@ -39,6 +41,7 @@ export const Header: React.FC = () => {
   const loading = useConfigStore((state) => state.ui.loading);
   const toggleSidebar = useConfigStore((state) => state.ui.toggleSidebar);
 
+
   const isSaving = loading?.save || false;
 
   const handleSave = async () => {
@@ -70,10 +73,9 @@ export const Header: React.FC = () => {
               <Menu className="w-5 h-5" />
             </Button>
 
-            <h1 className="text-lg sm:text-xl font-bold text-white flex items-center gap-1 sm:gap-2 truncate">
-              <span className="text-xl sm:text-2xl flex-shrink-0">🎨</span>
-              <span className="hide-mobile">Picasso Config Builder</span>
-              <span className="hide-desktop">Picasso</span>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-1 sm:gap-2 truncate">
+              <img src={logoImg} alt="MyRecruiter" className="h-8 w-auto flex-shrink-0" />
+              <span className="hide-mobile">Config Builder</span>
             </h1>
             {tenantId && (
               <Badge variant="outline" className="text-xs show-tablet-up">
@@ -130,6 +132,9 @@ export const Header: React.FC = () => {
 
             {/* Deploy Button - New Component */}
             <DeployButton />
+
+            {/* Clerk User Button */}
+            <UserButton />
           </div>
         </div>
       </header>

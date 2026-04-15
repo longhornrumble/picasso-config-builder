@@ -17,9 +17,7 @@ const hexColorSchema = z
   .regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color (e.g., #FF5733)');
 
 export const brandingConfigSchema = z.object({
-  logo_background_color: hexColorSchema.optional(),
   primary_color: hexColorSchema,
-  avatar_background_color: hexColorSchema.optional(),
   header_text_color: hexColorSchema.optional(),
   widget_icon_color: hexColorSchema.optional(),
   font_family: z.string().min(1, 'Font family is required'),
@@ -90,8 +88,10 @@ export const actionChipsConfigSchema = z.object({
 export const widgetBehaviorConfigSchema = z.object({
   start_open: z.boolean(),
   remember_state: z.boolean(),
-  persist_conversations: z.boolean(),
-  session_timeout_minutes: z.number().int().min(5).max(1440, 'Timeout must be between 5 and 1440 minutes (24 hours)'),
+  auto_open_delay: z.number().int().min(0).optional(),
+  mobile: z.object({
+    start_open: z.boolean().optional(),
+  }).optional(),
 });
 
 // ============================================================================
@@ -228,6 +228,7 @@ export const tenantConfigSchema = z.object({
   widget_behavior: widgetBehaviorConfigSchema.optional(),
   cta_settings: ctaSettingsSchema.optional(),
   aws: awsConfigSchema,
+
 }).superRefine((data, ctx) => {
   // Validate feature dependencies
   if (data.features.conversational_forms && Object.keys(data.conversational_forms).length === 0) {
@@ -302,6 +303,7 @@ export const tenantConfigSchema = z.object({
       }
     });
   });
+
 });
 
 // ============================================================================

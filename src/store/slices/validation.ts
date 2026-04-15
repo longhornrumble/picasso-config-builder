@@ -158,10 +158,10 @@ export const createValidationSlice: SliceCreator<ValidationSlice> = (set, get) =
   },
 
   hasErrors: () => {
-    return Object.keys(get().validation.errors).length > 0;
+    return Object.values(get().validation.errors).some(arr => arr.length > 0);
   },
 
   hasWarnings: () => {
-    return Object.keys(get().validation.warnings).length > 0;
+    return Object.values(get().validation.warnings).some(arr => arr.length > 0);
   },
 });

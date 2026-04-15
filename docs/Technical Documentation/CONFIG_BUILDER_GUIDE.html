@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Picasso Config Builder &mdash; Operator Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --emerald-50: #ecfdf5;
+    --emerald-100: #d1fae5;
+    --emerald-200: #a7f3d0;
+    --emerald-300: #6ee7b7;
+    --emerald-400: #34d399;
+    --emerald-500: #50C878;
+    --emerald-600: #059669;
+    --emerald-700: #047857;
+    --emerald-800: #065f46;
+    --emerald-900: #064e3b;
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+    --slate-950: #020617;
+    --blue-50: #eff6ff;
+    --blue-500: #3b82f6;
+    --blue-600: #2563eb;
+    --amber-50: #fffbeb;
+    --amber-500: #f59e0b;
+    --amber-600: #d97706;
+    --red-50: #fef2f2;
+    --red-500: #ef4444;
+    --purple-50: #faf5ff;
+    --purple-500: #a855f7;
+    --purple-600: #9333ea;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: var(--slate-800);
+    background: var(--slate-50);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, var(--slate-900) 0%, var(--slate-800) 50%, var(--emerald-900) 100%);
+    color: white;
+    padding: 4rem 2rem 3.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(80,200,120,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-eyebrow {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--emerald-400);
+    margin-bottom: 0.75rem;
+  }
+  .hero h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--slate-300);
+    max-width: 600px;
+    line-height: 1.7;
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* ── Build Order Banner ── */
+  .build-order {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: -2rem auto 3rem;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 4px 20px -2px rgba(0,0,0,0.08);
+  }
+  .build-order h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--slate-900);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .build-order h2::before {
+    content: '📋';
+    font-size: 1.2rem;
+  }
+  .build-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+  }
+  .build-step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--slate-700);
+    background: var(--slate-50);
+    border: 1px solid var(--slate-100);
+  }
+  .build-step .num {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--emerald-600);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .build-step .dep {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--slate-400);
+  }
+
+  /* ── Step Sections ── */
+  .step {
+    margin-bottom: 3rem;
+    scroll-margin-top: 2rem;
+  }
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--slate-200);
+  }
+  .step:first-of-type .step-header { border-top: none; padding-top: 0; }
+  .step-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--emerald-700);
+    color: white;
+    font-size: 1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--slate-900);
+    line-height: 1.2;
+  }
+
+  /* ── Prereq badge ── */
+  .prereq {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--amber-50);
+    border: 1px solid var(--amber-500);
+    color: var(--amber-600);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+  }
+  .prereq.none {
+    background: var(--emerald-50);
+    border-color: var(--emerald-500);
+    color: var(--emerald-600);
+  }
+
+  /* ── Prose ── */
+  .step p, .step li {
+    font-size: 0.95rem;
+    color: var(--slate-600);
+    line-height: 1.7;
+    margin-bottom: 0.75rem;
+  }
+  .step ul, .step ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .step li { margin-bottom: 0.35rem; }
+  .step strong { color: var(--slate-800); }
+
+  /* ── Sub-headings ── */
+  .step h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--slate-800);
+    margin: 1.5rem 0 0.75rem;
+  }
+  .step h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--slate-700);
+    margin: 1.25rem 0 0.5rem;
+  }
+
+  /* ── Tables ── */
+  .table-wrap {
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid var(--slate-200);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  thead {
+    background: var(--slate-800);
+    color: white;
+  }
+  th {
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  td {
+    padding: 0.6rem 0.85rem;
+    border-top: 1px solid var(--slate-100);
+    vertical-align: top;
+    color: var(--slate-700);
+  }
+  tbody tr:hover { background: var(--slate-50); }
+  td code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    background: var(--emerald-50);
+    color: var(--emerald-800);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  td .required {
+    display: inline-block;
+    background: var(--red-50);
+    color: var(--red-500);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+  td .optional {
+    display: inline-block;
+    color: var(--slate-400);
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+  td .conditional {
+    display: inline-block;
+    background: var(--amber-50);
+    color: var(--amber-600);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+
+  /* ── Callout boxes ── */
+  .callout {
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    margin: 1rem 0 1.25rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    border-left: 4px solid;
+  }
+  .callout.done {
+    background: var(--emerald-50);
+    border-color: var(--emerald-500);
+    color: var(--emerald-800);
+  }
+  .callout.tip {
+    background: var(--blue-50);
+    border-color: var(--blue-500);
+    color: var(--slate-700);
+  }
+  .callout.warn {
+    background: var(--amber-50);
+    border-color: var(--amber-500);
+    color: var(--slate-700);
+  }
+  .callout.v4 {
+    background: var(--purple-50);
+    border-color: var(--purple-500);
+    color: var(--slate-700);
+  }
+  .callout-label {
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.25rem;
+  }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--slate-900);
+    color: var(--slate-200);
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+  pre .key { color: var(--emerald-300); }
+  pre .str { color: #fbbf24; }
+  pre .comment { color: var(--slate-500); font-style: italic; }
+
+  /* ── Pattern cards ── */
+  .patterns {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .pattern-card {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 1.25rem;
+    transition: box-shadow 0.2s;
+  }
+  .pattern-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+  .pattern-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--slate-800);
+    margin: 0 0 0.5rem;
+  }
+  .pattern-card ol {
+    padding-left: 1.25rem;
+    margin: 0;
+  }
+  .pattern-card li {
+    font-size: 0.82rem;
+    color: var(--slate-600);
+    margin-bottom: 0.2rem;
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--slate-400);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--slate-200);
+    margin-top: 2rem;
+  }
+  footer strong { color: var(--slate-600); }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .hero { padding: 2.5rem 1.25rem 2rem; }
+    .hero h1 { font-size: 1.75rem; }
+    .container { padding: 0 1.25rem; }
+    .build-steps { grid-template-columns: 1fr; }
+    .build-order { margin: -1.5rem 1.25rem 2rem; padding: 1.25rem; }
+    .patterns { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    .hero { padding: 2rem; background: var(--slate-900); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .build-order { box-shadow: none; border: 1px solid #ccc; }
+    .step { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ HERO ═══ -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">MyRecruiter &middot; Internal Operations</div>
+    <h1>Picasso Config Builder<br>Operator Guide</h1>
+    <p>Step-by-step instructions for configuring a client implementation from scratch. Follow the build order &mdash; each step lists its prerequisites and every field you need to complete.</p>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════ BUILD ORDER ═══ -->
+<div class="container">
+<div class="build-order">
+  <h2>Build Order</h2>
+  <div class="build-steps">
+    <div class="build-step"><span class="num">1</span><div>Tenant + AWS<span class="dep">No dependencies</span></div></div>
+    <div class="build-step"><span class="num">2</span><div>Programs<span class="dep">No dependencies</span></div></div>
+    <div class="build-step"><span class="num">3</span><div>Forms<span class="dep">Requires: Programs</span></div></div>
+    <div class="build-step"><span class="num">4</span><div>CTAs<span class="dep">Requires: Forms (if start_form)</span></div></div>
+    <div class="build-step"><span class="num">5</span><div>Branches<span class="dep">Requires: CTAs</span></div></div>
+    <div class="build-step"><span class="num">6</span><div>Action Chips<span class="dep">Optional &middot; Requires: Branches</span></div></div>
+    <div class="build-step"><span class="num">7</span><div>Content Showcase<span class="dep">Optional &middot; Requires: CTAs</span></div></div>
+    <div class="build-step"><span class="num">8</span><div>Settings<span class="dep">Requires: Branches (fallback)</span></div></div>
+    <div class="build-step"><span class="num">9</span><div>Validate + Deploy<span class="dep">All steps complete</span></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ STEP 1 ═══ -->
+<section class="step" id="step-1">
+  <div class="step-header">
+    <div class="step-number">1</div>
+    <h2>Load or Create Tenant</h2>
+  </div>
+  <div class="prereq none">No prerequisites</div>
+
+  <p>From the home page, select an existing tenant or click <strong>Create New Tenant</strong>. A new tenant needs these identity fields:</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Req</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>tenant_id</code></td><td><span class="required">Required</span></td><td>Unique slug (lowercase, underscores). Cannot change after creation.</td></tr>
+      <tr><td><code>chat_title</code></td><td><span class="required">Required</span></td><td>Displayed in the widget header. Max 100 chars.</td></tr>
+      <tr><td><code>welcome_message</code></td><td><span class="required">Required</span></td><td>First message the user sees. Max 500 chars.</td></tr>
+      <tr><td><code>tone_prompt</code></td><td><span class="required">Required</span></td><td>Personality instructions for the AI. Max 2000 chars. This is one of the most important fields &mdash; it shapes every response.</td></tr>
+      <tr><td><code>subscription_tier</code></td><td><span class="required">Required</span></td><td>Free / Standard / Premium / Enterprise. Controls feature availability.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>AWS Configuration</h3>
+  <p>Navigate to <strong>Settings &gt; AI &amp; AWS</strong> tab:</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Req</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>knowledge_base_id</code></td><td><span class="required">Required</span></td><td>Bedrock Knowledge Base ID (10-20 chars, uppercase alphanumeric). Get this from the AWS console after the KB is created.</td></tr>
+      <tr><td><code>aws_region</code></td><td><span class="required">Required</span></td><td>Region where the KB lives (e.g., <code>us-east-1</code>).</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout done">
+    <div class="callout-label">When you're done</div>
+    You have a loadable tenant with identity and AWS connectivity. Nothing else exists yet.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ STEP 2 ═══ -->
+<section class="step" id="step-2">
+  <div class="step-header">
+    <div class="step-number">2</div>
+    <h2>Programs</h2>
+  </div>
+  <div class="prereq none">Prerequisite: Tenant loaded</div>
+
+  <p>Programs are organizational containers. Every form must belong to a program. If the client has one product or service, one program is fine. If they serve multiple audiences or have distinct offerings, create a program for each.</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Req</th><th>Validation</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>program_id</code></td><td><span class="required">Required</span></td><td>Lowercase, numbers, underscores. Max 50.</td><td>Unique key. Used by forms, CTAs, and branches to group entities.</td></tr>
+      <tr><td><code>program_name</code></td><td><span class="required">Required</span></td><td>Max 100 chars</td><td>Display name (shown in builder UI, not to end users).</td></tr>
+      <tr><td><code>description</code></td><td><span class="optional">Optional</span></td><td>Max 500 chars</td><td>Internal notes about what this program covers.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout tip">
+    <div class="callout-label">Example</div>
+    A nonprofit with mentoring and food distribution: <code>dare2dream</code> ("Dare2Dream Mentoring Program") and <code>lovebox</code> ("Love Box Distribution Program").
+  </div>
+
+  <div class="callout done">
+    <div class="callout-label">When you're done</div>
+    You have at least one program. You can now create forms.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ STEP 3 ═══ -->
+<section class="step" id="step-3">
+  <div class="step-header">
+    <div class="step-number">3</div>
+    <h2>Forms</h2>
+  </div>
+  <div class="prereq">Prerequisite: At least one program exists</div>
+
+  <p>Forms collect structured data from users through conversational prompts. Each form belongs to a program and contains one or more fields.</p>
+
+  <h3>Form Metadata</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Req</th><th>Validation</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>form_id</code></td><td><span class="required">Required</span></td><td>Lowercase, numbers, underscores. Max 50.</td><td>Unique key. CTAs reference this to trigger the form.</td></tr>
+      <tr><td><code>program</code></td><td><span class="required">Required</span></td><td>Must match an existing program_id</td><td>Which program this form belongs to.</td></tr>
+      <tr><td><code>title</code></td><td><span class="required">Required</span></td><td>Max 100 chars</td><td>Internal title (shown in builder, also used as conversation header).</td></tr>
+      <tr><td><code>description</code></td><td><span class="required">Required</span></td><td>Max 500 chars</td><td>Explains the form's purpose. Shown to the user as context.</td></tr>
+      <tr><td><code>enabled</code></td><td><span class="required">Required</span></td><td>Boolean</td><td>Toggle form on/off without deleting it. Defaults to true.</td></tr>
+      <tr><td><code>introduction</code></td><td><span class="optional">Optional</span></td><td>Max 1000 chars</td><td>Opening message before the first field is asked.</td></tr>
+      <tr><td><code>cta_text</code></td><td><span class="optional">Optional</span></td><td>Max 50 chars</td><td>Custom button text (e.g., "Start Application").</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Form Fields</h3>
+  <p>Each form needs at least one field. Click <strong>Add Field</strong> to add them in order &mdash; the order you add them is the order the AI asks them.</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Property</th><th>Req</th><th>Validation</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td><span class="required">Required</span></td><td>Lowercase, unique within form</td><td>Field identifier. Submitted data uses this as the key.</td></tr>
+      <tr><td><code>type</code></td><td><span class="required">Required</span></td><td>See types below</td><td>Controls input validation and UI rendering.</td></tr>
+      <tr><td><code>label</code></td><td><span class="required">Required</span></td><td>Max 100 chars</td><td>Human-readable field name (e.g., "Full Name").</td></tr>
+      <tr><td><code>prompt</code></td><td><span class="required">Required</span></td><td>Max 500 chars</td><td>The question the AI asks the user. Write this conversationally.</td></tr>
+      <tr><td><code>hint</code></td><td><span class="optional">Optional</span></td><td>Max 200 chars</td><td>Helper text shown below the input.</td></tr>
+      <tr><td><code>required</code></td><td><span class="required">Required</span></td><td>Boolean</td><td>Whether the user can skip this field.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Field Types</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Type</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>text</code></td><td>Single-line free text</td></tr>
+      <tr><td><code>email</code></td><td>Validates email format</td></tr>
+      <tr><td><code>phone</code></td><td>Accepts most phone formats</td></tr>
+      <tr><td><code>number</code></td><td>Numeric input only</td></tr>
+      <tr><td><code>textarea</code></td><td>Multi-line text</td></tr>
+      <tr><td><code>date</code></td><td>Date picker. Can add <code>minimum_age</code> gate (1&ndash;120 years).</td></tr>
+      <tr><td><code>select</code></td><td>Dropdown. Requires <code>options</code> array of {value, label} pairs.</td></tr>
+      <tr><td><code>name</code></td><td>Composite &mdash; auto-creates First Name + Last Name subfields.</td></tr>
+      <tr><td><code>address</code></td><td>Composite &mdash; auto-creates Street, City, State, ZIP subfields.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout tip">
+    <div class="callout-label">Eligibility Gates</div>
+    For <code>select</code> and <code>date</code> types: set <code>eligibility_gate: true</code> to block form progression if the user's answer doesn't meet criteria. Provide a <code>failure_message</code> to explain why.
+  </div>
+
+  <h3>Post-Submission (Optional)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Req</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>confirmation_message</code></td><td><span class="conditional">If configured</span></td><td>Thank-you message shown after submit. Max 1000 chars.</td></tr>
+      <tr><td><code>on_completion_branch</code></td><td><span class="optional">Optional</span></td><td>Branch to activate after form submission.</td></tr>
+      <tr><td><code>fulfillment</code></td><td><span class="optional">Optional</span></td><td>Where to send the data: <code>email</code> (SES), <code>webhook</code> (HTTP POST), <code>dynamodb</code>, or <code>sheets</code>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout done">
+    <div class="callout-label">When you're done</div>
+    You have forms with fields, each assigned to a program. You can now create CTAs that trigger these forms.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ STEP 4 ═══ -->
+<section class="step" id="step-4">
+  <div class="step-header">
+    <div class="step-number">4</div>
+    <h2>CTAs (Call-to-Actions)</h2>
+  </div>
+  <div class="prereq">Prerequisite: Forms exist (if any CTA uses <code>start_form</code>)</div>
+
+  <p>CTAs are the buttons users click. They're the core routing mechanism &mdash; every branch, action chip, and showcase card ultimately surfaces CTAs.</p>
+
+  <h3>CTA Fields</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Req</th><th>Validation</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>ctaId</code></td><td><span class="required">Required</span></td><td>Unique. Letters, numbers, hyphens, underscores.</td><td>Internal key. Branches and chips reference this.</td></tr>
+      <tr><td><code>label</code></td><td><span class="required">Required</span></td><td>Max 100 chars</td><td>Button text the user sees (e.g., "Apply to Mentor").</td></tr>
+      <tr><td><code>action</code></td><td><span class="required">Required</span></td><td>Enum (see below)</td><td>What happens when the button is clicked.</td></tr>
+      <tr><td><code>type</code></td><td><span class="required">Required</span></td><td>Auto-set from action</td><td>Internal classification. Don't set manually.</td></tr>
+      <tr><td><code>ai_available</code></td><td><span class="optional">Optional</span></td><td>Boolean</td><td>When true, the AI can suggest this CTA dynamically (Tier 1-2 scoring).</td></tr>
+      <tr><td><code>target_branch</code></td><td><span class="optional">Optional</span></td><td>Must reference existing branch</td><td>Navigates to a conversation branch when clicked.</td></tr>
+      <tr><td><code>on_completion_branch</code></td><td><span class="optional">Optional</span></td><td>Must reference existing branch</td><td>Branch to show after a form completes.</td></tr>
+      <tr><td><code>program_id</code></td><td><span class="optional">Optional</span></td><td>Must reference existing program</td><td>Organizational grouping.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Action Types</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Action</th><th>Type (auto)</th><th>Required field</th><th>What happens</th></tr></thead>
+    <tbody>
+      <tr><td><code>start_form</code></td><td><code>form_trigger</code></td><td><code>formId</code> (must reference existing form)</td><td>Opens the specified conversational form.</td></tr>
+      <tr><td><code>external_link</code></td><td><code>external_link</code></td><td><code>url</code> (valid HTTP/HTTPS)</td><td>Opens URL in new tab.</td></tr>
+      <tr><td><code>send_query</code></td><td><code>bedrock_query</code></td><td><code>query</code> (text)</td><td>Sends query to the AI as if the user typed it.</td></tr>
+      <tr><td><code>show_info</code></td><td><code>info_request</code></td><td><code>prompt</code> (text)</td><td>Displays a static info message (no AI call).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>CTA Design Patterns</h3>
+
+  <div class="callout tip">
+    <div class="callout-label">Form trigger with follow-up branch</div>
+    Action: <code>start_form</code>, formId: <code>mentor_application</code><br>
+    <code>on_completion_branch</code>: <code>mentor_next_steps</code><br>
+    After the form submits, the user sees the next-steps branch CTAs.
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-label">Navigation CTA (rigid path)</div>
+    Action: <code>show_info</code>, prompt: "Here's what you need to know..."<br>
+    <code>target_branch</code>: <code>dare2dream</code><br>
+    Clicking routes to the branch, which shows its own CTAs. The AI exits the conversation loop.
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-label">AI-available CTA (flexible path)</div>
+    Action: <code>send_query</code>, query: "Tell me about volunteering"<br>
+    <code>ai_available</code>: true &mdash; No <code>target_branch</code><br>
+    The AI stays in the loop and may suggest follow-up chips.
+  </div>
+
+  <div class="callout done">
+    <div class="callout-label">When you're done</div>
+    You have CTAs for all user actions. You can now group them into branches.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ STEP 5 ═══ -->
+<section class="step" id="step-5">
+  <div class="step-header">
+    <div class="step-number">5</div>
+    <h2>Branches</h2>
+  </div>
+  <div class="prereq">Prerequisite: CTAs exist</div>
+
+  <p>Branches group CTAs into routing destinations. When the AI (or a click) routes to a branch, the branch's primary and secondary CTAs are displayed as buttons.</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Req</th><th>Validation</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>branchId</code></td><td><span class="required">Required</span></td><td>Unique identifier</td><td>Key used by CTAs (<code>target_branch</code>), chips, and intent definitions.</td></tr>
+      <tr><td><code>available_ctas.primary</code></td><td><span class="required">Required</span></td><td>Must reference existing CTA; not in secondary</td><td>The featured/prominent CTA button.</td></tr>
+      <tr><td><code>available_ctas.secondary</code></td><td><span class="required">Required</span></td><td>Each must reference existing CTA; no duplicates</td><td>Additional CTA buttons shown below the primary.</td></tr>
+      <tr><td><code>description</code></td><td><span class="optional">Optional</span></td><td>Free text</td><td>When should this branch activate? Useful for intent definitions.</td></tr>
+      <tr><td><code>program_id</code></td><td><span class="optional">Optional</span></td><td>Must reference existing program</td><td>Organizational grouping.</td></tr>
+      <tr><td><code>showcase_item_id</code></td><td><span class="optional">Optional</span></td><td>Must reference existing showcase item</td><td>Display a content card alongside the branch CTAs.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>How Branches Work at Runtime</h3>
+  <ol>
+    <li>User clicks a CTA with <code>target_branch: "dare2dream"</code> (or AI routes there)</li>
+    <li>Lambda looks up <code>conversation_branches.dare2dream</code></li>
+    <li>Resolves <code>available_ctas.primary</code> &rarr; full CTA object from <code>cta_definitions</code></li>
+    <li>Resolves <code>available_ctas.secondary</code> &rarr; array of full CTA objects</li>
+    <li>Sends all resolved CTAs to the widget as buttons</li>
+  </ol>
+
+  <div class="callout tip">
+    <div class="callout-label">Branch design tip</div>
+    The primary CTA should be the most important action for that path. Secondary CTAs are supporting options. Example: Branch <code>dare2dream</code> &mdash; primary = "Apply to Be a Mentor", secondary = ["Learn More About Mentoring", "Back to Programs"].
+  </div>
+
+  <div class="callout done">
+    <div class="callout-label">When you're done</div>
+    You have branches that organize CTAs into paths. The core routing structure is complete. Steps 6&ndash;7 are optional enhancements.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ STEP 6 ═══ -->
+<section class="step" id="step-6">
+  <div class="step-header">
+    <div class="step-number">6</div>
+    <h2>Action Chips <span style="font-weight:400;font-size:0.9rem;color:var(--slate-400)">(Optional)</span></h2>
+  </div>
+  <div class="prereq">Prerequisite: Branches exist (if chips use <code>target_branch</code>)</div>
+
+  <p>Action chips are the quick-access buttons shown at the bottom of the chat. They provide Tier 1 routing &mdash; explicit, operator-defined shortcuts that bypass AI classification entirely.</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Req</th><th>Validation</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>chipId</code></td><td><span class="required">Required</span></td><td>Unique within chips</td><td>Auto-generated from label, or set manually.</td></tr>
+      <tr><td><code>label</code></td><td><span class="required">Required</span></td><td>Max 30 chars</td><td>Text shown on the chip. Keep it short.</td></tr>
+      <tr><td><code>action</code></td><td><span class="optional">Optional</span></td><td><code>send_query</code> or <code>show_info</code></td><td>Default: <code>send_query</code>. What happens when tapped.</td></tr>
+      <tr><td><code>value</code></td><td><span class="required">Required</span></td><td>&mdash;</td><td>The query to send or message to show.</td></tr>
+      <tr><td><code>target_branch</code></td><td><span class="optional">Optional</span></td><td>Must reference existing branch</td><td>Forces routing to this branch, overriding AI classification.</td></tr>
+      <tr><td><code>target_showcase_id</code></td><td><span class="optional">Optional</span></td><td>Must reference existing showcase item</td><td>Display a showcase card instead of querying the AI.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Global Chip Settings</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Setting</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>enabled</code></td><td>true</td><td>Master toggle for all chips.</td></tr>
+      <tr><td><code>max_display</code></td><td>4</td><td>How many chips to show at once.</td></tr>
+      <tr><td><code>show_on_welcome</code></td><td>true</td><td>Show chips on the welcome screen.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout done">
+    <div class="callout-label">When you're done</div>
+    Users see quick-access chips that shortcut to key paths.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ STEP 7 ═══ -->
+<section class="step" id="step-7">
+  <div class="step-header">
+    <div class="step-number">7</div>
+    <h2>Content Showcase <span style="font-weight:400;font-size:0.9rem;color:var(--slate-400)">(Optional)</span></h2>
+  </div>
+  <div class="prereq">Prerequisite: CTAs exist (if showcase items use <code>available_ctas</code>)</div>
+
+  <p>Showcase items are promotional content cards &mdash; "digital flyers" that display an image, description, and CTA buttons. They appear when the AI or a branch routes to them.</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Req</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td><span class="required">Required</span></td><td>Item identifier.</td></tr>
+      <tr><td><code>type</code></td><td><span class="required">Required</span></td><td><code>program</code>, <code>event</code>, <code>initiative</code>, or <code>campaign</code>.</td></tr>
+      <tr><td><code>enabled</code></td><td><span class="required">Required</span></td><td>Toggle visibility.</td></tr>
+      <tr><td><code>name</code></td><td><span class="required">Required</span></td><td>Card title.</td></tr>
+      <tr><td><code>tagline</code></td><td><span class="required">Required</span></td><td>Short subtitle.</td></tr>
+      <tr><td><code>description</code></td><td><span class="required">Required</span></td><td>Full description text.</td></tr>
+      <tr><td><code>image_url</code></td><td><span class="optional">Optional</span></td><td>Card image (valid URL).</td></tr>
+      <tr><td><code>keywords</code></td><td><span class="required">Required</span></td><td>Tags for AI matching/filtering.</td></tr>
+      <tr><td><code>available_ctas.primary</code></td><td><span class="optional">Optional</span></td><td>Featured CTA on the card.</td></tr>
+      <tr><td><code>available_ctas.secondary</code></td><td><span class="optional">Optional</span></td><td>Additional CTA buttons.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout done">
+    <div class="callout-label">When you're done</div>
+    You have rich content cards that can be surfaced by branches or action chips.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ STEP 8 ═══ -->
+<section class="step" id="step-8">
+  <div class="step-header">
+    <div class="step-number">8</div>
+    <h2>Settings</h2>
+  </div>
+  <div class="prereq">Prerequisite: Branches exist (for <code>fallback_branch</code>)</div>
+
+  <p>Now configure global behavior. Navigate to <strong>Settings</strong>.</p>
+
+  <h3>Branding (Settings &gt; Branding tab)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Priority</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>primary_color</code></td><td><span class="required">Required</span></td><td>Main brand color (hex). Used for buttons, links, widget icon.</td></tr>
+      <tr><td><code>font_family</code></td><td><span class="required">Required</span></td><td>Font name. Must be available on the client's site.</td></tr>
+      <tr><td><code>logo_url</code></td><td><span class="conditional">Recommended</span></td><td>Widget header logo. Host on S3 or client CDN.</td></tr>
+      <tr><td><code>header_background</code></td><td><span class="conditional">Recommended</span></td><td>Header bar color (hex).</td></tr>
+      <tr><td><code>user_bubble_color</code> / <code>bot_bubble_color</code></td><td><span class="optional">Optional</span></td><td>Chat bubble colors (hex).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Features (Settings &gt; Features tab)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Feature</th><th>Default</th><th>When to enable</th></tr></thead>
+    <tbody>
+      <tr><td><code>conversational_forms</code></td><td>false</td><td><strong>Must be true</strong> if you created any forms.</td></tr>
+      <tr><td><code>streaming</code></td><td>true</td><td>Keep enabled for real-time responses.</td></tr>
+      <tr><td><code>smart_cards</code></td><td>false</td><td>Enable if using content showcase.</td></tr>
+      <tr><td><code>uploads</code> / <code>photo_uploads</code></td><td>false</td><td>Only if the client needs file collection.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>CTA Settings (Settings &gt; AI &amp; AWS tab)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>When to set</th></tr></thead>
+    <tbody>
+      <tr><td><code>fallback_branch</code></td><td><strong>Recommended.</strong> The default branch when no intent classification matches.</td></tr>
+      <tr><td><code>max_ctas_per_response</code></td><td>Default 4. Increase if branches have many secondary CTAs.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Bedrock Instructions</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>role_instructions</code></td><td>System-level instructions that shape every response.</td></tr>
+      <tr><td><code>formatting_preferences</code></td><td>Emoji usage, response style, detail level.</td></tr>
+      <tr><td><code>custom_constraints</code></td><td>Rules like "Never discuss competitor products" or "Always mention the hotline number".</td></tr>
+      <tr><td><code>fallback_message</code></td><td>Message if the AI fails entirely.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout done">
+    <div class="callout-label">When you're done</div>
+    All settings are configured. The tenant is ready for validation.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ STEP 9 ═══ -->
+<section class="step" id="step-9">
+  <div class="step-header">
+    <div class="step-number">9</div>
+    <h2>Validate &amp; Deploy</h2>
+  </div>
+  <div class="prereq">Prerequisite: All previous steps complete</div>
+
+  <h3>Validation</h3>
+  <p>Check the validation summary on the Settings page or the Dashboard for status indicators.</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th style="background:var(--red-500)">Errors (must fix)</th><th style="background:var(--amber-600)">Warnings (should fix)</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <ul style="padding-left:1.2rem;margin:0">
+            <li>Form references a program that doesn't exist</li>
+            <li>CTA references a form that doesn't exist</li>
+            <li>Branch references a CTA that doesn't exist</li>
+            <li>Missing required fields</li>
+            <li>Missing <code>fallback_branch</code> when intent definitions are configured</li>
+          </ul>
+        </td>
+        <td>
+          <ul style="padding-left:1.2rem;margin:0">
+            <li>Orphaned entities (CTA not used by any branch)</li>
+            <li><code>conversational_forms</code> disabled but forms exist</li>
+            <li>Intent definition references missing branch</li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <h3>Deploy</h3>
+  <ol>
+    <li>Click <strong>Deploy to S3</strong> in the header</li>
+    <li>Review the deployment summary (entity counts, version bump)</li>
+    <li>Confirm</li>
+    <li>The builder merges your edits, creates a backup, increments the version by 0.1, and uploads to S3</li>
+    <li>The Lambda picks up the new config on next request (cache TTL: 5 minutes)</li>
+  </ol>
+
+  <div class="callout done">
+    <div class="callout-label">Done</div>
+    Your tenant is live. Test the widget embed to verify the configuration.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ INTENTS ═══ -->
+<section class="step" id="step-v4">
+  <div class="step-header">
+    <div class="step-number" style="background:var(--purple-600)">AI</div>
+    <h2>Intent Definitions</h2>
+  </div>
+  <div class="prereq">Prerequisite: Branches configured, fallback_branch set</div>
+
+  <p>Intent definitions power the classification pipeline. After each AI response, a separate classifier reads the user's message and matches it against these definitions to determine which branch CTAs to display. Navigate to <strong>Intent Definitions</strong> (available from the sidebar or Settings &gt; AI &amp; AWS tab).</p>
+
+  <pre><span class="key">"intent_definitions"</span>: [
+  {
+    <span class="key">"name"</span>: <span class="str">"mentoring_applicant"</span>,
+    <span class="key">"description"</span>: <span class="str">"The visitor wants to BECOME a mentor -- asking how to apply, requirements, time commitment. NOT when someone wants to RECEIVE mentorship."</span>,
+    <span class="key">"target_branch"</span>: <span class="str">"dare2dream"</span>
+  },
+  {
+    <span class="key">"name"</span>: <span class="str">"donating"</span>,
+    <span class="key">"description"</span>: <span class="str">"User wants to donate money, items, or gifts."</span>,
+    <span class="key">"target_branch"</span>: <span class="str">"donate"</span>
+  }
+]</pre>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Req</th><th>Validation</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td><span class="required">Required</span></td><td>Lowercase + underscores, max 100, unique</td><td>Intent identifier. Logged in CloudWatch.</td></tr>
+      <tr><td><code>description</code></td><td><span class="required">Required</span></td><td>Min 10, max 1000 chars</td><td><strong>What the classifier reads.</strong> Quality determines accuracy.</td></tr>
+      <tr><td><code>target_branch</code></td><td><span class="optional">Optional</span></td><td>Must reference existing branch</td><td>Branch to route to when this intent matches.</td></tr>
+      <tr><td><code>cta_id</code></td><td><span class="optional">Optional</span></td><td>Must reference existing CTA</td><td>Single CTA to surface (if no branch).</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout v4">
+    <div class="callout-label">Description quality tips</div>
+    <ul style="margin:0.25rem 0 0;padding-left:1.25rem">
+      <li>Include what the intent IS and what it IS NOT</li>
+      <li>Use the user's perspective ("The visitor wants to...")</li>
+      <li>Differentiate similar intents explicitly (mentor applicant vs. mentee)</li>
+      <li>Keep under ~200 chars for best classifier performance</li>
+    </ul>
+  </div>
+
+  <p><strong>Routing priority:</strong> <code>target_branch</code> &gt; <code>cta_id</code> &gt; fallback. If an intent matches but has neither, the fallback branch is used. Max 12 intent definitions per tenant.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════ LIMITS ═══ -->
+<section class="step" id="limits">
+  <div class="step-header">
+    <div class="step-number" style="background:var(--slate-500)">#</div>
+    <h2>Quick Reference: Entity Limits</h2>
+  </div>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Entity</th><th>Max</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Programs</td><td>No hard limit</td><td>Keep reasonable (5&ndash;15 typical)</td></tr>
+      <tr><td>Forms</td><td>No hard limit</td><td>Each needs at least 1 field</td></tr>
+      <tr><td>Form fields</td><td>No hard limit per form</td><td>Order matters &mdash; it's the question sequence</td></tr>
+      <tr><td>CTAs</td><td>No hard limit</td><td>Every CTA needs a unique ID</td></tr>
+      <tr><td>Branches</td><td>No hard limit</td><td>Each needs a primary CTA</td></tr>
+      <tr><td>Action chips</td><td>Governed by <code>max_display</code></td><td>Default 4 shown at a time</td></tr>
+      <tr><td>Showcase items</td><td>No hard limit</td><td>Needs name, tagline, description, keywords</td></tr>
+      <tr><td>Intent definitions</td><td>12</td><td>Keep focused &mdash; quality over quantity.</td></tr>
+      <tr><td>Quick help prompts</td><td>1&ndash;8</td><td>Suggested prompts on the help panel</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ PATTERNS ═══ -->
+<section class="step" id="patterns">
+  <div class="step-header">
+    <div class="step-number" style="background:var(--slate-500)">&rarr;</div>
+    <h2>Common Patterns</h2>
+  </div>
+
+  <div class="patterns">
+    <div class="pattern-card">
+      <h4>Simple Lead Capture</h4>
+      <ol>
+        <li>One program (e.g., <code>general</code>)</li>
+        <li>One form: name, email, phone</li>
+        <li>One CTA: <code>start_form</code> &rarr; the form</li>
+        <li>One branch with that CTA as primary</li>
+        <li>Set as <code>fallback_branch</code></li>
+      </ol>
+    </div>
+    <div class="pattern-card">
+      <h4>Multi-Program Nonprofit</h4>
+      <ol>
+        <li>Program per initiative</li>
+        <li>Forms per program (volunteer, donate, enroll)</li>
+        <li>CTAs: form triggers + info CTAs</li>
+        <li>Branches per program path</li>
+        <li>Action chips for top-level nav</li>
+        <li>Intent definitions to classify into the right program</li>
+      </ol>
+    </div>
+    <div class="pattern-card">
+      <h4>Information-Only (No Forms)</h4>
+      <ol>
+        <li>One program</li>
+        <li>No forms</li>
+        <li>CTAs: <code>show_info</code> or <code>send_query</code></li>
+        <li>Branches grouping related info CTAs</li>
+        <li>Action chips for quick navigation</li>
+        <li><code>conversational_forms</code> feature OFF</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<footer>
+  <strong>Picasso Config Builder &middot; Operator Guide</strong><br>
+  MyRecruiter &middot; Internal Operations &middot; Last updated February 2026
+</footer>
+
+</body>
+</html>

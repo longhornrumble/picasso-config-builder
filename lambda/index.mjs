@@ -12,8 +12,21 @@ import {
   getTenantMetadata,
   saveConfig,
   deleteConfig,
+  deleteTenantCompletely,
   listBackups,
+  generateTenantHash,
+  createTenantMapping,
 } from './s3Operations.mjs';
+
+import {
+  putTenantRecord,
+  updateTenantTimestamp,
+  updateTenantStatus,
+} from './registryOperations.mjs';
+
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const demoTemplate = require('./demo-template.json');
 
 import {
   mergeConfigSections,
@@ -22,6 +35,24 @@ import {
   getSectionInfo,
   generateConfigDiff,
 } from './mergeStrategy.mjs';
+
+/**
+ * Validate tenantId format. Returns null if valid, or an error response object if invalid.
+ */
+const TENANT_ID_REGEX = /^[A-Za-z0-9_-]{1,50}$/;
+function validateTenantId(tenantId, headers) {
+  if (!tenantId || !TENANT_ID_REGEX.test(tenantId)) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({
+        error: 'Bad Request',
+        message: 'tenantId must be alphanumeric (hyphens/underscores allowed), max 50 characters',
+      }),
+    };
+  }
+  return null;
+}
 
 /**
  * Main Lambda handler
@@ -86,6 +117,8 @@ export const handler = async (event) => {
     // GET /config/{tenantId}/metadata - Get tenant metadata only
     if (httpMethod === 'GET' && path.match(/^\/config\/([^/]+)\/metadata$/)) {
       const tenantId = path.match(/^\/config\/([^/]+)\/metadata$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
       const metadata = await getTenantMetadata(tenantId);
       return {
         statusCode: 200,
@@ -97,6 +130,8 @@ export const handler = async (event) => {
     // GET /config/{tenantId}/backups - List backups for tenant
     if (httpMethod === 'GET' && path.match(/^\/config\/([^/]+)\/backups$/)) {
       const tenantId = path.match(/^\/config\/([^/]+)\/backups$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
       const backups = await listBackups(tenantId);
       return {
         statusCode: 200,
@@ -108,6 +143,8 @@ export const handler = async (event) => {
     // GET /config/{tenantId} - Load full tenant config
     if (httpMethod === 'GET' && path.match(/^\/config\/([^/]+)$/)) {
       const tenantId = path.match(/^\/config\/([^/]+)$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
       const editableOnly = queryStringParameters?.editable_only === 'true';
 
       const config = await loadConfig(tenantId);
@@ -131,6 +168,8 @@ export const handler = async (event) => {
     // PUT /config/{tenantId} - Save tenant config
     if (httpMethod === 'PUT' && path.match(/^\/config\/([^/]+)$/)) {
       const tenantId = path.match(/^\/config\/([^/]+)$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
       const requestBody = JSON.parse(body);
 
       const {
@@ -140,20 +179,17 @@ export const handler = async (event) => {
         validate_only = false,
       } = requestBody;
 
-      // Only validate sections if merge=true (section-based editing)
-      // When merge=false, full config replacement is allowed
-      if (merge) {
-        const validation = validateEditedSections(editedConfig);
-        if (!validation.isValid) {
-          return {
-            statusCode: 400,
-            headers,
-            body: JSON.stringify({
-              error: 'Invalid edited sections',
-              details: validation.errors,
-            }),
-          };
-        }
+      // Validate config structure regardless of merge mode
+      const validation = validateEditedSections(editedConfig);
+      if (!validation.isValid) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            error: 'Invalid config sections',
+            details: validation.errors,
+          }),
+        };
       }
 
       // If validation only, return without saving
@@ -193,6 +229,13 @@ export const handler = async (event) => {
       // Save the config
       const result = await saveConfig(tenantId, finalConfig, create_backup);
 
+      // Update registry timestamp (non-blocking — don't fail the request)
+      try {
+        await updateTenantTimestamp(tenantId);
+      } catch (registryErr) {
+        console.warn('Registry timestamp update failed (non-blocking):', registryErr.message);
+      }
+
       return {
         statusCode: 200,
         headers,
@@ -204,9 +247,29 @@ export const handler = async (event) => {
     }
 
     // DELETE /config/{tenantId} - Delete tenant config
+    // Use ?full=true to permanently delete all files (config, backups, mapping)
     if (httpMethod === 'DELETE' && path.match(/^\/config\/([^/]+)$/)) {
       const tenantId = path.match(/^\/config\/([^/]+)$/)[1];
-      const result = await deleteConfig(tenantId);
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
+      const fullDelete = queryStringParameters?.full === 'true';
+
+      const result = fullDelete
+        ? await deleteTenantCompletely(tenantId)
+        : await deleteConfig(tenantId);
+
+      // Update registry status (non-blocking — don't fail the request)
+      try {
+        if (fullDelete) {
+          // Hard delete: mark churned and null out s3ConfigPath (files are gone)
+          await updateTenantStatus(tenantId, 'churned', { s3ConfigPath: null });
+        } else {
+          // Soft delete: mark churned, preserve s3ConfigPath (config archived to backup)
+          await updateTenantStatus(tenantId, 'churned');
+        }
+      } catch (registryErr) {
+        console.warn('Registry status update failed (non-blocking):', registryErr.message);
+      }
 
       return {
         statusCode: 200,
@@ -225,6 +288,149 @@ export const handler = async (event) => {
         statusCode: 200,
         headers,
         body: JSON.stringify({ sections: info }),
+      };
+    }
+
+    // POST /config - Create new tenant
+    if (httpMethod === 'POST' && path === '/config') {
+      const requestBody = JSON.parse(body);
+      const {
+        org_name,
+        tenant_id,
+        chat_title,
+        chat_subtitle,
+        subscription_tier,
+        primary_color,
+        welcome_message,
+        knowledge_base_id,
+        use_template = true,
+        tenant_type = 'demo',
+      } = requestBody;
+
+      // Validate tenant_id
+      if (!tenant_id) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            error: 'Bad Request',
+            message: 'tenant_id is required',
+          }),
+        };
+      }
+
+      if (!/^[A-Za-z0-9_-]+$/.test(tenant_id) || tenant_id.length > 50) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            error: 'Bad Request',
+            message: 'tenant_id must be alphanumeric (hyphens/underscores allowed), max 50 characters',
+          }),
+        };
+      }
+
+      // Check if tenant already exists
+      try {
+        await loadConfig(tenant_id);
+        return {
+          statusCode: 409,
+          headers,
+          body: JSON.stringify({
+            error: 'Conflict',
+            message: `Tenant ${tenant_id} already exists`,
+          }),
+        };
+      } catch (error) {
+        if (!error.message.includes('not found')) {
+          throw error;
+        }
+        // Config not found = good, tenant doesn't exist yet
+      }
+
+      // Generate tenant hash
+      const tenant_hash = generateTenantHash(tenant_id);
+
+      // Build config from template or minimal defaults
+      let config;
+      if (use_template) {
+        config = JSON.parse(JSON.stringify(demoTemplate));
+      } else {
+        config = {
+          tenant_type: 'demo',
+          subscription_tier: 'Free',
+          branding: {},
+          features: { streaming: true },
+          programs: {},
+          conversational_forms: {},
+          cta_definitions: {},
+          conversation_branches: {},
+          cta_settings: { fallback_branch: null },
+        };
+      }
+
+      // Apply provided overrides
+      config.tenant_id = tenant_id;
+      config.tenant_hash = tenant_hash;
+      config.tenant_type = tenant_type;
+      if (org_name) config.org_name = org_name;
+      config.generated_at = Math.floor(Date.now() / 1000);
+      config.version = '1.0';
+
+      if (chat_title) config.chat_title = chat_title;
+      if (chat_subtitle) config.chat_subtitle = chat_subtitle;
+      if (subscription_tier) config.subscription_tier = subscription_tier;
+      if (welcome_message) config.welcome_message = welcome_message;
+      if (knowledge_base_id) {
+        config.aws = config.aws || {};
+        config.aws.knowledge_base_id = knowledge_base_id;
+      }
+      if (primary_color) {
+        config.branding = config.branding || {};
+        config.branding.primary_color = primary_color;
+        config.branding.header_background_color = primary_color;
+        config.branding.widget_background_color = primary_color;
+      }
+
+      // Save config to S3 (no backup needed for new tenant)
+      await saveConfig(tenant_id, config, false);
+
+      // Create hash mapping
+      await createTenantMapping(tenant_id, tenant_hash);
+
+      // Seed tenant registry record (non-blocking — don't fail the request)
+      try {
+        await putTenantRecord({
+          tenantId: tenant_id,
+          tenantHash: tenant_hash,
+          companyName: org_name || chat_title || tenant_id,
+          s3ConfigPath: `tenants/${tenant_id}/${tenant_id}-config.json`,
+          subscriptionTier: subscription_tier || 'free',
+          status: 'active',
+          onboardedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          networkId: null,
+          networkName: null,
+          clerkOrgId: '',
+          stripeCustomerId: '',
+        });
+      } catch (registryErr) {
+        console.warn('Registry seed failed (non-blocking):', registryErr.message);
+      }
+
+      // Build embed code
+      const embedCode = `<script src="https://chat.myrecruiter.ai/widget.js" data-tenant="${tenant_hash}" async></script>`;
+
+      return {
+        statusCode: 201,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          tenant_id,
+          tenant_hash,
+          embed_code: embedCode,
+          config,
+        }),
       };
     }
 

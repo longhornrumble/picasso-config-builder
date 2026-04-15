@@ -8,6 +8,7 @@ import { Building2, Check } from 'lucide-react';
 import { Select } from './ui';
 import { useConfigStore } from '@/store';
 import { listTenants } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import type { SelectOption } from './ui/Select';
 
 interface TenantSelectorProps {
@@ -42,6 +43,8 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({
   const loadConfig = useConfigStore((state) => state.config.loadConfig);
   const addToast = useConfigStore((state) => state.ui.addToast);
 
+  const { user } = useAuth();
+
   // Fetch available tenants on mount
   useEffect(() => {
     const fetchTenants = async () => {
@@ -52,10 +55,17 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({
         const tenantsList = await listTenants();
 
         // Convert tenant list to select options
-        const options: SelectOption[] = tenantsList.map((tenant: any) => ({
+        let options: SelectOption[] = tenantsList.map((tenant: any) => ({
           value: tenant.tenantId,
           label: tenant.tenantName || tenant.tenantId,
         }));
+
+        // Filter tenants based on user role
+        // super_admin sees all tenants, other roles see only their assigned tenants
+        if (user?.role !== 'super_admin' && user?.tenants && user.tenants.length > 0) {
+          const userTenantSet = new Set(user.tenants);
+          options = options.filter((option) => userTenantSet.has(option.value));
+        }
 
         setTenants(options);
       } catch (err) {
@@ -73,7 +83,7 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({
     };
 
     fetchTenants();
-  }, [addToast]);
+  }, [addToast, user]);
 
   const handleTenantChange = async (value: string) => {
     if (!value || value === tenantId) {

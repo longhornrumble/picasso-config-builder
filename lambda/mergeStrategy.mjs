@@ -15,6 +15,9 @@ const EDITABLE_SECTIONS = [
   'cta_settings',
   'bedrock_instructions',
   'action_chips',
+  'feature_flags',
+  'cta_categories',
+  'intent_definitions',
 ];
 
 /**

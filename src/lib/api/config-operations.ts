@@ -121,15 +121,15 @@ export async function deployConfig(tenantId: string, config: TenantConfig): Prom
 
 /**
  * Delete tenant configuration (admin operation)
- * Use with caution - this cannot be undone unless backup exists
+ * @param full - If true, permanently deletes config, all backups, and hash mapping
  */
-export async function deleteConfig(tenantId: string): Promise<void> {
+export async function deleteConfig(tenantId: string, full: boolean = false): Promise<void> {
   try {
     if (!tenantId || tenantId.trim() === '') {
       throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID is required');
     }
 
-    await configApiClient.deleteConfig(tenantId);
+    await configApiClient.deleteConfig(tenantId, full);
   } catch (error) {
     throw handleAPIError(error);
   }

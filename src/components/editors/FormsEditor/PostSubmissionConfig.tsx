@@ -8,8 +8,8 @@
  */
 
 import React, { useState } from 'react';
-import { Input, Textarea, Select, Button, Badge } from '@/components/ui';
-import { Plus, X, Trash2, Mail, Webhook } from 'lucide-react';
+import { Input, Textarea, Button, Badge } from '@/components/ui';
+import { Plus, X, Trash2, Webhook } from 'lucide-react';
 import type { PostSubmissionConfig as PostSubmissionConfigType, PostSubmissionAction, Fulfillment } from '@/types/config';
 
 export interface PostSubmissionConfigProps {
@@ -28,8 +28,6 @@ export const PostSubmissionConfig: React.FC<PostSubmissionConfigProps> = ({
   onBlur,
 }) => {
   const [newNextStep, setNewNextStep] = useState('');
-  const [newRecipient, setNewRecipient] = useState('');
-  const [newCCRecipient, setNewCCRecipient] = useState('');
   const [showFulfillment, setShowFulfillment] = useState(!!value?.fulfillment);
 
   // Initialize with default if not set
@@ -86,43 +84,9 @@ export const PostSubmissionConfig: React.FC<PostSubmissionConfigProps> = ({
 
   // Fulfillment Management
   const handleFulfillmentChange = (updates: Partial<Fulfillment>) => {
-    const currentFulfillment = config.fulfillment || { method: 'email' as const };
+    const currentFulfillment = config.fulfillment || { method: 'webhook' as const };
     handleChange({
       fulfillment: { ...currentFulfillment, ...updates },
-    });
-  };
-
-  const handleAddRecipient = () => {
-    const email = newRecipient.trim();
-    if (email) {
-      const currentRecipients = config.fulfillment?.recipients || [];
-      handleFulfillmentChange({
-        recipients: [...currentRecipients, email],
-      });
-      setNewRecipient('');
-    }
-  };
-
-  const handleRemoveRecipient = (email: string) => {
-    handleFulfillmentChange({
-      recipients: (config.fulfillment?.recipients || []).filter(r => r !== email),
-    });
-  };
-
-  const handleAddCCRecipient = () => {
-    const email = newCCRecipient.trim();
-    if (email) {
-      const currentCC = config.fulfillment?.cc || [];
-      handleFulfillmentChange({
-        cc: [...currentCC, email],
-      });
-      setNewCCRecipient('');
-    }
-  };
-
-  const handleRemoveCCRecipient = (email: string) => {
-    handleFulfillmentChange({
-      cc: (config.fulfillment?.cc || []).filter(r => r !== email),
     });
   };
 
@@ -133,12 +97,6 @@ export const PostSubmissionConfig: React.FC<PostSubmissionConfigProps> = ({
     { value: 'external_link', label: 'External Link' },
   ];
 
-  const fulfillmentMethodOptions = [
-    { value: 'email', label: 'Email' },
-    { value: 'webhook', label: 'Webhook' },
-    { value: 'dynamodb', label: 'DynamoDB' },
-    { value: 'sheets', label: 'Google Sheets' },
-  ];
 
   return (
     <div className="space-y-6 border-t pt-6">
@@ -324,7 +282,7 @@ export const PostSubmissionConfig: React.FC<PostSubmissionConfigProps> = ({
                   handleChange({ fulfillment: undefined });
                 } else {
                   handleChange({
-                    fulfillment: { method: 'email' },
+                    fulfillment: { method: 'webhook' },
                   });
                 }
               }}
@@ -338,140 +296,24 @@ export const PostSubmissionConfig: React.FC<PostSubmissionConfigProps> = ({
 
         {showFulfillment && (
           <div className="space-y-4 pl-6 border-l-2 border-primary-200 dark:border-primary-800">
-            <Select
-              label="Fulfillment Method"
-              value={config.fulfillment?.method || 'email'}
-              onValueChange={(value) => handleFulfillmentChange({ method: value as any })}
-              options={fulfillmentMethodOptions}
-              required
-            />
-
-            {config.fulfillment?.method === 'email' && (
-              <>
-                <div className="w-full">
-                  <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <Mail className="w-4 h-4" />
-                    Recipients <span className="text-red-600">*</span>
-                  </label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      value={newRecipient}
-                      onChange={(e) => setNewRecipient(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddRecipient();
-                        }
-                      }}
-                      placeholder="email@example.com"
-                      type="email"
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleAddRecipient}
-                      disabled={!newRecipient.trim()}
-                      size="sm"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  {(config.fulfillment?.recipients || []).length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {(config.fulfillment?.recipients || []).map((email) => (
-                        <Badge key={email} variant="secondary" className="gap-1">
-                          {email}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveRecipient(email)}
-                            className="ml-1 hover:text-red-600"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="w-full">
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    CC Recipients
-                  </label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      value={newCCRecipient}
-                      onChange={(e) => setNewCCRecipient(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddCCRecipient();
-                        }
-                      }}
-                      placeholder="cc@example.com"
-                      type="email"
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleAddCCRecipient}
-                      disabled={!newCCRecipient.trim()}
-                      size="sm"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  {(config.fulfillment?.cc || []).length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {(config.fulfillment?.cc || []).map((email) => (
-                        <Badge key={email} variant="secondary" className="gap-1">
-                          {email}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCCRecipient(email)}
-                            className="ml-1 hover:text-red-600"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <Input
-                  label="Email Subject Template"
-                  value={config.fulfillment?.subject_template || ''}
-                  onChange={(e) => handleFulfillmentChange({ subject_template: e.target.value })}
-                  placeholder="New Form Submission: {{form_title}}"
-                />
-              </>
-            )}
-
-            {config.fulfillment?.method === 'webhook' && (
-              <div className="w-full">
-                <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <Webhook className="w-4 h-4" />
-                  Webhook URL <span className="text-red-600">*</span>
-                </label>
-                <Input
-                  value={config.fulfillment?.webhook_url || ''}
-                  onChange={(e) => handleFulfillmentChange({ webhook_url: e.target.value })}
-                  placeholder="https://api.example.com/webhook"
-                  type="url"
-                />
-              </div>
-            )}
-
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={config.fulfillment?.notification_enabled ?? true}
-                onChange={(e) => handleFulfillmentChange({ notification_enabled: e.target.checked })}
-                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            <div className="w-full">
+              <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Webhook className="w-4 h-4" />
+                Webhook URL <span className="text-red-600">*</span>
+              </label>
+              <Input
+                value={config.fulfillment?.webhook_url || ''}
+                onChange={(e) => handleFulfillmentChange({ webhook_url: e.target.value })}
+                placeholder="https://integrate.myrecruiter.ai/webhook/..."
+                type="url"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                Enable notifications
-              </span>
-            </label>
+              <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                POST form data to an external endpoint (e.g., n8n, Zapier, Google Sheets via webhook).
+              </p>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Email notifications are managed in the portal's Notifications tab.
+            </p>
           </div>
         )}
       </div>

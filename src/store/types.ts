@@ -241,13 +241,25 @@ export interface ConfigSlice {
   isDirty: boolean;
   lastSaved: number | null;
 
+  // Draft state
+  isDraft: boolean;
+  hasDraft: boolean;
+  draftLastSaved: number | null;
+
   // Actions
   loadConfig: (tenantId: string) => Promise<void>;
   saveConfig: () => Promise<void>;
   deployConfig: () => Promise<void>;
   resetConfig: () => void;
+  clearTenant: () => void;
   markDirty: () => void;
   markClean: () => void;
+
+  // Draft actions
+  saveDraft: () => Promise<void>;
+  loadDraft: () => Promise<void>;
+  discardDraft: () => Promise<void>;
+  promoteDraft: () => Promise<void>;
 
   // Merge strategy
   getMergedConfig: () => TenantConfig | null;

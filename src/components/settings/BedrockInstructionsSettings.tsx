@@ -16,7 +16,6 @@ import type { BedrockInstructions, EmojiUsage, ResponseStyle, DetailLevel } from
 const DEFAULT_BEDROCK_INSTRUCTIONS: BedrockInstructions = {
   _version: '1.0',
   _updated: new Date().toISOString(),
-  role_instructions: 'You are a helpful virtual assistant for a nonprofit organization. Your primary goal is to provide accurate information about programs and services based on the knowledge base, while maintaining a warm and supportive tone.',
   formatting_preferences: {
     emoji_usage: 'moderate',
     max_emojis_per_response: 3,
@@ -52,7 +51,6 @@ export const BedrockInstructionsSettings: React.FC = () => {
   const [newConstraint, setNewConstraint] = useState('');
 
   // Character counters
-  const roleCharsRemaining = 1000 - bedrockInstructions.role_instructions.length;
   const fallbackCharsRemaining = 500 - bedrockInstructions.fallback_message.length;
 
   // Update Bedrock instructions in baseConfig
@@ -106,23 +104,23 @@ export const BedrockInstructionsSettings: React.FC = () => {
 
   // Emoji usage options
   const emojiOptions: Array<{ value: EmojiUsage; label: string }> = [
-    { value: 'none', label: 'None - No emojis' },
-    { value: 'moderate', label: 'Moderate - Occasional emojis' },
-    { value: 'generous', label: 'Generous - Frequent emojis' },
+    { value: 'none', label: 'None - No emojis in responses' },
+    { value: 'moderate', label: 'Moderate - Sparingly, as subtle accents' },
+    { value: 'generous', label: 'Generous - Freely, for warmth and personality' },
   ];
 
-  // Response style options
+  // Response style options (controls FORMAT — how responses are written)
   const styleOptions: Array<{ value: ResponseStyle; label: string }> = [
-    { value: 'professional_concise', label: 'Professional & Concise' },
-    { value: 'warm_conversational', label: 'Warm & Conversational' },
-    { value: 'structured_detailed', label: 'Structured & Detailed' },
+    { value: 'professional_concise', label: 'Professional - Direct, no filler, business-appropriate' },
+    { value: 'warm_conversational', label: 'Warm & Conversational - Friendly prose, like a colleague' },
+    { value: 'structured_detailed', label: 'Structured - Organized with bullet points and lists' },
   ];
 
-  // Detail level options
+  // Detail level options (controls LENGTH — how much is written)
   const detailOptions: Array<{ value: DetailLevel; label: string }> = [
-    { value: 'concise', label: 'Concise - Brief responses' },
-    { value: 'balanced', label: 'Balanced - Moderate detail' },
-    { value: 'comprehensive', label: 'Comprehensive - Detailed responses' },
+    { value: 'concise', label: 'Concise - 1 to 2 paragraphs, key facts only' },
+    { value: 'balanced', label: 'Balanced - 2 to 3 paragraphs, relevant details' },
+    { value: 'comprehensive', label: 'Comprehensive - 3 to 5 paragraphs, full context' },
   ];
 
   return (
@@ -140,38 +138,6 @@ export const BedrockInstructionsSettings: React.FC = () => {
                 and cannot be modified here.
               </p>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Role Instructions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Role Instructions</CardTitle>
-          <CardDescription>
-            Define who the AI is and its primary purpose (max 1000 characters)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            value={bedrockInstructions.role_instructions}
-            onChange={(e) => {
-              if (e.target.value.length <= 1000) {
-                updateBedrockInstructions({
-                  role_instructions: e.target.value,
-                });
-              }
-            }}
-            rows={6}
-            placeholder="Example: You are a helpful virtual assistant for a nonprofit organization..."
-          />
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-500 dark:text-gray-400">
-              Characters remaining: {roleCharsRemaining}
-            </span>
-            {roleCharsRemaining < 100 && (
-              <Badge variant="warning">Near limit</Badge>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -227,7 +193,7 @@ export const BedrockInstructionsSettings: React.FC = () => {
                 });
               }}
               options={styleOptions}
-              helperText="Overall tone and structure"
+              helperText="Controls how responses are formatted"
             />
 
             {/* Detail Level */}
@@ -240,7 +206,7 @@ export const BedrockInstructionsSettings: React.FC = () => {
                 });
               }}
               options={detailOptions}
-              helperText="How detailed should responses be?"
+              helperText="Controls how long responses are"
             />
           </div>
         </CardContent>

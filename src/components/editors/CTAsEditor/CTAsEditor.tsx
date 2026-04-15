@@ -61,7 +61,7 @@ export const CTAsEditor: React.FC = () => {
         prompt: '',
         target_branch: undefined,
         program_id: undefined,
-        // Note: 'style' field removed in v1.5 - position-based styling from branches
+        ai_available: false,
       }}
       config={{
         // Entity metadata
@@ -98,6 +98,7 @@ export const CTAsEditor: React.FC = () => {
               ...(ctaData.prompt && { prompt: ctaData.prompt }),
               ...(ctaData.target_branch && { target_branch: ctaData.target_branch }),
               ...(ctaData.program_id && { program_id: ctaData.program_id }),
+              ...(ctaData.ai_available != null && { ai_available: ctaData.ai_available }),
             };
             createCTA(cta, ctaId);
           },
@@ -112,6 +113,7 @@ export const CTAsEditor: React.FC = () => {
               ...(ctaEntity.url && { url: ctaEntity.url }),
               ...(ctaEntity.query && { query: ctaEntity.query }),
               ...(ctaEntity.prompt && { prompt: ctaEntity.prompt }),
+              ai_available: ctaEntity.ai_available || false,
             };
             // Handle target_branch: include if defined, or explicitly set to undefined to remove
             if (ctaEntity.target_branch !== undefined) {

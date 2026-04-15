@@ -36,8 +36,8 @@ The Picasso Config Builder is a web-based internal operations tool for managing 
 ## Key Features
 
 - **Forms Management**: Create and edit conversational forms with field builders (text, email, phone, select, multi-select, date, number, composite fields)
-- **CTA Configuration**: Define call-to-action buttons with conditional prompts and explicit routing
-- **Branch Editor**: Configure conversation flow with priority-based branching
+- **CTA Configuration**: Define call-to-action buttons with `ai_available` flag, action types (`start_form`, `show_info`, `external_link`, `send_query`), and branch linking
+- **Branch Editor**: Configure guided conversation paths with primary/secondary CTAs
 - **Program Management**: Manage programs and their relationships
 - **Content Showcase**: Create responsive content cards with rich media and CTAs
 - **Action Chips**: Define explicit routing for action chips with 3-tier hierarchy
@@ -66,7 +66,7 @@ picasso-config-builder/
 │   │   ├── editors/          # Main editors (Forms, CTAs, Branches, Programs, etc.)
 │   │   │   ├── ActionChipsEditor/
 │   │   │   ├── BranchesEditor/
-│   │   │   ├── CTAsEditor/
+│   │   │   ├── CTAsEditor/       # Includes ai_available checkbox and badge
 │   │   │   ├── ProgramsEditor/
 │   │   │   └── ShowcaseEditor/
 │   │   ├── dashboard/        # Flow diagram components
@@ -79,7 +79,7 @@ picasso-config-builder/
 │   │   ├── layout/           # Layout components (Header, Sidebar, etc.)
 │   │   ├── modals/           # Modal dialogs
 │   │   ├── ui/               # shadcn/ui components
-│   │   └── settings/         # Settings components
+│   │   └── settings/         # Settings (FeaturesSettings includes V3.5 feature flags)
 │   ├── hooks/
 │   │   ├── useConfig.ts      # Main config hook
 │   │   ├── useAutoSave.ts    # Auto-save functionality
@@ -105,11 +105,11 @@ picasso-config-builder/
 │   │   │   └── runtimeValidation.ts
 │   │   └── utils/            # Utility functions
 │   ├── store/
-│   │   ├── index.ts          # Main Zustand store
-│   │   ├── slices/           # Store slices
-│   │   │   ├── config.ts
+│   │   ├── index.ts          # Main Zustand store (Zustand + Immer)
+│   │   ├── slices/           # Domain slices
+│   │   │   ├── config.ts     # Config loading, merging, deployment
 │   │   │   ├── forms.ts
-│   │   │   ├── ctas.ts
+│   │   │   ├── ctas.ts       # CTA CRUD (includes ai_available)
 │   │   │   ├── branches.ts
 │   │   │   ├── programs.ts
 │   │   │   ├── contentShowcase.ts
@@ -245,12 +245,16 @@ The Config Builder supports Picasso tenant config schema v1.4.1 (latest):
 ### Key Schema Sections
 
 - `programs`: Program definitions with metadata and relationships
+- `cta_definitions`: CTA buttons with action types and optional `ai_available` flag — the AI's vocabulary is built from CTAs marked `ai_available: true`
+- `conversation_branches`: Guided paths with primary/secondary CTAs, activated by `show_info` CTAs with `target_branch`
 - `conversational_forms`: Form definitions with fields and validation
 - `form_settings`: Global form behavior configuration
-- `conversation_branches`: Priority-based routing with context_type matching
+- `feature_flags`: V3.5 AI behavior toggles (`DYNAMIC_ACTIONS`, `DYNAMIC_CHIPS`, `GUIDANCE_MODULES`) — managed in Features & Capabilities settings tab
 - `action_chips`: Explicit routing configuration with 3-tier hierarchy
 - `content_showcase`: Content cards with rich media and CTAs
 - `card_inventory`: Extracted actions, requirements, programs (legacy)
+
+**Note:** `available_actions` is **deprecated** and no longer managed by the config builder. The AI vocabulary is now derived entirely from `cta_definitions` with `ai_available: true`. The Lambda streaming handler has a legacy fallback for tenants not yet migrated.
 
 ## Path Aliases
 

@@ -1,0 +1,248 @@
+{
+  "tenant_type": "demo",
+  "subscription_tier": "Standard",
+  "chat_title": "",
+  "tone_prompt": "You are a warm, friendly, and knowledgeable team member for a nonprofit organization. Respond with genuine care and enthusiasm for helping the community. Keep your answers brief, clear, and actionable. Always include relevant links, forms, or calls to action when available to help people take their next step—whether that's volunteering, donating, or learning more about the organization's programs.",
+  "welcome_message": "Welcome! I'm here to help answer your questions. How can I assist you today?",
+  "callout_text": "Hi! 👋 Ask me anything.",
+  "version": "1.0",
+
+  "branding": {
+    "primary_color": "#10B981",
+    "secondary_color": "#059669",
+    "header_background_color": "#10B981",
+    "header_text_color": "#FFFFFF",
+    "header_subtitle_color": "#E0E0E0",
+    "widget_icon_color": "#FFFFFF",
+    "widget_background_color": "#10B981",
+    "font_family": "Inter",
+    "font_size_base": "14px",
+    "border_radius": "12px",
+    "logo_url": "",
+    "avatar_url": ""
+  },
+
+  "features": {
+    "streaming": true,
+    "conversational_forms": true,
+    "smart_cards": true,
+    "uploads": false,
+    "photo_uploads": false,
+    "voice_input": false,
+    "callout": {
+      "enabled": true,
+      "text": "Hi! 👋 Ask me anything.",
+      "auto_dismiss": false
+    }
+  },
+
+  "quick_help": {
+    "enabled": true,
+    "title": "Common Questions",
+    "toggle_text": "Help Menu ⬆️",
+    "close_after_selection": true,
+    "prompts": [
+      "👥 Who do you help?",
+      "🤝 How can I volunteer?",
+      "🎯 What programs do you offer?",
+      "💝 How can I donate?",
+      "📋 What are the requirements?",
+      "☎️ How can I contact you?"
+    ]
+  },
+
+  "action_chips": {
+    "enabled": true,
+    "max_display": 4,
+    "show_on_welcome": true,
+    "default_chips": {
+      "volunteer": {
+        "label": "🤝 Volunteer",
+        "value": "How can I volunteer?",
+        "target_branch": "volunteer_interest"
+      },
+      "programs": {
+        "label": "🎯 Our Programs",
+        "value": "What programs do you offer?",
+        "target_branch": "program_exploration"
+      },
+      "donate": {
+        "label": "💝 Donate",
+        "value": "How can I donate or support?",
+        "target_branch": "donation_interest"
+      },
+      "contact": {
+        "label": "☎️ Contact Us",
+        "value": "How do I contact you?",
+        "target_branch": "contact"
+      }
+    }
+  },
+
+  "widget_behavior": {
+    "start_open": false,
+    "remember_state": true
+  },
+
+  "aws": {
+    "knowledge_base_id": "",
+    "aws_region": "us-east-1"
+  },
+
+  "cta_settings": {
+    "fallback_branch": "navigation_hub"
+  },
+
+  "conversation_branches": {
+    "volunteer_interest": {
+      "detection_keywords": ["volunteer", "help", "involved", "participate", "join"],
+      "available_ctas": {
+        "primary": "volunteer_apply",
+        "secondary": ["learn_more", "contact_us"]
+      }
+    },
+    "donation_interest": {
+      "detection_keywords": ["donate", "donation", "give", "support", "contribute"],
+      "available_ctas": {
+        "primary": "donate",
+        "secondary": ["learn_more", "contact_us"]
+      }
+    },
+    "program_exploration": {
+      "detection_keywords": ["programs", "services", "what do you do", "opportunities"],
+      "available_ctas": {
+        "primary": "view_programs",
+        "secondary": ["volunteer_apply", "donate"]
+      }
+    },
+    "contact": {
+      "detection_keywords": ["contact", "reach", "email", "phone", "call"],
+      "available_ctas": {
+        "primary": "contact_us",
+        "secondary": ["learn_more"]
+      }
+    },
+    "navigation_hub": {
+      "available_ctas": {
+        "primary": "volunteer_apply",
+        "secondary": ["donate", "view_programs", "contact_us"]
+      }
+    }
+  },
+
+  "cta_definitions": {
+    "volunteer_apply": {
+      "label": "Apply to Volunteer",
+      "value": "Start volunteer application",
+      "action": "start_form",
+      "formId": "general_inquiry",
+      "type": "form_trigger",
+      "style": "primary"
+    },
+    "donate": {
+      "label": "Donate Now",
+      "value": "I want to donate",
+      "action": "external_link",
+      "url": "",
+      "type": "external_link",
+      "style": "primary"
+    },
+    "learn_more": {
+      "label": "Learn More",
+      "value": "Tell me more about your organization",
+      "action": "show_info",
+      "infoType": "about",
+      "type": "info_request",
+      "style": "secondary"
+    },
+    "view_programs": {
+      "label": "View Programs",
+      "value": "Show me your programs",
+      "action": "show_info",
+      "infoType": "programs",
+      "type": "info_request",
+      "style": "info"
+    },
+    "contact_us": {
+      "label": "Contact Us",
+      "value": "How do I contact you?",
+      "action": "external_link",
+      "url": "",
+      "type": "external_link",
+      "style": "secondary"
+    },
+    "check_eligibility": {
+      "label": "Check Eligibility",
+      "value": "Am I eligible to volunteer?",
+      "action": "start_form",
+      "formId": "general_inquiry",
+      "type": "form_trigger",
+      "style": "primary"
+    }
+  },
+
+  "conversational_forms": {
+    "general_inquiry": {
+      "enabled": true,
+      "form_id": "general_inquiry",
+      "title": "Get Started",
+      "description": "Tell us a bit about yourself so we can connect you with the right opportunity.",
+      "cta_text": "Would you like to get started?",
+      "fields": [
+        {
+          "id": "first_name",
+          "type": "text",
+          "label": "First Name",
+          "prompt": "Let's get started! What's your first name?",
+          "required": true
+        },
+        {
+          "id": "last_name",
+          "type": "text",
+          "label": "Last Name",
+          "prompt": "And your last name?",
+          "required": true
+        },
+        {
+          "id": "email",
+          "type": "email",
+          "label": "Email",
+          "prompt": "What email address should we use to contact you?",
+          "required": true
+        },
+        {
+          "id": "phone",
+          "type": "phone",
+          "label": "Phone",
+          "prompt": "What's the best phone number to reach you?",
+          "required": false
+        },
+        {
+          "id": "interest",
+          "type": "select",
+          "label": "Area of Interest",
+          "prompt": "What are you most interested in?",
+          "required": true,
+          "options": [
+            { "value": "volunteer", "label": "Volunteering" },
+            { "value": "donate", "label": "Donating" },
+            { "value": "programs", "label": "Learning about programs" },
+            { "value": "other", "label": "Something else" }
+          ]
+        },
+        {
+          "id": "comments",
+          "type": "textarea",
+          "label": "Additional Comments",
+          "prompt": "Anything else you'd like us to know? (Optional)",
+          "required": false,
+          "placeholder": "Share any questions or additional information..."
+        }
+      ]
+    }
+  },
+
+  "programs": {},
+  "form_settings": {},
+  "metadata": {}
+}

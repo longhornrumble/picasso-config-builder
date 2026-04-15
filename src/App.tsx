@@ -1,10 +1,11 @@
 /**
  * App Component
- * Main application component with React Router configuration
+ * Main application component with React Router configuration and authentication
  */
 
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Show, SignIn, UserButton } from '@clerk/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer } from './components/ToastContainer';
 import { Layout } from './components/layout';
@@ -21,11 +22,13 @@ import {
   NotFoundPage,
 } from './pages';
 import { useAutoSave } from './hooks/useAutoSave';
+import { Spinner } from './components/ui';
 
 /**
  * Main Application Component
  *
  * Features:
+ * - Authentication gating with Bubble SSO
  * - React Router v6 configuration
  * - Error boundary for error handling
  * - Toast notification system
@@ -53,6 +56,42 @@ const App: React.FC = () => {
   // Enable auto-save functionality
   useAutoSave();
 
+  return (
+    <>
+      {/* Clerk sign-in gate */}
+      <Show when="signed-out">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+          <div className="w-full max-w-sm space-y-6">
+            <div className="text-center space-y-2">
+              <h1 className="text-xl font-bold text-gray-800">Picasso Config Builder</h1>
+              <p className="text-sm text-gray-500">Internal tool — authorized access only</p>
+            </div>
+            <div className="flex justify-center">
+              <SignIn
+                routing="hash"
+                appearance={{
+                  elements: {
+                    rootBox: 'w-full',
+                    card: 'shadow-xl border border-gray-100 w-full',
+                    footer: 'hidden',
+                  },
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </Show>
+
+      {/* Authenticated — show main app */}
+      <Show when="signed-in">
+        {renderApp()}
+      </Show>
+    </>
+  );
+};
+
+/** Main app content — only rendered when Clerk is signed in */
+function renderApp() {
   return (
     <ErrorBoundary>
       <BrowserRouter>

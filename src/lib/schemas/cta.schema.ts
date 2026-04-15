@@ -33,6 +33,10 @@ export const ctaDefinitionSchema = z.object({
     .max(100, 'Completion branch ID must be 100 characters or less')
     .optional()
     .describe('Branch ID to show after form completes (for form CTAs)'),
+  ai_available: z
+    .boolean()
+    .optional()
+    .describe('When true, includes this CTA in the AI vocabulary for dynamic selection (Tier 1-2 scoring).'),
 }).superRefine((data, ctx) => {
   // Validate action-specific required fields (v1.3+)
 

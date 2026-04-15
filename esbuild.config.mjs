@@ -127,6 +127,7 @@ const defineVars = {
   'import.meta.env.VITE_S3_BUCKET': JSON.stringify(process.env.VITE_S3_BUCKET || 'myrecruiter-picasso'),
   'import.meta.env.VITE_AWS_REGION': JSON.stringify(process.env.VITE_AWS_REGION || 'us-east-1'),
   'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || ''),
+  'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_CLERK_PUBLISHABLE_KEY || ''),
 
   // Node.js environment compatibility
   'process.env.NODE_ENV': JSON.stringify(isDevelopment ? 'development' : 'production')

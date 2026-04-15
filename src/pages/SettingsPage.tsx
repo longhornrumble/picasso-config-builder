@@ -3,11 +3,25 @@
  * Settings and configuration metadata page
  */
 
-import React from 'react';
-import { Settings, CheckCircle, AlertCircle, Clock, Info } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from '@/components/ui';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Settings, CheckCircle, AlertCircle, Clock, Info, Trash2 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Badge, Button, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import { useConfigStore } from '@/store';
-import { CTASettings, BedrockInstructionsSettings } from '@/components/settings';
+import { DeleteTenantModal } from '@/components/modals/DeleteTenantModal';
+import {
+  CTASettings,
+  BedrockInstructionsSettings,
+  TenantIdentitySettings,
+  BrandingSettings,
+  FeaturesSettings,
+  QuickHelpSettings,
+  WidgetBehaviorSettings,
+  AWSSettings,
+  FeatureFlagsSettings,
+  NotificationSettings,
+} from '@/components/settings';
+import { EmbedCodeSettings } from '@/components/settings/EmbedCodeSettings';
 
 /**
  * Settings Page
@@ -20,6 +34,9 @@ import { CTASettings, BedrockInstructionsSettings } from '@/components/settings'
  * ```
  */
 export const SettingsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const tenantId = useConfigStore((state) => state.config.tenantId);
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
   const isDirty = useConfigStore((state) => state.config.isDirty);
@@ -28,6 +45,16 @@ export const SettingsPage: React.FC = () => {
   const errors = useConfigStore((state) => state.validation.errors);
   const warnings = useConfigStore((state) => state.validation.warnings);
   const lastValidated = useConfigStore((state) => state.validation.lastValidated);
+  const clearTenant = useConfigStore((state) => state.config.clearTenant);
+  const addToast = useConfigStore((state) => state.ui.addToast);
+
+  const isDemo = baseConfig?.tenant_type === 'demo' || tenantId?.startsWith('demo_');
+
+  const handleTenantDeleted = () => {
+    clearTenant();
+    addToast({ type: 'success', message: `Tenant ${tenantId} deleted successfully` });
+    navigate('/');
+  };
 
   const errorCount = Object.values(errors).reduce(
     (total, entityErrors) => total + entityErrors.length,
@@ -104,11 +131,76 @@ export const SettingsPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* CTA Settings */}
-          <CTASettings />
+          {/* Danger Zone — only for demo tenants */}
+          {isDemo && (
+            <Card className="border-red-300 dark:border-red-800">
+              <CardHeader>
+                <CardTitle className="text-red-600 dark:text-red-400 flex items-center gap-2">
+                  <Trash2 className="w-5 h-5" />
+                  Danger Zone
+                </CardTitle>
+                <CardDescription>
+                  Irreversible actions for this demo tenant
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      Delete this demo tenant
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Permanently remove configuration, backups, and widget mapping
+                    </p>
+                  </div>
+                  <Button
+                    variant="danger"
+                    onClick={() => setShowDeleteModal(true)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Tenant
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Bedrock Instructions */}
-          <BedrockInstructionsSettings />
+          {/* Tabbed Settings */}
+          <Tabs defaultValue="general" className="w-full">
+            <TabsList className="w-full justify-start">
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="branding">Branding</TabsTrigger>
+              <TabsTrigger value="features">Features</TabsTrigger>
+              <TabsTrigger value="ai-aws">AI & AWS</TabsTrigger>
+            </TabsList>
+
+            {/* General Tab */}
+            <TabsContent value="general" className="space-y-6 mt-6">
+              <TenantIdentitySettings />
+              <EmbedCodeSettings />
+              <NotificationSettings />
+              <CTASettings />
+              <QuickHelpSettings />
+              <WidgetBehaviorSettings />
+            </TabsContent>
+
+            {/* Branding Tab */}
+            <TabsContent value="branding" className="space-y-6 mt-6">
+              <BrandingSettings />
+            </TabsContent>
+
+            {/* Features Tab */}
+            <TabsContent value="features" className="space-y-6 mt-6">
+              <FeaturesSettings />
+            </TabsContent>
+
+            {/* AI & AWS Tab */}
+            <TabsContent value="ai-aws" className="space-y-6 mt-6">
+              <BedrockInstructionsSettings />
+              <AWSSettings />
+              <FeatureFlagsSettings />
+            </TabsContent>
+          </Tabs>
 
           {/* Validation Status */}
           <Card>
@@ -209,6 +301,14 @@ export const SettingsPage: React.FC = () => {
               </p>
             </CardContent>
           </Card>
+
+          <DeleteTenantModal
+            open={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            tenantId={tenantId || ''}
+            tenantName={baseConfig?.org_name || baseConfig?.chat_title}
+            onDeleted={handleTenantDeleted}
+          />
         </>
       )}
     </div>
