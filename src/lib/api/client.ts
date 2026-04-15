@@ -23,30 +23,45 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.yourapi.com/ap
  */
 export class ConfigAPIClient {
   private baseUrl: string;
+  private tokenProvider: (() => Promise<string | null>) | null = null;
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
   }
 
   /**
-   * Get authentication headers from localStorage token
+   * Set the token provider function (typically from Clerk's getToken)
+   * Called once during app initialization to wire auth context into the API client
    */
-  private getAuthHeaders(): Record<string, string> {
-    const token = localStorage.getItem('config_builder_token');
-    if (!token) {
-      return {};
-    }
-    return {
-      'Authorization': `Bearer ${token}`,
-    };
+  setTokenProvider(provider: () => Promise<string | null>): void {
+    this.tokenProvider = provider;
   }
 
   /**
-   * Handle 401 responses by clearing auth and dispatching session expired event
+   * Get authentication headers from Clerk session token
+   * Token is fetched on-demand from Clerk — never stored in localStorage
+   */
+  async getAuthHeaders(): Promise<Record<string, string>> {
+    if (!this.tokenProvider) {
+      return {};
+    }
+    try {
+      const token = await this.tokenProvider();
+      if (!token) {
+        return {};
+      }
+      return {
+        'Authorization': `Bearer ${token}`,
+      };
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Handle 401 responses by dispatching session expired event
    */
   private handle401Response(): void {
-    localStorage.removeItem('config_builder_token');
-    localStorage.removeItem('config_builder_user');
     window.dispatchEvent(new CustomEvent('auth:session-expired'));
   }
 
@@ -59,7 +74,7 @@ export class ConfigAPIClient {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          ...this.getAuthHeaders(),
+          ...(await this.getAuthHeaders()),
         },
       });
 
@@ -90,7 +105,7 @@ export class ConfigAPIClient {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          ...this.getAuthHeaders(),
+          ...(await this.getAuthHeaders()),
         },
       });
 
@@ -120,7 +135,7 @@ export class ConfigAPIClient {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          ...this.getAuthHeaders(),
+          ...(await this.getAuthHeaders()),
         },
       });
 
@@ -191,7 +206,7 @@ export class ConfigAPIClient {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            ...this.getAuthHeaders(),
+            ...(await this.getAuthHeaders()),
           },
           body: JSON.stringify(requestBody),
         });
@@ -231,7 +246,7 @@ export class ConfigAPIClient {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            ...this.getAuthHeaders(),
+            ...(await this.getAuthHeaders()),
           },
           body: JSON.stringify({
             config,
@@ -276,7 +291,7 @@ export class ConfigAPIClient {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            ...this.getAuthHeaders(),
+            ...(await this.getAuthHeaders()),
           },
         });
 
@@ -320,7 +335,7 @@ export class ConfigAPIClient {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...this.getAuthHeaders(),
+            ...(await this.getAuthHeaders()),
           },
           body: JSON.stringify(request),
         });
