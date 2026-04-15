@@ -195,6 +195,33 @@ export const cardInventorySchema = z.object({
 });
 
 // ============================================================================
+// CHANNELS SCHEMA (Facebook Messenger / Instagram DMs)
+// ============================================================================
+
+export const channelConnectionSchema = z.object({
+  page_id: z.string().min(1, 'Page ID is required'),
+  page_name: z.string().min(1, 'Page name is required'),
+  enabled: z.boolean(),
+  connected_at: z.string(),
+  connected_by: z.string(),
+});
+
+export const instagramChannelConnectionSchema = z.object({
+  account_id: z.string().min(1, 'Account ID is required'),
+  account_name: z.string().min(1, 'Account name is required'),
+  enabled: z.boolean(),
+  connected_at: z.string(),
+  connected_by: z.string(),
+});
+
+export const channelsConfigSchema = z
+  .object({
+    messenger: channelConnectionSchema.optional(),
+    instagram: instagramChannelConnectionSchema.optional(),
+  })
+  .optional();
+
+// ============================================================================
 // FULL TENANT CONFIG SCHEMA
 // ============================================================================
 
@@ -228,6 +255,9 @@ export const tenantConfigSchema = z.object({
   widget_behavior: widgetBehaviorConfigSchema.optional(),
   cta_settings: ctaSettingsSchema.optional(),
   aws: awsConfigSchema,
+
+  // Channel integrations
+  channels: channelsConfigSchema,
 
 }).superRefine((data, ctx) => {
   // Validate feature dependencies
@@ -325,3 +355,6 @@ export type ProgramCard = z.infer<typeof programCardSchema>;
 export type ReadinessThresholds = z.infer<typeof readinessThresholdsSchema>;
 export type CardInventory = z.infer<typeof cardInventorySchema>;
 export type TenantConfig = z.infer<typeof tenantConfigSchema>;
+export type ChannelConnection = z.infer<typeof channelConnectionSchema>;
+export type InstagramChannelConnection = z.infer<typeof instagramChannelConnectionSchema>;
+export type ChannelsConfig = z.infer<typeof channelsConfigSchema>;

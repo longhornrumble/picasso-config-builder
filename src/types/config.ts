@@ -587,6 +587,33 @@ export interface NotificationSettings {
 }
 
 // ============================================================================
+// CHANNELS CONFIG (Facebook Messenger / Instagram DMs)
+// ============================================================================
+
+export type ChannelType = 'messenger' | 'instagram';
+
+export interface ChannelConnection {
+  page_id: string;
+  page_name: string;
+  enabled: boolean;
+  connected_at: string;
+  connected_by: string;
+}
+
+export interface InstagramChannelConnection {
+  account_id: string;
+  account_name: string;
+  enabled: boolean;
+  connected_at: string;
+  connected_by: string;
+}
+
+export interface ChannelsConfig {
+  messenger?: ChannelConnection;
+  instagram?: InstagramChannelConnection;
+}
+
+// ============================================================================
 // FULL TENANT CONFIG
 // ============================================================================
 
@@ -640,6 +667,9 @@ export interface TenantConfig {
 
   // Notification delivery configuration
   notification_settings?: NotificationSettings;
+
+  // Channel integrations (Facebook Messenger, Instagram DMs)
+  channels?: ChannelsConfig;
 }
 
 // ============================================================================
