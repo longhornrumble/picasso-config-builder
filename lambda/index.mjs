@@ -37,6 +37,24 @@ import {
 } from './mergeStrategy.mjs';
 
 /**
+ * Validate tenantId format. Returns null if valid, or an error response object if invalid.
+ */
+const TENANT_ID_REGEX = /^[A-Za-z0-9_-]{1,50}$/;
+function validateTenantId(tenantId, headers) {
+  if (!tenantId || !TENANT_ID_REGEX.test(tenantId)) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({
+        error: 'Bad Request',
+        message: 'tenantId must be alphanumeric (hyphens/underscores allowed), max 50 characters',
+      }),
+    };
+  }
+  return null;
+}
+
+/**
  * Main Lambda handler
  * Routes requests to appropriate functions based on HTTP method and path
  * Supports both API Gateway and Lambda Function URL event formats
@@ -99,6 +117,8 @@ export const handler = async (event) => {
     // GET /config/{tenantId}/metadata - Get tenant metadata only
     if (httpMethod === 'GET' && path.match(/^\/config\/([^/]+)\/metadata$/)) {
       const tenantId = path.match(/^\/config\/([^/]+)\/metadata$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
       const metadata = await getTenantMetadata(tenantId);
       return {
         statusCode: 200,
@@ -110,6 +130,8 @@ export const handler = async (event) => {
     // GET /config/{tenantId}/backups - List backups for tenant
     if (httpMethod === 'GET' && path.match(/^\/config\/([^/]+)\/backups$/)) {
       const tenantId = path.match(/^\/config\/([^/]+)\/backups$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
       const backups = await listBackups(tenantId);
       return {
         statusCode: 200,
@@ -121,6 +143,8 @@ export const handler = async (event) => {
     // GET /config/{tenantId} - Load full tenant config
     if (httpMethod === 'GET' && path.match(/^\/config\/([^/]+)$/)) {
       const tenantId = path.match(/^\/config\/([^/]+)$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
       const editableOnly = queryStringParameters?.editable_only === 'true';
 
       const config = await loadConfig(tenantId);
@@ -144,6 +168,8 @@ export const handler = async (event) => {
     // PUT /config/{tenantId} - Save tenant config
     if (httpMethod === 'PUT' && path.match(/^\/config\/([^/]+)$/)) {
       const tenantId = path.match(/^\/config\/([^/]+)$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
       const requestBody = JSON.parse(body);
 
       const {
@@ -153,20 +179,17 @@ export const handler = async (event) => {
         validate_only = false,
       } = requestBody;
 
-      // Only validate sections if merge=true (section-based editing)
-      // When merge=false, full config replacement is allowed
-      if (merge) {
-        const validation = validateEditedSections(editedConfig);
-        if (!validation.isValid) {
-          return {
-            statusCode: 400,
-            headers,
-            body: JSON.stringify({
-              error: 'Invalid edited sections',
-              details: validation.errors,
-            }),
-          };
-        }
+      // Validate config structure regardless of merge mode
+      const validation = validateEditedSections(editedConfig);
+      if (!validation.isValid) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            error: 'Invalid config sections',
+            details: validation.errors,
+          }),
+        };
       }
 
       // If validation only, return without saving
@@ -227,6 +250,8 @@ export const handler = async (event) => {
     // Use ?full=true to permanently delete all files (config, backups, mapping)
     if (httpMethod === 'DELETE' && path.match(/^\/config\/([^/]+)$/)) {
       const tenantId = path.match(/^\/config\/([^/]+)$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
       const fullDelete = queryStringParameters?.full === 'true';
 
       const result = fullDelete
