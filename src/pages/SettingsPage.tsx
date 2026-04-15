@@ -20,6 +20,7 @@ import {
   AWSSettings,
   FeatureFlagsSettings,
   NotificationSettings,
+  ChannelsSettings,
 } from '@/components/settings';
 import { EmbedCodeSettings } from '@/components/settings/EmbedCodeSettings';
 
@@ -172,6 +173,7 @@ export const SettingsPage: React.FC = () => {
               <TabsTrigger value="branding">Branding</TabsTrigger>
               <TabsTrigger value="features">Features</TabsTrigger>
               <TabsTrigger value="ai-aws">AI & AWS</TabsTrigger>
+              <TabsTrigger value="channels">Channels</TabsTrigger>
             </TabsList>
 
             {/* General Tab */}
@@ -199,6 +201,11 @@ export const SettingsPage: React.FC = () => {
               <BedrockInstructionsSettings />
               <AWSSettings />
               <FeatureFlagsSettings />
+            </TabsContent>
+
+            {/* Channels Tab */}
+            <TabsContent value="channels" className="space-y-6 mt-6">
+              <ChannelsSettings />
             </TabsContent>
           </Tabs>
 
