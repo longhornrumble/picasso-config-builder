@@ -60,10 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut();
   };
 
-  // Expose Clerk session token for API calls — kept in memory, not localStorage
+  // Expose Clerk JWT with picasso-config template for API calls
   const getToken = useCallback(async (): Promise<string | null> => {
     try {
-      return await clerkGetToken();
+      return await clerkGetToken({ template: 'picasso-config' });
     } catch {
       return null;
     }

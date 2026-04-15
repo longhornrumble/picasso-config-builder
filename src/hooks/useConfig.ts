@@ -12,6 +12,7 @@ import {
   getTenantMetadata,
 } from '@/lib/api/config-operations';
 import { ConfigAPIError } from '@/lib/api/errors';
+import { useAuth } from '@/context/AuthContext';
 import type { TenantConfig } from '@/types/config';
 import type { TenantListItem, TenantMetadata, LoadConfigResponse } from '@/types/api';
 
@@ -34,6 +35,7 @@ export function useTenantList(): UseTenantListResult {
   const [tenants, setTenants] = useState<TenantListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   const fetchTenants = useCallback(async () => {
     setLoading(true);
@@ -52,9 +54,12 @@ export function useTenantList(): UseTenantListResult {
     }
   }, []);
 
+  // Wait for auth to be ready before fetching tenants
   useEffect(() => {
-    fetchTenants();
-  }, [fetchTenants]);
+    if (!authLoading && isAuthenticated) {
+      fetchTenants();
+    }
+  }, [fetchTenants, authLoading, isAuthenticated]);
 
   return {
     tenants,
