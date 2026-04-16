@@ -208,7 +208,10 @@ describe('Edge Cases Integration Tests', () => {
   it('should handle malformed field data', async () => {
     const { result } = renderHook(() => useConfigStore());
 
-    // Create program and form with malformed field
+    // Create program and form with malformed field. The current validator
+    // catches structural problems like select fields with no options,
+    // composite fields missing subfields, and eligibility gates missing a
+    // failure message (empty id/label/prompt are no longer validated).
     await act(async () => {
       result.current.programs.createProgram(
         createTestProgram({ program_id: 'test-program' })
@@ -223,11 +226,12 @@ describe('Edge Cases Integration Tests', () => {
         trigger_phrases: ['test'],
         fields: [
           {
-            id: '',
-            type: 'text',
-            label: '',
-            prompt: '',
+            id: 'select1',
+            type: 'select',
+            label: 'Select',
+            prompt: 'Choose an option',
             required: true,
+            options: [], // Select with no options — should be invalid
           } as any,
         ],
       });
