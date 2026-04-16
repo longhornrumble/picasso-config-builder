@@ -66,10 +66,11 @@ debug-*.mjs
 test-*.mjs
 navigate-to-programs.mjs
 
-# Screenshots
-*.png
-
 # Test output and logs
+# Screenshots captured by E2E/debug runs (assets under src/assets/ ARE committed).
+# The /*.png pattern ignores loose screenshots dropped at the repo root by
+# debug scripts, without blocking src/assets/*.png or other tracked PNGs.
+/*.png
 e2e/screenshots/
 e2e/test-output*.log
 e2e/*.log
