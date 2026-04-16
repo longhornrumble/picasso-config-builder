@@ -90,11 +90,13 @@ export default defineConfig({
     },
   ],
 
-  // Run your local dev server before starting the tests
+  // Run your local dev server before starting the tests.
+  // In CI we use the mock dev server (filesystem-backed mock-s3/) because the
+  // real S3-backed server requires an `ai-developer` AWS profile that only
+  // exists on developer machines. Locally we default to the real S3 server.
   webServer: [
-    // Start local dev server with S3 access on port 3001
     {
-      command: 'npm run server:dev',
+      command: process.env.CI ? 'npm run server:dev:mock' : 'npm run server:dev',
       url: 'http://localhost:3001/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
