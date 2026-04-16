@@ -228,9 +228,13 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(branch?.detection_keywords).toHaveLength(2);
     expect(branch?.detection_keywords).toContain('initial');
 
-    // Add keyword
+    // Add keyword via updateBranch (dedicated add/removeKeyword helpers were
+    // removed; callers now update the detection_keywords array directly)
     await act(async () => {
-      result.current.branches.addKeyword('test-branch', 'new keyword');
+      const current = result.current.branches.getBranch('test-branch')!;
+      result.current.branches.updateBranch('test-branch', {
+        detection_keywords: [...current.detection_keywords, 'new keyword'],
+      });
     });
 
     // Verify keyword added
@@ -238,9 +242,12 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(branch?.detection_keywords).toHaveLength(3);
     expect(branch?.detection_keywords).toContain('new keyword');
 
-    // Remove keyword
+    // Remove keyword via updateBranch
     await act(async () => {
-      result.current.branches.removeKeyword('test-branch', 'initial');
+      const current = result.current.branches.getBranch('test-branch')!;
+      result.current.branches.updateBranch('test-branch', {
+        detection_keywords: current.detection_keywords.filter((k) => k !== 'initial'),
+      });
     });
 
     // Verify keyword removed
@@ -455,10 +462,13 @@ describe('CTA and Branch Workflow Integration Tests', () => {
     expect(errors.some((e) => e.includes('primary CTA'))).toBe(true);
   });
 
-  it('should validate branch requires keywords', async () => {
+  it('should permit branch with empty keywords', async () => {
+    // Historically the validator required at least one detection keyword, but
+    // that rule was removed alongside V4 routing changes (branches no longer
+    // trigger from user-side keyword matching). A branch with no keywords but a
+    // valid primary CTA is now considered valid.
     const { result } = renderHook(() => useConfigStore());
 
-    // Create CTA
     await act(async () => {
       result.current.ctas.createCTA(
         {
@@ -472,29 +482,26 @@ describe('CTA and Branch Workflow Integration Tests', () => {
       );
     });
 
-    // Create branch without keywords
     await act(async () => {
       result.current.branches.createBranch(
         {
-          detection_keywords: [], // No keywords
+          detection_keywords: [],
           available_ctas: {
             primary: 'test-cta',
             secondary: [],
           },
         },
-        'invalid-branch'
+        'keywordless-branch'
       );
     });
 
-    // Run validation
     await act(async () => {
       await result.current.validation.validateAll();
     });
 
-    // Verify validation fails
-    expect(result.current.validation.isValid).toBe(false);
+    expect(result.current.validation.isValid).toBe(true);
     const errors = extractValidationErrors(result.current.validation);
-    expect(errors.some((e) => e.includes('keyword'))).toBe(true);
+    expect(errors.some((e) => e.toLowerCase().includes('keyword'))).toBe(false);
   });
 
   it('should duplicate CTA with all properties', async () => {

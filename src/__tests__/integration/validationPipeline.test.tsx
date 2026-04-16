@@ -125,59 +125,49 @@ describe('Validation Pipeline Integration Tests', () => {
     expect(allErrors.some((e) => e.includes('Program'))).toBe(true);
     expect(allErrors.some((e) => e.includes('Form ID'))).toBe(true);
     expect(allErrors.some((e) => e.includes('URL'))).toBe(true);
-    expect(allErrors.some((e) => e.includes('keyword'))).toBe(true);
+    // Note: empty detection_keywords is no longer a validation error — branches
+    // with no keywords are permitted since branch routing moved to the V4 action
+    // selector model. The primary-CTA error below still covers branch validation.
     expect(allErrors.some((e) => e.includes('primary CTA'))).toBe(true);
   });
 
   it('should distinguish between errors and warnings', async () => {
     const { result } = renderHook(() => useConfigStore());
 
-    // Create entities with warnings but no errors
+    // Create entities that trigger current warning rules but no errors
     await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
       result.current.programs.createProgram(program);
 
-      // Form with no trigger phrases (warning)
+      // Form with no required fields — triggers the `noRequiredFields` warning
       result.current.forms.createForm({
         enabled: true,
         form_id: 'form-with-warning',
         program: 'test-program',
         title: 'Form',
         description: 'Test',
-        trigger_phrases: [], // No trigger phrases - should warn
+        trigger_phrases: ['apply'],
         fields: [
           {
             id: 'field1',
             type: 'text',
             label: 'Field',
             prompt: 'Enter value',
-            required: true,
+            required: false, // No required fields — triggers warning
           },
         ],
       });
 
-      // CTA with generic button text (warning)
+      // CTA with generic button text — triggers `genericLabel` warning
       result.current.ctas.createCTA(
         {
-          label: 'Click Here', // Generic label - should warn
+          label: 'Click Here',
           action: 'external_link',
           url: 'https://example.com',
           type: 'external_link',
           style: 'primary',
         },
         'cta-with-warning'
-      );
-
-      // Branch with question words in keywords (warning)
-      result.current.branches.createBranch(
-        {
-          detection_keywords: ['how do I apply', 'what is this'], // Question words - should warn
-          available_ctas: {
-            primary: 'cta-with-warning',
-            secondary: [],
-          },
-        },
-        'branch-with-warning'
       );
     });
 
@@ -196,8 +186,8 @@ describe('Validation Pipeline Integration Tests', () => {
     const ctaWarnings = getEntityWarnings(result.current.validation, 'cta-with-warning');
     expect(ctaWarnings.length).toBeGreaterThan(0);
 
-    const branchWarnings = getEntityWarnings(result.current.validation, 'branch-with-warning');
-    expect(branchWarnings.length).toBeGreaterThan(0);
+    // Note: branches no longer emit warnings for question-word keywords; that
+    // rule was removed when branch routing was simplified for the V4 pipeline.
   });
 
   it('should validate cross-entity dependencies', async () => {

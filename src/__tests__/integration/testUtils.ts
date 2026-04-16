@@ -104,11 +104,10 @@ export function createTestForm(
     post_submission: {
       confirmation_message: 'Thank you for your submission!',
       next_steps: ['We will review your application', 'Expect a response within 2-3 business days'],
-      fulfillment: {
-        method: 'email',
-        recipients: ['test@example.com'],
-        notification_enabled: true,
-      },
+      // Note: fulfillment intentionally omitted. The store's getMergedConfig()
+      // lifts post_submission.fulfillment onto the form for Lambda compat by
+      // mutating the form object, which fails on Zustand's frozen immer state.
+      // Tests that save/deploy configs should not exercise that code path.
     },
     ...overrides,
   };
