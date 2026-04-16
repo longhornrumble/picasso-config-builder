@@ -15,7 +15,7 @@ export const createCTAsSlice: SliceCreator<CTAsSlice> = (set, get) => ({
   createCTA: (cta: CTADefinition, ctaId: string) => {
     set((state) => {
       state.ctas.ctas[ctaId] = cta;
-      state.config.markDirty();
+      state.config.isDirty = true;
     });
 
     get().ui.addToast({
@@ -32,7 +32,7 @@ export const createCTAsSlice: SliceCreator<CTAsSlice> = (set, get) => ({
       const cta = state.ctas.ctas[ctaId];
       if (cta) {
         state.ctas.ctas[ctaId] = { ...cta, ...updates };
-        state.config.markDirty();
+        state.config.isDirty = true;
       }
     });
 
@@ -66,7 +66,7 @@ export const createCTAsSlice: SliceCreator<CTAsSlice> = (set, get) => ({
         state.ctas.activeCtaId = null;
       }
 
-      state.config.markDirty();
+      state.config.isDirty = true;
 
       if (ctaLabel) {
         get().ui.addToast({

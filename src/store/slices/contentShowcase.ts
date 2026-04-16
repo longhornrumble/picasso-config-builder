@@ -14,7 +14,7 @@ export const createContentShowcaseSlice: SliceCreator<ContentShowcaseSlice> = (s
   createShowcaseItem: (item: ShowcaseItem) => {
     set((state) => {
       state.contentShowcase.content_showcase.push(item);
-      state.config.markDirty();
+      state.config.isDirty = true;
     });
 
     get().ui.addToast({
@@ -36,7 +36,7 @@ export const createContentShowcaseSlice: SliceCreator<ContentShowcaseSlice> = (s
           ...state.contentShowcase.content_showcase[index],
           ...updates,
         };
-        state.config.markDirty();
+        state.config.isDirty = true;
       }
     });
 
@@ -57,7 +57,7 @@ export const createContentShowcaseSlice: SliceCreator<ContentShowcaseSlice> = (s
       if (index !== -1) {
         const itemName = state.contentShowcase.content_showcase[index].name;
         state.contentShowcase.content_showcase.splice(index, 1);
-        state.config.markDirty();
+        state.config.isDirty = true;
 
         get().ui.addToast({
           type: 'success',

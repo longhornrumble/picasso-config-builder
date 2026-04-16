@@ -15,7 +15,7 @@ export const createProgramsSlice: SliceCreator<ProgramsSlice> = (set, get) => ({
   createProgram: (program: Program) => {
     set((state) => {
       state.programs.programs[program.program_id] = program;
-      state.config.markDirty();
+      state.config.isDirty = true;
     });
 
     // Show success toast
@@ -85,7 +85,7 @@ export const createProgramsSlice: SliceCreator<ProgramsSlice> = (set, get) => ({
         state.programs.programs[programId] = updatedProgram;
       }
 
-      state.config.markDirty();
+      state.config.isDirty = true;
       updateSucceeded = true;
     });
 
@@ -121,7 +121,7 @@ export const createProgramsSlice: SliceCreator<ProgramsSlice> = (set, get) => ({
         state.programs.activeProgramId = null;
       }
 
-      state.config.markDirty();
+      state.config.isDirty = true;
 
       // Show success toast
       if (programName) {
