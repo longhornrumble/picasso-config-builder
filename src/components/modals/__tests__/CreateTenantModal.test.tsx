@@ -30,7 +30,7 @@ describe('CreateTenantModal', () => {
     const tenantIdInput = screen.getByLabelText(/tenant id/i);
     await user.type(tenantIdInput, 'invalid tenant!');
 
-    const submitButton = screen.getByRole('button', { name: /create demo tenant/i });
+    const submitButton = screen.getByRole('button', { name: /^create tenant$/i });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -56,7 +56,7 @@ describe('CreateTenantModal', () => {
     await user.type(screen.getByLabelText(/tenant id/i), 'test-tenant');
     await user.type(screen.getByLabelText(/chat title/i), 'Test Chat');
 
-    const submitButton = screen.getByRole('button', { name: /create demo tenant/i });
+    const submitButton = screen.getByRole('button', { name: /^create tenant$/i });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -87,7 +87,7 @@ describe('CreateTenantModal', () => {
     await user.type(screen.getByLabelText(/organization name/i), 'Existing Org');
     await user.type(screen.getByLabelText(/tenant id/i), 'existing-tenant');
 
-    const submitButton = screen.getByRole('button', { name: /create demo tenant/i });
+    const submitButton = screen.getByRole('button', { name: /^create tenant$/i });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -112,7 +112,7 @@ describe('CreateTenantModal', () => {
 
     await user.type(screen.getByLabelText(/organization name/i), 'New Org');
     await user.type(screen.getByLabelText(/tenant id/i), 'new-tenant');
-    await user.click(screen.getByRole('button', { name: /create demo tenant/i }));
+    await user.click(screen.getByRole('button', { name: /^create tenant$/i }));
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /load this tenant/i })).toBeInTheDocument();
@@ -149,7 +149,7 @@ describe('CreateTenantModal', () => {
 
     await user.type(screen.getByLabelText(/organization name/i), 'Test Org');
     await user.type(screen.getByLabelText(/tenant id/i), 'test-tenant');
-    await user.click(screen.getByRole('button', { name: /create demo tenant/i }));
+    await user.click(screen.getByRole('button', { name: /^create tenant$/i }));
 
     await waitFor(() => {
       expect(screen.getAllByRole('button', { name: /copy/i })[0]).toBeInTheDocument();
