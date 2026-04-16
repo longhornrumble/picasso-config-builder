@@ -106,7 +106,8 @@ describe('Form Validation', () => {
 
       const result = validateForm(form, 'test-form', allPrograms);
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.message.includes('duplicate'))).toBe(true);
+      // Current message starts with "Duplicate field ID" — match case-insensitively.
+      expect(result.errors.some((e) => e.message.toLowerCase().includes('duplicate'))).toBe(true);
     });
 
     it('should require options for select fields', () => {
@@ -209,37 +210,31 @@ describe('Form Validation', () => {
   });
 
   describe('trigger phrase validation', () => {
-    it('should warn if no trigger phrases', () => {
-      const form: ConversationalForm = {
+    // Note: trigger phrase validation was removed when forms moved to explicit
+    // CTA routing. `validateTriggerPhrases` in formValidation.ts is now a no-op.
+    // Empty or populated trigger_phrases should both validate cleanly.
+    it('should not warn about trigger phrases either way (feature removed)', () => {
+      const emptyForm: ConversationalForm = {
         enabled: true,
         form_id: 'test-form',
         program: 'test-program',
         title: 'Test Form',
         description: 'Test description',
-        trigger_phrases: [], // No trigger phrases
+        trigger_phrases: [],
         fields: [mockField],
       };
-
-      const result = validateForm(form, 'test-form', allPrograms);
-      expect(result.valid).toBe(true);
-      expect(result.warnings.some((w) => w.message.includes('trigger phrases'))).toBe(true);
-    });
-
-    it('should not warn with trigger phrases', () => {
-      const form: ConversationalForm = {
-        enabled: true,
-        form_id: 'test-form',
-        program: 'test-program',
-        title: 'Test Form',
-        description: 'Test description',
+      const populatedForm: ConversationalForm = {
+        ...emptyForm,
         trigger_phrases: ['apply', 'application'],
-        fields: [mockField],
       };
 
-      const result = validateForm(form, 'test-form', allPrograms);
-      expect(result.valid).toBe(true);
-      const triggerWarnings = result.warnings.filter((w) => w.message.includes('trigger'));
-      expect(triggerWarnings).toHaveLength(0);
+      const emptyResult = validateForm(emptyForm, 'test-form', allPrograms);
+      const populatedResult = validateForm(populatedForm, 'test-form', allPrograms);
+
+      expect(emptyResult.valid).toBe(true);
+      expect(populatedResult.valid).toBe(true);
+      expect(emptyResult.warnings.filter((w) => w.message.toLowerCase().includes('trigger'))).toHaveLength(0);
+      expect(populatedResult.warnings.filter((w) => w.message.toLowerCase().includes('trigger'))).toHaveLength(0);
     });
   });
 
@@ -268,7 +263,10 @@ describe('Form Validation', () => {
       expect(result.warnings.some((w) => w.message.includes('too many'))).toBe(true);
     });
 
-    it('should suggest email validation for required email fields', () => {
+    // Note: email/phone format-validation suggestions were removed. The
+    // comment in formValidation.ts explains: "Email and phone field types
+    // inherently provide format validation — No additional warnings needed."
+    it('should not warn about email fields (inherent format validation)', () => {
       const form: ConversationalForm = {
         enabled: true,
         form_id: 'test-form',
@@ -289,10 +287,10 @@ describe('Form Validation', () => {
 
       const result = validateForm(form, 'test-form', allPrograms);
       expect(result.valid).toBe(true);
-      expect(result.warnings.some((w) => w.message.includes('email'))).toBe(true);
+      expect(result.warnings.filter((w) => w.message.toLowerCase().includes('email'))).toHaveLength(0);
     });
 
-    it('should suggest phone validation for required phone fields', () => {
+    it('should not warn about phone fields (inherent format validation)', () => {
       const form: ConversationalForm = {
         enabled: true,
         form_id: 'test-form',
@@ -313,7 +311,7 @@ describe('Form Validation', () => {
 
       const result = validateForm(form, 'test-form', allPrograms);
       expect(result.valid).toBe(true);
-      expect(result.warnings.some((w) => w.message.includes('phone'))).toBe(true);
+      expect(result.warnings.filter((w) => w.message.toLowerCase().includes('phone'))).toHaveLength(0);
     });
   });
 

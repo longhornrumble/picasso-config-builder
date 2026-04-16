@@ -434,7 +434,11 @@ describe('Type Guards', () => {
         expect(isValidBranch(branch)).toBe(true);
       });
 
-      it('should reject branches without keywords', () => {
+      // Note: `isValidBranch` validates structural shape only. After V4
+      // routing changes, empty `detection_keywords` no longer makes a branch
+      // invalid — the guard accepts it as long as `available_ctas` is
+      // well-formed.
+      it('should accept branches with empty keywords (keywords no longer required)', () => {
         const branch = {
           detection_keywords: [],
           available_ctas: {
@@ -443,7 +447,7 @@ describe('Type Guards', () => {
           },
         };
 
-        expect(isValidBranch(branch)).toBe(false);
+        expect(isValidBranch(branch)).toBe(true);
       });
 
       it('should reject invalid structures', () => {
