@@ -12,7 +12,7 @@
  * 8. Verify complete workflow
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useConfigStore } from '@/store';
 import {
@@ -386,10 +386,12 @@ describe('Form Creation Workflow Integration Tests', () => {
     expect(errors.some((e) => e.includes('Program'))).toBe(true);
   });
 
-  it('should warn when form has no trigger phrases', async () => {
+  it('should not emit a trigger-phrases warning (feature removed)', async () => {
+    // Trigger-phrase validation was removed when forms moved to explicit CTA
+    // routing. A form with empty trigger_phrases should validate cleanly with
+    // no trigger-phrase warning.
     const { result } = renderHook(() => useConfigStore());
 
-    // Create program and form
     let programId: string;
     await act(async () => {
       const program = createTestProgram({ program_id: 'test-program' });
@@ -402,21 +404,18 @@ describe('Form Creation Workflow Integration Tests', () => {
         program: programId,
         title: 'Test Form',
         description: 'Test',
-        trigger_phrases: [], // No trigger phrases
+        trigger_phrases: [],
         fields: [createTestFormField({ id: 'field1' })],
       });
     });
 
-    // Run validation
     await act(async () => {
       await result.current.validation.validateAll();
     });
 
-    // Should pass validation but have warnings
     expect(result.current.validation.isValid).toBe(true);
     const formWarnings = getEntityWarnings(result.current.validation, 'test-form');
-    expect(formWarnings.length).toBeGreaterThan(0);
-    expect(formWarnings.some((w) => w.message.includes('trigger phrases'))).toBe(true);
+    expect(formWarnings.filter((w) => w.message.toLowerCase().includes('trigger'))).toHaveLength(0);
   });
 
   it('should duplicate form with all fields and relationships', async () => {
@@ -452,10 +451,16 @@ describe('Form Creation Workflow Integration Tests', () => {
       );
     });
 
-    // Duplicate form
+    // Duplicate form. duplicateForm now prompts the user for a new form ID via
+    // window.prompt(); JSDOM returns null by default, which aborts the
+    // duplication. Stub it to provide a deterministic new ID.
+    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('original-form-copy');
+
     await act(async () => {
       result.current.forms.duplicateForm(formId);
     });
+
+    promptSpy.mockRestore();
 
     // Verify duplicate created
     const allForms = result.current.forms.getAllForms();

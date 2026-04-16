@@ -15,7 +15,7 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
   createBranch: (branch: ConversationBranch, branchId: string) => {
     set((state) => {
       state.branches.branches[branchId] = branch;
-      state.config.markDirty();
+      state.config.isDirty = true;
     });
 
     get().ui.addToast({
@@ -32,7 +32,7 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
       const branch = state.branches.branches[branchId];
       if (branch) {
         state.branches.branches[branchId] = { ...branch, ...updates };
-        state.config.markDirty();
+        state.config.isDirty = true;
       }
     });
 
@@ -54,7 +54,7 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
         state.branches.activeBranchId = null;
       }
 
-      state.config.markDirty();
+      state.config.isDirty = true;
     });
 
     get().ui.addToast({
@@ -118,7 +118,7 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
             primary: ctaId,
           },
         };
-        state.config.markDirty();
+        state.config.isDirty = true;
       }
     });
   },
@@ -146,7 +146,7 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
               secondary: [...branch.available_ctas.secondary, ctaId],
             },
           };
-          state.config.markDirty();
+          state.config.isDirty = true;
         }
       }
     });
@@ -163,7 +163,7 @@ export const createBranchesSlice: SliceCreator<BranchesSlice> = (set, get) => ({
             secondary: branch.available_ctas.secondary.filter((id) => id !== ctaId),
           },
         };
-        state.config.markDirty();
+        state.config.isDirty = true;
       }
     });
   },

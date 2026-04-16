@@ -15,7 +15,7 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
   createForm: (form: ConversationalForm) => {
     set((state) => {
       state.forms.forms[form.form_id] = form;
-      state.config.markDirty();
+      state.config.isDirty = true;
     });
 
     get().ui.addToast({
@@ -96,7 +96,7 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
         state.forms.forms[formId] = updatedForm;
       }
 
-      state.config.markDirty();
+      state.config.isDirty = true;
       updateSucceeded = true;
     });
 
@@ -132,7 +132,7 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
         state.forms.activeFormId = null;
       }
 
-      state.config.markDirty();
+      state.config.isDirty = true;
 
       if (formTitle) {
         get().ui.addToast({
@@ -228,7 +228,7 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
           ...form,
           fields: [...form.fields, field],
         };
-        state.config.markDirty();
+        state.config.isDirty = true;
       }
     });
 
@@ -251,7 +251,7 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
           ...form,
           fields: updatedFields,
         };
-        state.config.markDirty();
+        state.config.isDirty = true;
       }
     });
 
@@ -273,7 +273,7 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
           ...form,
           fields: updatedFields,
         };
-        state.config.markDirty();
+        state.config.isDirty = true;
       }
     });
 
@@ -298,7 +298,7 @@ export const createFormsSlice: SliceCreator<FormsSlice> = (set, get) => ({
           ...form,
           fields: updatedFields,
         };
-        state.config.markDirty();
+        state.config.isDirty = true;
       }
     });
 

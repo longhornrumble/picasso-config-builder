@@ -165,21 +165,20 @@ describe('S3 Deployment Workflow Integration Tests', () => {
   it('should preserve existing config sections on deployment', async () => {
     const { result } = renderHook(() => useConfigStore());
 
-    // Load config with additional sections
+    // Load config with additional sections. The store expects
+    // `content_showcase` to be a flat array of showcase items, not nested.
     const testConfig = createTestTenantConfig('TEST_TENANT');
-    testConfig.content_showcase = {
-      content_showcase: [
-        {
-          id: 'showcase-1',
-          type: 'program',
-          enabled: true,
-          name: 'Featured Program',
-          tagline: 'Test tagline',
-          description: 'Test description',
-          keywords: ['test'],
-        },
-      ],
-    } as any;
+    testConfig.content_showcase = [
+      {
+        id: 'showcase-1',
+        type: 'program',
+        enabled: true,
+        name: 'Featured Program',
+        tagline: 'Test tagline',
+        description: 'Test description',
+        keywords: ['test'],
+      },
+    ] as any;
 
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
@@ -201,19 +200,18 @@ describe('S3 Deployment Workflow Integration Tests', () => {
       await result.current.config.deployConfig();
     });
 
-    // Verify content_showcase preserved
+    // Verify content_showcase preserved (shape is a flat array in the deployed config)
     const deployedConfig = mockS3._getMockConfig('TEST_TENANT');
     expect(deployedConfig!.content_showcase).toBeDefined();
-    expect((deployedConfig!.content_showcase as any).content_showcase).toHaveLength(1);
+    expect(deployedConfig!.content_showcase as any[]).toHaveLength(1);
   });
 
-  it('should update version and timestamp on deployment', async () => {
+  it('should bump version on deployment', async () => {
     const { result } = renderHook(() => useConfigStore());
 
-    // Load config
+    // Load config with a known starting version
     const testConfig = createTestTenantConfig('TEST_TENANT');
     testConfig.version = '1.3.0';
-    const originalTimestamp = testConfig.generated_at;
 
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
@@ -230,28 +228,28 @@ describe('S3 Deployment Workflow Integration Tests', () => {
       result.current.programs.createProgram(newProgram);
     });
 
-    // Wait a moment to ensure timestamp changes
-    await new Promise((resolve) => setTimeout(resolve, 10));
-
     // Deploy
     await act(async () => {
       await result.current.config.deployConfig();
     });
 
-    // Verify version and timestamp updated
+    // Verify version incremented. Note: `generated_at` is no longer part of
+    // the deploy payload — the Lambda stamps it server-side. Version bumping
+    // happens client-side in the deploy path (1.3 -> 1.4).
     const deployedConfig = mockS3._getMockConfig('TEST_TENANT');
-    expect(deployedConfig!.generated_at).toBeGreaterThan(originalTimestamp);
-    // Version should be incremented (assuming incrementVersion logic)
+    expect(parseFloat(deployedConfig!.version)).toBeGreaterThan(1.3);
   });
 
   it('should handle deployment of empty config sections', async () => {
     const { result } = renderHook(() => useConfigStore());
 
-    // Create minimal config with only programs
+    // Create minimal config with only programs. Note: the payload field
+    // names are `cta_definitions` and `conversation_branches` (not `ctas`
+    // and `routing`), matching the current Lambda contract.
     const minimalConfig = createTestTenantConfig('TEST_TENANT');
-    delete minimalConfig.conversational_forms;
-    delete minimalConfig.ctas;
-    delete minimalConfig.routing;
+    delete (minimalConfig as any).conversational_forms;
+    delete (minimalConfig as any).cta_definitions;
+    delete (minimalConfig as any).conversation_branches;
 
     mockS3._setMockConfig('TEST_TENANT', minimalConfig);
 
@@ -293,11 +291,11 @@ describe('S3 Deployment Workflow Integration Tests', () => {
       await result.current.config.deployConfig();
     });
 
-    // Verify all sections deployed
+    // Verify all sections deployed (current field names)
     const deployedConfig = mockS3._getMockConfig('TEST_TENANT');
     expect(deployedConfig!.conversational_forms).toBeDefined();
-    expect(deployedConfig!.ctas).toBeDefined();
-    expect(deployedConfig!.routing).toBeDefined();
+    expect(deployedConfig!.cta_definitions).toBeDefined();
+    expect(deployedConfig!.conversation_branches).toBeDefined();
   });
 
   it('should handle reload after deployment', async () => {
@@ -361,11 +359,13 @@ describe('S3 Deployment Workflow Integration Tests', () => {
       await result.current.config.deployConfig();
     });
 
-    // Verify deployConfig was called (which should create backup)
+    // Verify deployConfig was called with an editable-fields payload. Note:
+    // `tenant_id` is no longer part of the deploy payload — the Lambda derives
+    // the tenant from the URL path. `programs` and `version` are sent.
     expect(mockS3.deployConfig).toHaveBeenCalledWith(
       'TEST_TENANT',
       expect.objectContaining({
-        tenant_id: 'TEST_TENANT',
+        version: expect.any(String),
         programs: expect.any(Object),
       })
     );
