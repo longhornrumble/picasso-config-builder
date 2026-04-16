@@ -31,7 +31,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        # Always install chromium because playwright.global-setup.ts uses
+        # chromium for the one-time Clerk sign-in (regardless of which
+        # browser the matrix job tests against).
+        run: npx playwright install --with-deps chromium ${{ matrix.browser }}
 
       - name: Build application
         run: npm run build:dev
