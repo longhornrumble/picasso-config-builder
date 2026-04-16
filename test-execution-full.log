@@ -1,0 +1,1057 @@
+
+> picasso-config-builder@0.1.0 test:e2e:chromium
+> playwright test --project=chromium
+
+[2m[WebServer] [22m
+[2m[WebServer] [22m > Local:   http://127.0.0.1:3000/
+[2m[WebServer] [22m > Network: http://172.20.10.2:3000/
+[2m[WebServer] [22m
+[2m[WebServer] [22m[watch] build finished, watching for changes...
+🚀 Starting mock server for E2E tests...
+Mock server running on http://localhost:3001
+✅ Mock server started on http://localhost:3001
+
+Running 27 tests using 5 workers
+
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+Running form creation test in chromium
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[chromium] Home page load time: 828ms
+  ✓   3 [chromium] › e2e/cross-browser.spec.ts:33:3 › Cross-Browser Compatibility › should load home page in under 2 seconds (1.9s)
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+Running form edit test in chromium
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/TEST001
+[chromium] Forms page load time: 0ms
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+  ✘   4 [chromium] › e2e/branch-editor.spec.ts:265:3 › CTA Creation & Branch Assignment › should allow editing CTA assignments in branch (1.0m)
+  ✘   5 [chromium] › e2e/branch-editor.spec.ts:43:3 › CTA Creation & Branch Assignment › should create CTAs, assign to branch, validate and deploy (1.0m)
+  ✘   2 [chromium] › e2e/branch-editor.spec.ts:226:3 › CTA Creation & Branch Assignment › should display CTA preview in branch editor (1.0m)
+  ✘   1 [chromium] › e2e/cross-browser.spec.ts:40:3 › Cross-Browser Compatibility › should successfully create and deploy a form (1.0m)
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+Running CTA creation test in chromium
+Testing form validation in chromium
+Testing UI rendering in chromium
+Testing modal behavior in chromium
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+  ✘   6 [chromium] › e2e/cross-browser.spec.ts:77:3 › Cross-Browser Compatibility › should successfully edit an existing form (1.0m)
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+Testing keyboard navigation in chromium
+  ✓   8 [chromium] › e2e/cross-browser.spec.ts:158:3 › Cross-Browser Compatibility › should render UI components correctly (3.0s)
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[chromium] CTAs page load time: 1ms
+[MOCK] GET /config/TEST001
+Testing long content handling in chromium
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+  ✘   7 [chromium] › e2e/cross-browser.spec.ts:118:3 › Cross-Browser Compatibility › should successfully create and deploy a CTA (1.0m)
+  ✘  10 [chromium] › e2e/cross-browser.spec.ts:184:3 › Cross-Browser Compatibility › should handle modals correctly (1.0m)
+  ✘   9 [chromium] › e2e/cross-browser.spec.ts:219:3 › Cross-Browser Compatibility › should handle form validation consistently (1.0m)
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+Testing rapid interaction handling in chromium
+Testing state persistence in chromium
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+  ✘  11 [chromium] › e2e/cross-browser.spec.ts:245:3 › Cross-Browser Compatibility › should support keyboard navigation (1.0m)
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+  ✘  12 [chromium] › e2e/cross-browser.spec.ts:269:3 › Cross-Browser Compatibility › should handle long content without layout issues (1.0m)
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+  ✓  13 [chromium] › e2e/cross-browser.spec.ts:346:3 › Browser-Specific Features › should work with browser back/forward buttons (3.7s)
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+  ✘  18 [chromium] › e2e/dependency-warnings.spec.ts:202:3 › Dependency Warning Flow › should show dependency warning when deleting form used by CTA (1.6m)
+  ✘  16 [chromium] › e2e/cross-browser.spec.ts:367:3 › Browser-Specific Features › should handle page refresh without data loss (1.6m)
+  ✘  15 [chromium] › e2e/cross-browser.spec.ts:295:3 › Cross-Browser Compatibility › should maintain state across navigation (1.6m)
+  ✘  17 [chromium] › e2e/dependency-warnings.spec.ts:34:3 › Dependency Warning Flow › should show dependency warning when deleting program used by form (1.6m)
+  ✘  14 [chromium] › e2e/cross-browser.spec.ts:322:3 › Cross-Browser Compatibility › should handle rapid clicks without errors (1.6m)
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+  ✘  19 [chromium] › e2e/form-creation.spec.ts:39:3 › Complete Form Creation Flow › should create a complete form with program, fields, triggers, and deploy (34.6m)
+  ✘  21 [chromium] › e2e/form-creation.spec.ts:271:3 › Complete Form Creation Flow › should validate required fields before submission (34.6m)
+  ✘  20 [chromium] › e2e/form-creation.spec.ts:243:3 › Complete Form Creation Flow › should persist form data across navigation (34.6m)
+  ✘  23 [chromium] › e2e/validation.spec.ts:35:3 › Validation Error Blocking Deployment › should block deployment when CTA has start_form action without formId (34.6m)
+  ✘  22 [chromium] › e2e/dependency-warnings.spec.ts:251:3 › Dependency Warning Flow › should show dependency warning when deleting CTA used by branch (34.6m)
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/TEST001
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+[MOCK] GET /config/tenants
+  ✘  24 [chromium] › e2e/validation.spec.ts:199:3 › Validation Error Blocking Deployment › should show validation errors for duplicate IDs (1.0m)
+  ✘  26 [chromium] › e2e/validation.spec.ts:237:3 › Validation Error Blocking Deployment › should validate on blur for individual fields (1.0m)
+  ✘  25 [chromium] › e2e/validation.spec.ts:223:3 › Validation Error Blocking Deployment › should show validation errors for missing required fields (1.0m)
+  ✘  27 [chromium] › e2e/validation.spec.ts:257:3 › Validation Error Blocking Deployment › should clear validation errors after fixing issues (1.0m)
+🛑 Stopping mock server...
+Mock server stopped
+✅ Mock server stopped
+
+
+  1) [chromium] › e2e/branch-editor.spec.ts:43:3 › CTA Creation & Branch Assignment › should create CTAs, assign to branch, validate and deploy › Create prerequisite program 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create Program"), [data-testid="Create Program"]').first()[22m
+
+
+       at fixtures/test-helpers.ts:93
+
+      91 | export async function clickButton(page: Page, textOrTestId: string) {
+      92 |   const button = page.locator(`button:has-text("${textOrTestId}"), [data-testid="${textOrTestId}"]`).first();
+    > 93 |   await button.click();
+         |                ^
+      94 |   await page.waitForLoadState('networkidle');
+      95 | }
+      96 |
+        at clickButton (/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/fixtures/test-helpers.ts:93:16)
+        at createProgram (/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/fixtures/test-helpers.ts:177:9)
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/branch-editor.spec.ts:46:7
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/branch-editor.spec.ts:45:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/branch-editor-CTA-Creation-700fc--branch-validate-and-deploy-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/branch-editor-CTA-Creation-700fc--branch-validate-and-deploy-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/branch-editor-CTA-Creation-700fc--branch-validate-and-deploy-chromium/error-context.md
+
+  2) [chromium] › e2e/branch-editor.spec.ts:226:3 › CTA Creation & Branch Assignment › should display CTA preview in branch editor 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      228 |     await navigateToSection(page, 'ctas');
+      229 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 230 |     await createButton.click();
+          |                        ^
+      231 |     await waitForModal(page);
+      232 |
+      233 |     await fillFormField(page, 'id', 'test_preview_cta');
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/branch-editor.spec.ts:230:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/branch-editor-CTA-Creation-57e63-TA-preview-in-branch-editor-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/branch-editor-CTA-Creation-57e63-TA-preview-in-branch-editor-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/branch-editor-CTA-Creation-57e63-TA-preview-in-branch-editor-chromium/error-context.md
+
+  3) [chromium] › e2e/branch-editor.spec.ts:265:3 › CTA Creation & Branch Assignment › should allow editing CTA assignments in branch 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      269 |     // CTA 1
+      270 |     let createButton = page.locator('button:has-text("Create")').first();
+    > 271 |     await createButton.click();
+          |                        ^
+      272 |     await waitForModal(page);
+      273 |     await fillFormField(page, 'id', 'cta_edit_test_1');
+      274 |     await fillFormField(page, 'label', 'CTA Edit Test 1');
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/branch-editor.spec.ts:271:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/branch-editor-CTA-Creation-55958-g-CTA-assignments-in-branch-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/branch-editor-CTA-Creation-55958-g-CTA-assignments-in-branch-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/branch-editor-CTA-Creation-55958-g-CTA-assignments-in-branch-chromium/error-context.md
+
+  4) [chromium] › e2e/cross-browser.spec.ts:40:3 › Cross-Browser Compatibility › should successfully create and deploy a form 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create"), button:has-text("Add Form")').first()[22m
+
+
+      52 |     // Create form
+      53 |     const createButton = page.locator('button:has-text("Create"), button:has-text("Add Form")').first();
+    > 54 |     await createButton.click();
+         |                        ^
+      55 |     await waitForModal(page);
+      56 |
+      57 |     await fillFormField(page, 'id', `cross_browser_form_${browserName}`);
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/cross-browser.spec.ts:54:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-25861-ly-create-and-deploy-a-form-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-25861-ly-create-and-deploy-a-form-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cross-browser-Cross-Browse-25861-ly-create-and-deploy-a-form-chromium/error-context.md
+
+  5) [chromium] › e2e/cross-browser.spec.ts:77:3 › Cross-Browser Compatibility › should successfully edit an existing form 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      83 |     await navigateToSection(page, 'forms');
+      84 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 85 |     await createButton.click();
+         |                        ^
+      86 |     await waitForModal(page);
+      87 |
+      88 |     await fillFormField(page, 'id', `edit_test_form_${browserName}`);
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/cross-browser.spec.ts:85:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-f8610-fully-edit-an-existing-form-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-f8610-fully-edit-an-existing-form-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cross-browser-Cross-Browse-f8610-fully-edit-an-existing-form-chromium/error-context.md
+
+  6) [chromium] › e2e/cross-browser.spec.ts:118:3 › Cross-Browser Compatibility › should successfully create and deploy a CTA 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create"), button:has-text("Add CTA")').first()[22m
+
+
+      130 |     // Create CTA
+      131 |     const createButton = page.locator('button:has-text("Create"), button:has-text("Add CTA")').first();
+    > 132 |     await createButton.click();
+          |                        ^
+      133 |     await waitForModal(page);
+      134 |
+      135 |     await fillFormField(page, 'id', `cross_browser_cta_${browserName}`);
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/cross-browser.spec.ts:132:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-82b75-lly-create-and-deploy-a-CTA-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-82b75-lly-create-and-deploy-a-CTA-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cross-browser-Cross-Browse-82b75-lly-create-and-deploy-a-CTA-chromium/error-context.md
+
+  7) [chromium] › e2e/cross-browser.spec.ts:184:3 › Cross-Browser Compatibility › should handle modals correctly 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      190 |     // Open modal
+      191 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 192 |     await createButton.click();
+          |                        ^
+      193 |     await waitForModal(page);
+      194 |
+      195 |     // Check modal is visible
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/cross-browser.spec.ts:192:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-d2abc-uld-handle-modals-correctly-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-d2abc-uld-handle-modals-correctly-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cross-browser-Cross-Browse-d2abc-uld-handle-modals-correctly-chromium/error-context.md
+
+  8) [chromium] › e2e/cross-browser.spec.ts:219:3 › Cross-Browser Compatibility › should handle form validation consistently 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      224 |
+      225 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 226 |     await createButton.click();
+          |                        ^
+      227 |     await waitForModal(page);
+      228 |
+      229 |     // Try to submit without required fields
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/cross-browser.spec.ts:226:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-888e3-orm-validation-consistently-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-888e3-orm-validation-consistently-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cross-browser-Cross-Browse-888e3-orm-validation-consistently-chromium/error-context.md
+
+  9) [chromium] › e2e/cross-browser.spec.ts:245:3 › Cross-Browser Compatibility › should support keyboard navigation 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      251 |     // Open create modal
+      252 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 253 |     await createButton.click();
+          |                        ^
+      254 |     await waitForModal(page);
+      255 |
+      256 |     // Tab through fields
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/cross-browser.spec.ts:253:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-8dd0c-support-keyboard-navigation-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-8dd0c-support-keyboard-navigation-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cross-browser-Cross-Browse-8dd0c-support-keyboard-navigation-chromium/error-context.md
+
+  10) [chromium] › e2e/cross-browser.spec.ts:269:3 › Cross-Browser Compatibility › should handle long content without layout issues 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      274 |
+      275 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 276 |     await createButton.click();
+          |                        ^
+      277 |     await waitForModal(page);
+      278 |
+      279 |     // Fill with very long text
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/cross-browser.spec.ts:276:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-cce6a-ntent-without-layout-issues-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-cce6a-ntent-without-layout-issues-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cross-browser-Cross-Browse-cce6a-ntent-without-layout-issues-chromium/error-context.md
+
+  11) [chromium] › e2e/cross-browser.spec.ts:295:3 › Cross-Browser Compatibility › should maintain state across navigation 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      301 |     await navigateToSection(page, 'programs');
+      302 |     const createProgramButton = page.locator('button:has-text("Create")').first();
+    > 303 |     await createProgramButton.click();
+          |                               ^
+      304 |     await waitForModal(page);
+      305 |     await fillFormField(page, 'id', `state_test_${browserName}`);
+      306 |     await fillFormField(page, 'name', `State Test ${browserName}`);
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/cross-browser.spec.ts:303:31
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-aafea-ain-state-across-navigation-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-aafea-ain-state-across-navigation-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cross-browser-Cross-Browse-aafea-ain-state-across-navigation-chromium/error-context.md
+
+  12) [chromium] › e2e/cross-browser.spec.ts:322:3 › Cross-Browser Compatibility › should handle rapid clicks without errors 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      328 |     // Rapid clicks on create button
+      329 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 330 |     await createButton.click();
+          |                        ^
+      331 |     await createButton.click().catch(() => {}); // Ignore if fails
+      332 |     await createButton.click().catch(() => {}); // Ignore if fails
+      333 |
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/cross-browser.spec.ts:330:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-2ffc9-rapid-clicks-without-errors-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/cross-browser-Cross-Browse-2ffc9-rapid-clicks-without-errors-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cross-browser-Cross-Browse-2ffc9-rapid-clicks-without-errors-chromium/error-context.md
+
+  13) [chromium] › e2e/cross-browser.spec.ts:367:3 › Browser-Specific Features › should handle page refresh without data loss 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      372 |     await navigateToSection(page, 'programs');
+      373 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 374 |     await createButton.click();
+          |                        ^
+      375 |     await waitForModal(page);
+      376 |     await fillFormField(page, 'id', `refresh_test_${browserName}`);
+      377 |     await fillFormField(page, 'name', `Refresh Test ${browserName}`);
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/cross-browser.spec.ts:374:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/cross-browser-Browser-Spec-d251e-e-refresh-without-data-loss-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/cross-browser-Browser-Spec-d251e-e-refresh-without-data-loss-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/cross-browser-Browser-Spec-d251e-e-refresh-without-data-loss-chromium/error-context.md
+
+  14) [chromium] › e2e/dependency-warnings.spec.ts:34:3 › Dependency Warning Flow › should show dependency warning when deleting program used by form › Create program 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create Program"), [data-testid="Create Program"]').first()[22m
+
+
+       at fixtures/test-helpers.ts:93
+
+      91 | export async function clickButton(page: Page, textOrTestId: string) {
+      92 |   const button = page.locator(`button:has-text("${textOrTestId}"), [data-testid="${textOrTestId}"]`).first();
+    > 93 |   await button.click();
+         |                ^
+      94 |   await page.waitForLoadState('networkidle');
+      95 | }
+      96 |
+        at clickButton (/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/fixtures/test-helpers.ts:93:16)
+        at createProgram (/Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/fixtures/test-helpers.ts:177:9)
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/dependency-warnings.spec.ts:37:7
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/dependency-warnings.spec.ts:36:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/dependency-warnings-Depend-840ec-leting-program-used-by-form-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/dependency-warnings-Depend-840ec-leting-program-used-by-form-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/dependency-warnings-Depend-840ec-leting-program-used-by-form-chromium/error-context.md
+
+  15) [chromium] › e2e/dependency-warnings.spec.ts:202:3 › Dependency Warning Flow › should show dependency warning when deleting form used by CTA 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      204 |     await navigateToSection(page, 'forms');
+      205 |     const createFormButton = page.locator('button:has-text("Create")').first();
+    > 206 |     await createFormButton.click();
+          |                            ^
+      207 |     await waitForModal(page);
+      208 |     await fillFormField(page, 'id', 'cta_dependency_form');
+      209 |     await fillFormField(page, 'name', 'CTA Dependency Form');
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/dependency-warnings.spec.ts:206:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/dependency-warnings-Depend-24fdb-n-deleting-form-used-by-CTA-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/dependency-warnings-Depend-24fdb-n-deleting-form-used-by-CTA-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/dependency-warnings-Depend-24fdb-n-deleting-form-used-by-CTA-chromium/error-context.md
+
+  16) [chromium] › e2e/dependency-warnings.spec.ts:251:3 › Dependency Warning Flow › should show dependency warning when deleting CTA used by branch 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      253 |     await navigateToSection(page, 'ctas');
+      254 |     const createCtaButton = page.locator('button:has-text("Create")').first();
+    > 255 |     await createCtaButton.click();
+          |                           ^
+      256 |     await waitForModal(page);
+      257 |     await fillFormField(page, 'id', 'branch_dependency_cta');
+      258 |     await fillFormField(page, 'label', 'Branch Dependency CTA');
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/dependency-warnings.spec.ts:255:27
+
+    [31mTearing down "context" exceeded the test timeout of 60000ms.[39m
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/dependency-warnings-Depend-e60b1-deleting-CTA-used-by-branch-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/dependency-warnings-Depend-e60b1-deleting-CTA-used-by-branch-chromium/error-context.md
+
+  17) [chromium] › e2e/form-creation.spec.ts:39:3 › Complete Form Creation Flow › should create a complete form with program, fields, triggers, and deploy 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create"), button:has-text("Add Program"), button:has-text("New Program")').first()[22m
+
+
+      51 |       // Click Create Program button
+      52 |       const createButton = page.locator('button:has-text("Create"), button:has-text("Add Program"), button:has-text("New Program")').first();
+    > 53 |       await createButton.click();
+         |                          ^
+      54 |       await waitForModal(page);
+      55 |
+      56 |       // Fill program form
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/form-creation.spec.ts:53:26
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/form-creation.spec.ts:47:5
+
+    [31mTearing down "context" exceeded the test timeout of 60000ms.[39m
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/form-creation-Complete-For-478ec--fields-triggers-and-deploy-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/form-creation-Complete-For-478ec--fields-triggers-and-deploy-chromium/error-context.md
+
+  18) [chromium] › e2e/form-creation.spec.ts:243:3 › Complete Form Creation Flow › should persist form data across navigation 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create"), button:has-text("Add Form")').first()[22m
+
+
+      247 |
+      248 |     const createButton = page.locator('button:has-text("Create"), button:has-text("Add Form")').first();
+    > 249 |     await createButton.click();
+          |                        ^
+      250 |     await waitForModal(page);
+      251 |
+      252 |     await fillFormField(page, 'id', 'test_persistence_form');
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/form-creation.spec.ts:249:24
+
+    [31mTearing down "context" exceeded the test timeout of 60000ms.[39m
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/form-creation-Complete-For-aabd6-form-data-across-navigation-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/form-creation-Complete-For-aabd6-form-data-across-navigation-chromium/error-context.md
+
+  19) [chromium] › e2e/form-creation.spec.ts:271:3 › Complete Form Creation Flow › should validate required fields before submission 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create"), button:has-text("Add Form")').first()[22m
+
+
+      274 |
+      275 |     const createButton = page.locator('button:has-text("Create"), button:has-text("Add Form")').first();
+    > 276 |     await createButton.click();
+          |                        ^
+      277 |     await waitForModal(page);
+      278 |
+      279 |     // Try to save without filling required fields
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/form-creation.spec.ts:276:24
+
+    [31mTearing down "context" exceeded the test timeout of 60000ms.[39m
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/form-creation-Complete-For-6dbf3-ed-fields-before-submission-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/form-creation-Complete-For-6dbf3-ed-fields-before-submission-chromium/error-context.md
+
+  20) [chromium] › e2e/validation.spec.ts:35:3 › Validation Error Blocking Deployment › should block deployment when CTA has start_form action without formId 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      38 |       await navigateToSection(page, 'forms');
+      39 |       const createButton = page.locator('button:has-text("Create")').first();
+    > 40 |       await createButton.click();
+         |                          ^
+      41 |       await waitForModal(page);
+      42 |       await fillFormField(page, 'id', 'validation_test_form');
+      43 |       await fillFormField(page, 'name', 'Validation Test Form');
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/validation.spec.ts:40:26
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/validation.spec.ts:37:5
+
+    [31mTearing down "context" exceeded the test timeout of 60000ms.[39m
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/validation-Validation-Erro-9ebf2--form-action-without-formId-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/validation-Validation-Erro-9ebf2--form-action-without-formId-chromium/error-context.md
+
+  21) [chromium] › e2e/validation.spec.ts:199:3 › Validation Error Blocking Deployment › should show validation errors for duplicate IDs 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      201 |     await navigateToSection(page, 'programs');
+      202 |     let createButton = page.locator('button:has-text("Create")').first();
+    > 203 |     await createButton.click();
+          |                        ^
+      204 |     await waitForModal(page);
+      205 |     await fillFormField(page, 'id', 'duplicate_id_test');
+      206 |     await fillFormField(page, 'name', 'First Program');
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/validation.spec.ts:203:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/validation-Validation-Erro-3f82b-on-errors-for-duplicate-IDs-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/validation-Validation-Erro-3f82b-on-errors-for-duplicate-IDs-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/validation-Validation-Erro-3f82b-on-errors-for-duplicate-IDs-chromium/error-context.md
+
+  22) [chromium] › e2e/validation.spec.ts:223:3 › Validation Error Blocking Deployment › should show validation errors for missing required fields 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      224 |     await navigateToSection(page, 'forms');
+      225 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 226 |     await createButton.click();
+          |                        ^
+      227 |     await waitForModal(page);
+      228 |
+      229 |     // Try to save without filling any fields
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/validation.spec.ts:226:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/validation-Validation-Erro-3afb4-for-missing-required-fields-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/validation-Validation-Erro-3afb4-for-missing-required-fields-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/validation-Validation-Erro-3afb4-for-missing-required-fields-chromium/error-context.md
+
+  23) [chromium] › e2e/validation.spec.ts:237:3 › Validation Error Blocking Deployment › should validate on blur for individual fields 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      238 |     await navigateToSection(page, 'forms');
+      239 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 240 |     await createButton.click();
+          |                        ^
+      241 |     await waitForModal(page);
+      242 |
+      243 |     // Focus and blur a required field without entering data
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/validation.spec.ts:240:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/validation-Validation-Erro-40a7c--blur-for-individual-fields-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/validation-Validation-Erro-40a7c--blur-for-individual-fields-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/validation-Validation-Erro-40a7c--blur-for-individual-fields-chromium/error-context.md
+
+  24) [chromium] › e2e/validation.spec.ts:257:3 › Validation Error Blocking Deployment › should clear validation errors after fixing issues 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Create")').first()[22m
+
+
+      258 |     await navigateToSection(page, 'forms');
+      259 |     const createButton = page.locator('button:has-text("Create")').first();
+    > 260 |     await createButton.click();
+          |                        ^
+      261 |     await waitForModal(page);
+      262 |
+      263 |     // Try to save without data
+        at /Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/validation.spec.ts:260:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/validation-Validation-Erro-a3565--errors-after-fixing-issues-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/validation-Validation-Erro-a3565--errors-after-fixing-issues-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/validation-Validation-Erro-a3565--errors-after-fixing-issues-chromium/error-context.md
+
+  24 failed
+    [chromium] › e2e/branch-editor.spec.ts:43:3 › CTA Creation & Branch Assignment › should create CTAs, assign to branch, validate and deploy 
+    [chromium] › e2e/branch-editor.spec.ts:226:3 › CTA Creation & Branch Assignment › should display CTA preview in branch editor 
+    [chromium] › e2e/branch-editor.spec.ts:265:3 › CTA Creation & Branch Assignment › should allow editing CTA assignments in branch 
+    [chromium] › e2e/cross-browser.spec.ts:40:3 › Cross-Browser Compatibility › should successfully create and deploy a form 
+    [chromium] › e2e/cross-browser.spec.ts:77:3 › Cross-Browser Compatibility › should successfully edit an existing form 
+    [chromium] › e2e/cross-browser.spec.ts:118:3 › Cross-Browser Compatibility › should successfully create and deploy a CTA 
+    [chromium] › e2e/cross-browser.spec.ts:184:3 › Cross-Browser Compatibility › should handle modals correctly 
+    [chromium] › e2e/cross-browser.spec.ts:219:3 › Cross-Browser Compatibility › should handle form validation consistently 
+    [chromium] › e2e/cross-browser.spec.ts:245:3 › Cross-Browser Compatibility › should support keyboard navigation 
+    [chromium] › e2e/cross-browser.spec.ts:269:3 › Cross-Browser Compatibility › should handle long content without layout issues 
+    [chromium] › e2e/cross-browser.spec.ts:295:3 › Cross-Browser Compatibility › should maintain state across navigation 
+    [chromium] › e2e/cross-browser.spec.ts:322:3 › Cross-Browser Compatibility › should handle rapid clicks without errors 
+    [chromium] › e2e/cross-browser.spec.ts:367:3 › Browser-Specific Features › should handle page refresh without data loss 
+    [chromium] › e2e/dependency-warnings.spec.ts:34:3 › Dependency Warning Flow › should show dependency warning when deleting program used by form 
+    [chromium] › e2e/dependency-warnings.spec.ts:202:3 › Dependency Warning Flow › should show dependency warning when deleting form used by CTA 
+    [chromium] › e2e/dependency-warnings.spec.ts:251:3 › Dependency Warning Flow › should show dependency warning when deleting CTA used by branch 
+    [chromium] › e2e/form-creation.spec.ts:39:3 › Complete Form Creation Flow › should create a complete form with program, fields, triggers, and deploy 
+    [chromium] › e2e/form-creation.spec.ts:243:3 › Complete Form Creation Flow › should persist form data across navigation 
+    [chromium] › e2e/form-creation.spec.ts:271:3 › Complete Form Creation Flow › should validate required fields before submission 
+    [chromium] › e2e/validation.spec.ts:35:3 › Validation Error Blocking Deployment › should block deployment when CTA has start_form action without formId 
+    [chromium] › e2e/validation.spec.ts:199:3 › Validation Error Blocking Deployment › should show validation errors for duplicate IDs 
+    [chromium] › e2e/validation.spec.ts:223:3 › Validation Error Blocking Deployment › should show validation errors for missing required fields 
+    [chromium] › e2e/validation.spec.ts:237:3 › Validation Error Blocking Deployment › should validate on blur for individual fields 
+    [chromium] › e2e/validation.spec.ts:257:3 › Validation Error Blocking Deployment › should clear validation errors after fixing issues 
+  3 passed (39.4m)
+
+[36m  Serving HTML report at http://localhost:51159. Press Ctrl+C to quit.[39m

@@ -1,0 +1,427 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - list
+    - generic:
+      - banner:
+        - generic:
+          - generic:
+            - heading [level=1]:
+              - generic: 🎨
+              - generic: Picasso Config Builder
+            - generic: MYR384719
+          - generic:
+            - generic:
+              - button:
+                - generic:
+                  - generic:
+                    - img
+                  - text: 16 Errors, 10 Warnings
+            - generic:
+              - img
+              - generic:
+                - combobox:
+                  - generic: Atlanta Angels
+                  - img
+              - img
+            - button:
+              - img
+              - generic: Preview
+            - button [disabled]:
+              - img
+              - generic: Save
+            - generic:
+              - button [disabled]:
+                - img
+                - text: Deploy
+              - generic: "16"
+      - generic:
+        - complementary:
+          - generic:
+            - generic: Navigation
+            - button:
+              - img
+          - navigation:
+            - link:
+              - /url: /
+              - img
+              - generic: Home
+            - link:
+              - /url: /programs
+              - img
+              - generic: Programs
+            - link:
+              - /url: /forms
+              - img
+              - generic: Forms
+            - link:
+              - /url: /ctas
+              - img
+              - generic: CTAs
+            - link:
+              - /url: /branches
+              - img
+              - generic: Branches
+            - link:
+              - /url: /cards
+              - img
+              - generic: Showcase Items
+            - link:
+              - /url: /settings
+              - img
+              - generic: Settings
+          - generic:
+            - generic:
+              - generic: "16"
+              - generic: errors
+        - main:
+          - generic:
+            - navigation:
+              - link:
+                - /url: /
+                - img
+                - generic: Home
+              - img
+              - generic: Programs
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=1]: Programs
+                  - paragraph: Define organizational programs that forms can be assigned to
+                - button:
+                  - img
+                  - text: Create Program
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - heading [level=3]: Love Box
+                        - paragraph:
+                          - code: love_box
+                  - generic:
+                    - generic:
+                      - paragraph: Love Box program for providing care packages
+                  - generic:
+                    - button:
+                      - img
+                      - text: Edit
+                    - button:
+                      - img
+                      - text: Delete
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - button:
+                - generic:
+                  - img
+                - generic:
+                  - heading [level=3]:
+                    - img
+                    - text: Validation Results
+                - generic:
+                  - generic: 16 Errors
+                  - generic: 10 Warnings
+              - button:
+                - img
+          - generic:
+            - generic:
+              - generic:
+                - button:
+                  - generic:
+                    - img
+                    - generic: Global
+                    - generic:
+                      - generic: 16 errors
+                      - generic: 10 warnings
+                - generic:
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: lovebox_application
+                          - generic: "❌ Program reference is required → Fix: Select a program from the dropdown or create one first"
+                          - generic: "Field: program"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: daretodream_application
+                          - generic: "❌ Program reference is required → Fix: Select a program from the dropdown or create one first"
+                          - generic: "Field: program"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: lovebox_apply
+                          - generic: "❌ Referenced form \"lb_apply\" does not exist → Fix: Select an existing form or create the form first"
+                          - generic: "Field: formId"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: daretodream_apply
+                          - generic: "❌ Referenced form \"dd_apply\" does not exist → Fix: Select an existing form or create the form first"
+                          - generic: "Field: formId"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: view_requirements
+                          - generic: "❌ Prompt is required when action is \"show_info\" → Fix: Enter what information should be shown to the user"
+                          - generic: "Field: prompt"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: lovebox_info
+                          - generic: "❌ Prompt is required when action is \"show_info\" → Fix: Enter what information should be shown to the user"
+                          - generic: "Field: prompt"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: daretodream_info
+                          - generic: "❌ Prompt is required when action is \"show_info\" → Fix: Enter what information should be shown to the user"
+                          - generic: "Field: prompt"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: view_programs
+                          - generic: "❌ Prompt is required when action is \"show_info\" → Fix: Enter what information should be shown to the user"
+                          - generic: "Field: prompt"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: check_eligibility
+                          - generic: "❌ Referenced form \"eligibility_check\" does not exist → Fix: Select an existing form or create the form first"
+                          - generic: "Field: formId"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: daretodream_discussion
+                          - generic: "❌ Secondary CTA 1 \"learn_more\" does not exist → Fix: Remove this CTA or select an existing one"
+                          - generic: "Field: available_ctas.secondary[0]"
+                        - img
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: daretodream_discussion
+                          - generic: "ℹ️ Broader topics should have higher priority (sorted first), specific programs should have lower priority → Tip: Priority controls which branch triggers when keywords match multiple branches"
+                          - generic: "Field: detection_keywords"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: form-lovebox_application
+                          - generic: "❌ Program reference is required → Fix: Select a program from the dropdown or create one first"
+                          - generic: "Field: program"
+                        - img
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: form-lovebox_application
+                          - generic: "⚠️ Form should have a program assigned for proper filtering after completion → Fix: Assign this form to a program to enable program-specific filtering"
+                          - generic: "Field: program"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: form-daretodream_application
+                          - generic: "❌ Program reference is required → Fix: Select a program from the dropdown or create one first"
+                          - generic: "Field: program"
+                        - img
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: form-daretodream_application
+                          - generic: "⚠️ Form should have a program assigned for proper filtering after completion → Fix: Assign this form to a program to enable program-specific filtering"
+                          - generic: "Field: program"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: cta-lovebox_apply
+                          - generic: "❌ Referenced form \"lb_apply\" does not exist → Fix: Select an existing form or create the form first"
+                          - generic: "Field: formId"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: cta-daretodream_apply
+                          - generic: "❌ Referenced form \"dd_apply\" does not exist → Fix: Select an existing form or create the form first"
+                          - generic: "Field: formId"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: cta-check_eligibility
+                          - generic: "❌ Referenced form \"eligibility_check\" does not exist → Fix: Select an existing form or create the form first"
+                          - generic: "Field: formId"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: branch-daretodream_discussion
+                          - generic: "❌ Secondary CTA 1 \"learn_more\" does not exist → Fix: Remove this CTA or select an existing one"
+                          - generic: "Field: available_ctas.secondary[0]"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: lovebox_discussion
+                          - generic: "ℹ️ Broader topics should have higher priority (sorted first), specific programs should have lower priority → Tip: Priority controls which branch triggers when keywords match multiple branches"
+                          - generic: "Field: detection_keywords"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: program_exploration
+                          - generic: "⚠️ Keywords contain question words. Detection keywords should match anticipated Bedrock responses, not user queries → Fix: Use topic words instead (e.g., \"volunteer opportunities\" not \"how to volunteer\")"
+                          - generic: "Field: detection_keywords"
+                        - img
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: program_exploration
+                          - generic: "ℹ️ Broader topics should have higher priority (sorted first), specific programs should have lower priority → Tip: Priority controls which branch triggers when keywords match multiple branches"
+                          - generic: "Field: detection_keywords"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: requirements_discussion
+                          - generic: "ℹ️ Broader topics should have higher priority (sorted first), specific programs should have lower priority → Tip: Priority controls which branch triggers when keywords match multiple branches"
+                          - generic: "Field: detection_keywords"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: volunteer_interest
+                          - generic: "ℹ️ Broader topics should have higher priority (sorted first), specific programs should have lower priority → Tip: Priority controls which branch triggers when keywords match multiple branches"
+                          - generic: "Field: detection_keywords"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: program-love_box
+                          - generic: "ℹ️ Orphaned Program \"love_box\" is not referenced by any other entity → Suggestion: Either use this in a CTA/branch or delete it if unused"
+                        - img
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - generic: cta-view_programs
+                          - generic: "ℹ️ Orphaned CTA \"view_programs\" is not referenced by any other entity → Suggestion: Either use this in a CTA/branch or delete it if unused"
+                        - img
+  - dialog "Create Program" [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - heading "Create Program" [level=2] [ref=e7]
+          - paragraph [ref=e8]: Define a new program.
+        - generic [ref=e9]: ⌘S
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: Program ID*
+          - textbox "Program ID*" [ref=e14]:
+            - /placeholder: e.g., volunteer_program
+            - text: dare_to_dream
+          - paragraph [ref=e15]: Lowercase letters, numbers, and underscores only
+        - generic [ref=e16]:
+          - generic [ref=e17]: Program Name*
+          - textbox "Program Name*" [ref=e19]:
+            - /placeholder: e.g., Volunteer Programs
+            - text: Dare to Dream
+          - paragraph [ref=e20]: Display name shown to users
+        - generic [ref=e21]:
+          - generic [ref=e22]: Description
+          - textbox "Description" [active] [ref=e25]:
+            - /placeholder: Optional description of this program...
+            - text: Dare to Dream mentorship program
+          - paragraph [ref=e26]: Max 500 characters
+      - generic [ref=e28]:
+        - button "Cancel" [ref=e29] [cursor=pointer]
+        - button "Create Program" [ref=e30] [cursor=pointer]
+    - button "Close" [ref=e31] [cursor=pointer]:
+      - img [ref=e32]
+      - generic [ref=e35]: Close
+```
