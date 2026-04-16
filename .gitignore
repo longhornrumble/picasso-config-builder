@@ -75,6 +75,9 @@ e2e/screenshots/
 e2e/test-output*.log
 e2e/*.log
 
+# Playwright auth state (Clerk session persisted by global-setup)
+playwright/.auth/
+
 # Environment files (deployment-specific)
 .env.deployment
 .env.production

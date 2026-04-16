@@ -9,9 +9,11 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
 
-  // NOTE: Removed global setup/teardown - using real S3 via local dev server instead of mock
-  // globalSetup: './playwright.global-setup.ts',
-  // globalTeardown: './playwright.global-teardown.ts',
+  // Global setup signs the E2E test user into Clerk once and persists the
+  // session to playwright/.auth/user.json. Every test loads that storage
+  // state (see `use.storageState` below) and starts out signed in as a
+  // real Clerk user — no auth bypass.
+  globalSetup: './playwright.global-setup.ts',
 
   // Maximum time one test can run for
   timeout: 60 * 1000,
@@ -39,6 +41,11 @@ export default defineConfig({
   use: {
     // Base URL to use in actions like `await page.goto('/')`
     baseURL: 'http://localhost:3000',
+
+    // Load Clerk session written by playwright.global-setup.ts so every test
+    // starts signed in. If the file doesn't exist (e.g. running a single test
+    // without globalSetup), tests will see the Clerk sign-in gate and fail.
+    storageState: 'playwright/.auth/user.json',
 
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',
