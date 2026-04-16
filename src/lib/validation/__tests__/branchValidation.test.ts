@@ -1,6 +1,13 @@
 /**
  * Branch Validation Tests
  * Comprehensive tests for branch validation rules
+ *
+ * Note: This suite was aligned with the current branchValidation.ts after the
+ * V4 routing changes removed several rules (keyword-required, question-word
+ * warnings, cross-branch overlap detection, and priority suggestions). The
+ * current validator only checks CTA references and the max-CTAs-per-response
+ * cap. Tests for removed rules have been updated to assert the new behavior
+ * rather than resurrect deleted logic.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -19,97 +26,18 @@ describe('Branch Validation', () => {
   const allCTAs = { 'test-cta': mockCTA };
 
   describe('keyword validation', () => {
-    it('should require at least one keyword', () => {
+    it('should allow branches without keywords (V4 routing no longer requires them)', () => {
       const branch: ConversationBranch = {
-        detection_keywords: [], // No keywords
+        detection_keywords: [],
         available_ctas: {
           primary: 'test-cta',
           secondary: [],
         },
       };
 
-      const result = validateBranch(branch, 'test-branch', allCTAs, {});
-      expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.message.includes('keyword'))).toBe(true);
-    });
-
-    it('should warn about question words in keywords', () => {
-      const questionKeywords = [
-        'how do I apply',
-        'what is this program',
-        'when can I apply',
-        'where do I go',
-        'why should I apply',
-      ];
-
-      questionKeywords.forEach((keyword) => {
-        const branch: ConversationBranch = {
-          detection_keywords: [keyword],
-          available_ctas: {
-            primary: 'test-cta',
-            secondary: [],
-          },
-        };
-
-        const result = validateBranch(branch, 'test-branch', allCTAs, {});
-        expect(result.valid).toBe(true);
-        expect(result.warnings.some((w) => w.message.includes('question words'))).toBe(true);
-      });
-    });
-
-    it('should warn about keyword overlap with other branches', () => {
-      const branch1: ConversationBranch = {
-        detection_keywords: ['housing', 'rental', 'assistance', 'affordable'],
-        available_ctas: {
-          primary: 'test-cta',
-          secondary: [],
-        },
-      };
-
-      const branch2: ConversationBranch = {
-        detection_keywords: ['housing', 'rental', 'application'],
-        available_ctas: {
-          primary: 'test-cta',
-          secondary: [],
-        },
-      };
-
-      const allBranches = {
-        'branch-1': branch1,
-        'branch-2': branch2,
-      };
-
-      const result = validateBranch(branch2, 'branch-2', allCTAs, allBranches);
+      const result = validateBranch(branch, 'test-branch', allCTAs);
       expect(result.valid).toBe(true);
-      expect(result.warnings.some((w) => w.message.includes('overlap'))).toBe(true);
-    });
-
-    it('should not warn about minor keyword overlap', () => {
-      const branch1: ConversationBranch = {
-        detection_keywords: ['housing', 'rental', 'assistance', 'affordable'],
-        available_ctas: {
-          primary: 'test-cta',
-          secondary: [],
-        },
-      };
-
-      const branch2: ConversationBranch = {
-        detection_keywords: ['medical', 'healthcare', 'clinic', 'doctor'],
-        available_ctas: {
-          primary: 'test-cta',
-          secondary: [],
-        },
-      };
-
-      const allBranches = {
-        'branch-1': branch1,
-        'branch-2': branch2,
-      };
-
-      const result = validateBranch(branch2, 'branch-2', allCTAs, allBranches);
-      expect(result.valid).toBe(true);
-      const overlapWarnings = result.warnings.filter((w) => w.message.includes('overlap'));
-      expect(overlapWarnings).toHaveLength(0);
+      expect(result.errors.some((e) => e.message.toLowerCase().includes('keyword'))).toBe(false);
     });
   });
 
@@ -123,7 +51,7 @@ describe('Branch Validation', () => {
         },
       };
 
-      const result = validateBranch(branch, 'test-branch', allCTAs, {});
+      const result = validateBranch(branch, 'test-branch', allCTAs);
       expect(result.valid).toBe(false);
       expect(result.errors.some((e) => e.message.includes('primary CTA'))).toBe(true);
     });
@@ -137,7 +65,7 @@ describe('Branch Validation', () => {
         },
       };
 
-      const result = validateBranch(branch, 'test-branch', allCTAs, {});
+      const result = validateBranch(branch, 'test-branch', allCTAs);
       expect(result.valid).toBe(false);
       expect(result.errors.some((e) => e.message.includes('does not exist'))).toBe(true);
     });
@@ -151,9 +79,10 @@ describe('Branch Validation', () => {
         },
       };
 
-      const result = validateBranch(branch, 'test-branch', allCTAs, {});
+      const result = validateBranch(branch, 'test-branch', allCTAs);
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.message.includes('secondary'))).toBe(true);
+      // Current message is "Secondary CTA <n> \"<id>\" does not exist" — match case-insensitively.
+      expect(result.errors.some((e) => e.message.toLowerCase().includes('secondary'))).toBe(true);
     });
 
     it('should validate successfully with valid CTAs', () => {
@@ -176,14 +105,13 @@ describe('Branch Validation', () => {
       const result = validateBranch(
         branch,
         'test-branch',
-        { 'test-cta': mockCTA, 'secondary-cta': secondaryCTA },
-        {}
+        { 'test-cta': mockCTA, 'secondary-cta': secondaryCTA }
       );
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should warn if more than 3 total CTAs', () => {
+    it('should warn if total CTAs exceed the per-response cap', () => {
       const branch: ConversationBranch = {
         detection_keywords: ['test'],
         available_ctas: {
@@ -199,30 +127,16 @@ describe('Branch Validation', () => {
         'cta-3': mockCTA,
       };
 
-      const result = validateBranch(branch, 'test-branch', ctas, {});
+      // Pass an explicit cap of 3 so 4 total triggers the warning. The current
+      // signature takes maxCtasPerResponse (number) rather than allBranches.
+      const result = validateBranch(branch, 'test-branch', ctas, 3);
       expect(result.valid).toBe(true);
-      expect(result.warnings.some((w) => w.message.includes('too many'))).toBe(true);
-    });
-  });
-
-  describe('quality validation', () => {
-    it('should provide priority suggestion', () => {
-      const branch: ConversationBranch = {
-        detection_keywords: ['housing'],
-        available_ctas: {
-          primary: 'test-cta',
-          secondary: [],
-        },
-      };
-
-      const result = validateBranch(branch, 'test-branch', allCTAs, {});
-      expect(result.valid).toBe(true);
-      expect(result.warnings.some((w) => w.message.includes('priority'))).toBe(true);
+      expect(result.warnings.some((w) => w.message.toLowerCase().includes('too many'))).toBe(true);
     });
   });
 
   describe('bulk branch validation', () => {
-    it('should validate all branches', () => {
+    it('should validate all branches and surface errors from any invalid one', () => {
       const branches: Record<string, ConversationBranch> = {
         'branch-1': {
           detection_keywords: ['housing'],
@@ -232,9 +146,9 @@ describe('Branch Validation', () => {
           },
         },
         'branch-2': {
-          detection_keywords: [], // Invalid
+          detection_keywords: ['help'],
           available_ctas: {
-            primary: 'test-cta',
+            primary: '', // Invalid — missing primary CTA
             secondary: [],
           },
         },
@@ -248,16 +162,16 @@ describe('Branch Validation', () => {
     it('should collect all errors from multiple branches', () => {
       const branches: Record<string, ConversationBranch> = {
         'branch-1': {
-          detection_keywords: [],
+          detection_keywords: ['a'],
           available_ctas: {
-            primary: '',
+            primary: '', // missing primary
             secondary: [],
           },
         },
         'branch-2': {
           detection_keywords: ['test'],
           available_ctas: {
-            primary: 'nonexistent-cta',
+            primary: 'nonexistent-cta', // missing reference
             secondary: [],
           },
         },

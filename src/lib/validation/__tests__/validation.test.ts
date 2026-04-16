@@ -120,14 +120,17 @@ describe('Validation Engine', () => {
       expect(result.errors.some((e) => e.message.includes('does not exist'))).toBe(true);
     });
 
-    it('should warn about missing trigger phrases', () => {
+    // Note: trigger phrase warnings were removed when forms moved to explicit
+    // CTA routing. A form with empty trigger_phrases should validate cleanly
+    // with no warnings about trigger phrases.
+    it('should not warn about empty trigger_phrases (feature removed)', () => {
       const form: ConversationalForm = {
         enabled: true,
         form_id: 'test-form',
         program: 'test-program',
         title: 'Test Form',
         description: 'Test description',
-        trigger_phrases: [], // No trigger phrases
+        trigger_phrases: [],
         fields: [
           {
             id: 'name',
@@ -142,8 +145,7 @@ describe('Validation Engine', () => {
       const result = validateForm(form, 'test-form', { 'test-program': testProgram });
 
       expect(result.valid).toBe(true);
-      expect(result.warnings).toHaveLength(1);
-      expect(result.warnings[0].message).toContain('trigger phrases');
+      expect(result.warnings.filter((w) => w.message.toLowerCase().includes('trigger'))).toHaveLength(0);
     });
   });
 
@@ -156,19 +158,21 @@ describe('Validation Engine', () => {
       style: 'primary',
     };
 
-    it('should require at least one keyword', () => {
+    // Note: `detection_keywords` and `question words` rules were removed when
+    // V4 routing moved CTA selection to the LLM-based action selector. A
+    // branch with empty keywords is now valid; question-word content is no
+    // longer inspected. The primary-CTA check remains.
+    it('should allow branches without keywords (feature removed)', () => {
       const branch: ConversationBranch = {
-        detection_keywords: [], // No keywords
+        detection_keywords: [],
         available_ctas: {
           primary: 'test-cta',
           secondary: [],
         },
       };
 
-      const result = validateBranch(branch, 'test-branch', { 'test-cta': testCTA }, {});
-
-      expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.message.includes('keyword'))).toBe(true);
+      const result = validateBranch(branch, 'test-branch', { 'test-cta': testCTA });
+      expect(result.valid).toBe(true);
     });
 
     it('should require primary CTA', () => {
@@ -180,25 +184,10 @@ describe('Validation Engine', () => {
         },
       };
 
-      const result = validateBranch(branch, 'test-branch', { 'test-cta': testCTA }, {});
+      const result = validateBranch(branch, 'test-branch', { 'test-cta': testCTA });
 
       expect(result.valid).toBe(false);
       expect(result.errors.some((e) => e.message.includes('primary CTA'))).toBe(true);
-    });
-
-    it('should warn about question words in keywords', () => {
-      const branch: ConversationBranch = {
-        detection_keywords: ['how do I apply', 'what is this'],
-        available_ctas: {
-          primary: 'test-cta',
-          secondary: [],
-        },
-      };
-
-      const result = validateBranch(branch, 'test-branch', { 'test-cta': testCTA }, {});
-
-      expect(result.valid).toBe(true);
-      expect(result.warnings.some((w) => w.message.includes('question words'))).toBe(true);
     });
   });
 

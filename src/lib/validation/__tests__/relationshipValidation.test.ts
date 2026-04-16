@@ -215,7 +215,8 @@ describe('Relationship Validation', () => {
         branches
       );
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.message.includes('secondary'))).toBe(true);
+      // Message is "Secondary CTA ..." — match case-insensitively.
+      expect(result.errors.some((e) => e.message.toLowerCase().includes('secondary'))).toBe(true);
     });
 
     it('should validate valid branch → CTA relationship', () => {
@@ -233,8 +234,12 @@ describe('Relationship Validation', () => {
   });
 
   describe('circular dependency detection', () => {
-    it('should warn about trigger phrases matching confirmation messages', () => {
-      const formWithCircular: ConversationalForm = {
+    // Note: trigger-phrase-vs-confirmation-message circular detection was
+    // removed when forms moved to explicit CTA routing. The check in
+    // `detectCircularDependencies` is now a no-op. Both shapes below should
+    // validate cleanly without emitting a "circular" warning.
+    it('should not warn about trigger-phrase/confirmation overlap (feature removed)', () => {
+      const formWithOverlap: ConversationalForm = {
         ...mockForm,
         trigger_phrases: ['apply for housing'],
         post_submission: {
@@ -245,32 +250,14 @@ describe('Relationship Validation', () => {
 
       const result = validateRelationships(
         { 'test-program': mockProgram },
-        { 'test-form': formWithCircular },
+        { 'test-form': formWithOverlap },
         {},
         {}
       );
 
-      expect(result.warnings.some((w) => w.message.includes('circular'))).toBe(true);
-    });
-
-    it('should not warn about unrelated trigger phrases and confirmations', () => {
-      const formWithoutCircular: ConversationalForm = {
-        ...mockForm,
-        trigger_phrases: ['apply'],
-        post_submission: {
-          confirmation_message: 'Thank you for your submission!',
-          actions: [],
-        },
-      };
-
-      const result = validateRelationships(
-        { 'test-program': mockProgram },
-        { 'test-form': formWithoutCircular },
-        {},
-        {}
+      const circularWarnings = result.warnings.filter((w) =>
+        w.message.toLowerCase().includes('circular')
       );
-
-      const circularWarnings = result.warnings.filter((w) => w.message.includes('circular'));
       expect(circularWarnings).toHaveLength(0);
     });
   });
@@ -288,7 +275,7 @@ describe('Relationship Validation', () => {
       const forms = { 'test-form': mockForm };
 
       const result = validateRelationships(programs, forms, {}, {});
-      expect(result.warnings.some((w) => w.message.includes('orphaned'))).toBe(true);
+      expect(result.warnings.some((w) => w.message.toLowerCase().includes('orphaned'))).toBe(true);
       expect(result.warnings.some((w) => w.message.includes('unused-program'))).toBe(true);
     });
 
@@ -312,7 +299,7 @@ describe('Relationship Validation', () => {
         ctas,
         branches
       );
-      expect(result.warnings.some((w) => w.message.includes('orphaned'))).toBe(true);
+      expect(result.warnings.some((w) => w.message.toLowerCase().includes('orphaned'))).toBe(true);
       expect(result.warnings.some((w) => w.message.includes('unused-cta'))).toBe(true);
     });
 
@@ -324,7 +311,7 @@ describe('Relationship Validation', () => {
         { 'test-branch': mockBranch }
       );
 
-      const orphanedWarnings = result.warnings.filter((w) => w.message.includes('orphaned'));
+      const orphanedWarnings = result.warnings.filter((w) => w.message.toLowerCase().includes('orphaned'));
       expect(orphanedWarnings).toHaveLength(0);
     });
   });
