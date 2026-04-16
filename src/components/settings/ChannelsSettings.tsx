@@ -25,7 +25,7 @@ import type { ChannelConnection, ChannelsConfig } from '@/types/config';
 // Constants
 // ---------------------------------------------------------------------------
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.yourapi.com/api';
+const CHANNELS_API_URL = import.meta.env.VITE_CHANNELS_API_URL || 'https://qwxscz5w6lkzjmhcpyhewijize0jpzzx.lambda-url.us-east-1.on.aws';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -255,7 +255,7 @@ export const ChannelsSettings: React.FC = () => {
     try {
       const token = await getToken();
       const res = await fetch(
-        `${API_BASE_URL}/meta/oauth/url?tenant_id=${encodeURIComponent(tenantId)}`,
+        `${CHANNELS_API_URL}/meta/oauth/url?tenant_id=${encodeURIComponent(tenantId)}`,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
@@ -305,7 +305,7 @@ export const ChannelsSettings: React.FC = () => {
 
       try {
         const token = await getToken();
-        const res = await fetch(`${API_BASE_URL}/meta/channels/${encodeURIComponent(tenantId)}/toggle`, {
+        const res = await fetch(`${CHANNELS_API_URL}/meta/channels/${encodeURIComponent(tenantId)}/toggle`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -348,7 +348,7 @@ export const ChannelsSettings: React.FC = () => {
     try {
       const token = await getToken();
       const res = await fetch(
-        `${API_BASE_URL}/meta/channels/${encodeURIComponent(tenantId)}/disconnect`,
+        `${CHANNELS_API_URL}/meta/channels/${encodeURIComponent(tenantId)}/disconnect`,
         {
           method: 'POST',
           headers: {
