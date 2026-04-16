@@ -1,0 +1,12 @@
+
+> picasso-config-builder@0.1.0 test:e2e:chromium
+> playwright test --project=chromium
+
+TypeError: Module "file:///Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/fixtures/MYR384719-config.json" needs an import attribute of type "json"
+TypeError: Module "file:///Users/chrismiller/Desktop/Working_Folder/picasso-config-builder/e2e/fixtures/MYR384719-config.json" needs an import attribute of type "json"
+
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m
