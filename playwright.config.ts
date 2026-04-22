@@ -22,11 +22,14 @@ export default defineConfig({
   // Fail the build on CI if you accidentally left test.only in the source code
   forbidOnly: !!process.env.CI,
 
-  // Retry on CI only
-  retries: process.env.CI ? 2 : 0,
+  // No retries — we want the real pass/fail signal. Retries mask
+  // flakes that should be fixed, and triple the runtime of every
+  // failing test (which blew the CI timeout previously).
+  retries: 0,
 
-  // Opt out of parallel tests on CI
-  workers: process.env.CI ? 1 : undefined,
+  // Parallelize on CI. 3 workers × 33 specs × 60s worst-case = ~11 min,
+  // comfortably inside the 20-min job budget.
+  workers: process.env.CI ? 3 : undefined,
 
   // Reporter to use
   reporter: [
