@@ -13,6 +13,7 @@ import type {
   SaveConfigResponse,
   TenantMetadata,
 } from '@/types/api';
+import type { Proposal } from '@/types/proposals';
 
 // Get API URL from environment
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.yourapi.com/api';
@@ -384,6 +385,41 @@ export class ConfigAPIClient {
         maxRetries: 2,
       }
     );
+  }
+
+  /**
+   * List pending KB-freshness proposals for a tenant.
+   * Returns the proposals newest-first; empty array if none.
+   */
+  async listProposals(tenantId: string): Promise<Proposal[]> {
+    if (!tenantId || tenantId.trim() === '') {
+      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
+    }
+
+    return fetchWithRetry(async () => {
+      const response = await fetch(
+        `${this.baseUrl}/proposals?tenantId=${encodeURIComponent(tenantId)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(await this.getAuthHeaders()),
+          },
+        }
+      );
+
+      if (response.status === 401) {
+        this.handle401Response();
+        throw await parseHTTPError(response);
+      }
+
+      if (!response.ok) {
+        throw await parseHTTPError(response);
+      }
+
+      const data = await response.json();
+      return (data.proposals || []) as Proposal[];
+    });
   }
 
   /**
