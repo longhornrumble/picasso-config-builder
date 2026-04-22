@@ -155,6 +155,10 @@ export class ConfigAPIClient {
         throw new ConfigAPIError('INVALID_CONFIG', 'Response missing config field');
       }
 
+      // Prefer the ETag response header (wire-native), fall back to the
+      // body field for API Gateway deployments that strip ETag.
+      const etag = response.headers.get('ETag') || data.etag || undefined;
+
       return {
         config: data.config as TenantConfig,
         metadata: data.metadata || {
@@ -163,6 +167,7 @@ export class ConfigAPIClient {
           lastModified: Date.now(),
           configVersion: data.config.version || '1.0',
         },
+        etag,
       };
     });
   }
@@ -174,7 +179,7 @@ export class ConfigAPIClient {
   async saveConfig(
     tenantId: string,
     config: TenantConfig,
-    options: { createBackup?: boolean } = {}
+    options: { createBackup?: boolean; ifMatch?: string } = {}
   ): Promise<SaveConfigResponse> {
     if (!tenantId || tenantId.trim() === '') {
       throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
@@ -207,6 +212,7 @@ export class ConfigAPIClient {
           headers: {
             'Content-Type': 'application/json',
             ...(await this.getAuthHeaders()),
+            ...(options.ifMatch && { 'If-Match': options.ifMatch }),
           },
           body: JSON.stringify(requestBody),
         });
@@ -216,11 +222,34 @@ export class ConfigAPIClient {
           throw await parseHTTPError(response);
         }
 
+        // 409 Conflict means the server detected an ETag mismatch.
+        // Surface a typed error carrying the server's current config +
+        // etag so the UI can prompt the user to reload without losing
+        // their local edits.
+        if (response.status === 409) {
+          let details: unknown = undefined;
+          try {
+            details = await response.json();
+          } catch {
+            // ignore JSON parse failures; details stays undefined
+          }
+          throw new ConfigAPIError(
+            'VERSION_CONFLICT',
+            'This config was updated elsewhere while you were editing. Reload to apply your changes on top of the latest version.',
+            details,
+            409
+          );
+        }
+
         if (!response.ok) {
           throw await parseHTTPError(response);
         }
 
-        return response.json();
+        const data = await response.json();
+        // Attach the new ETag from the response header as a fallback
+        // for callers that need to chain another save.
+        const etag = response.headers.get('ETag') || data.etag || undefined;
+        return { ...data, etag } as SaveConfigResponse;
       },
       {
         maxRetries: 2, // Save operations get fewer retries

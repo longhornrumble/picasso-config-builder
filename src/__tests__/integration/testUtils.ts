@@ -214,12 +214,13 @@ export function createMockS3API() {
           version: config.version,
           lastModified: config.generated_at,
         },
+        etag: `"mock-etag-${tenantId}-${config.generated_at}"`,
       });
     }),
 
     saveConfig: vi.fn((tenantId: string, config: TenantConfig) => {
       mockConfigs.set(tenantId, config);
-      return Promise.resolve();
+      return Promise.resolve({ etag: `"mock-etag-${tenantId}-${Date.now()}"` });
     }),
 
     deployConfig: vi.fn((tenantId: string, config: TenantConfig) => {

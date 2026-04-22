@@ -7,6 +7,7 @@ export { Header } from './Header';
 export { Sidebar } from './Sidebar';
 export { MainContent } from './MainContent';
 export { Breadcrumbs } from './Breadcrumbs';
+export { ConflictBanner } from './ConflictBanner';
 export { ValidationPanel } from './ValidationPanel';
 export { ValidationSummary } from './ValidationSummary';
 export { EntityValidationBadge } from './EntityValidationBadge';

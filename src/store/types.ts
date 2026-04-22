@@ -234,12 +234,34 @@ export interface ValidationSlice {
 // CONFIG SLICE
 // ============================================================================
 
+/**
+ * State tracked when the server rejects a save with 409 Conflict
+ * because another writer modified the config since the current user
+ * loaded it. The UI reads this to show the reload banner.
+ */
+export interface ConfigConflictState {
+  currentConfig: TenantConfig | null;
+  currentETag: string | null;
+}
+
 export interface ConfigSlice {
   // Loaded config state
   tenantId: string | null;
   baseConfig: TenantConfig | null;
+  /**
+   * S3 ETag of baseConfig. Sent as If-Match on saves to detect
+   * concurrent modifications. Null between tenant switches.
+   */
+  etag: string | null;
   isDirty: boolean;
   lastSaved: number | null;
+
+  /**
+   * Non-null when the last save hit a 409 Conflict. UI should render
+   * a reload banner. Cleared on successful reload + re-save or by
+   * the user dismissing the banner.
+   */
+  conflictState: ConfigConflictState | null;
 
   // Draft state
   isDraft: boolean;
@@ -252,6 +274,7 @@ export interface ConfigSlice {
   deployConfig: () => Promise<void>;
   resetConfig: () => void;
   clearTenant: () => void;
+  clearConflict: () => void;
   markDirty: () => void;
   markClean: () => void;
 

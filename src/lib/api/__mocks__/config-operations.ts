@@ -89,11 +89,14 @@ export const mockLoadConfig = async (tenantId: string): Promise<LoadConfigRespon
       ...mockMetadata,
       tenantId,
     },
+    etag: '"mock-etag"',
   };
 };
 
-export const mockSaveConfig = async (): Promise<void> => {
-  // Mock successful save
+export const mockSaveConfig = async (): Promise<{ etag?: string }> => {
+  // Mock successful save — return a synthetic etag so store state can
+  // refresh its optimistic-concurrency token after the write.
+  return { etag: '"mock-etag"' };
 };
 
 export const mockDeployConfig = async (): Promise<void> => {

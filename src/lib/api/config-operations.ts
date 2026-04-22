@@ -72,8 +72,8 @@ export async function loadConfig(tenantId: string): Promise<LoadConfigResponse> 
 export async function saveConfig(
   tenantId: string,
   config: TenantConfig,
-  options: { createBackup?: boolean } = {}
-): Promise<void> {
+  options: { createBackup?: boolean; ifMatch?: string } = {}
+): Promise<{ etag?: string }> {
   try {
     if (!tenantId || tenantId.trim() === '') {
       throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID is required');
@@ -91,7 +91,8 @@ export async function saveConfig(
       version: incrementVersion(config.version),
     };
 
-    await configApiClient.saveConfig(tenantId, updatedConfig, options);
+    const result = await configApiClient.saveConfig(tenantId, updatedConfig, options);
+    return { etag: result.etag };
   } catch (error) {
     throw handleAPIError(error);
   }
