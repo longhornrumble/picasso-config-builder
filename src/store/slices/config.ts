@@ -7,13 +7,17 @@ import type { TenantConfig } from '@/types/config';
 import type { SliceCreator, ConfigSlice } from '../types';
 import * as configAPI from '@/lib/api/config-operations';
 import { configApiClient } from '@/lib/api/client';
+import { ConfigAPIError } from '@/lib/api/errors';
 
 export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
   // State
   tenantId: null,
   baseConfig: null,
+  etag: null,
   isDirty: false,
   lastSaved: null,
+
+  conflictState: null,
 
   // Draft state
   isDraft: false,
@@ -36,6 +40,8 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         // Update config slice
         state.config.tenantId = tenantId;
         state.config.baseConfig = response.config;
+        state.config.etag = response.etag ?? null;
+        state.config.conflictState = null;
         state.config.isDirty = false;
         state.config.lastSaved = response.metadata.lastModified;
 
@@ -124,13 +130,16 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         throw new Error('Failed to merge configuration');
       }
 
-      await configAPI.saveConfig(state.config.tenantId, mergedConfig, {
+      const saveResult = await configAPI.saveConfig(state.config.tenantId, mergedConfig, {
         createBackup: true,
+        ifMatch: state.config.etag ?? undefined,
       });
 
       // Update base config and mark clean
       set((state) => {
         state.config.baseConfig = mergedConfig;
+        state.config.etag = saveResult.etag ?? null;
+        state.config.conflictState = null;
         state.config.isDirty = false;
         state.config.lastSaved = Date.now();
       });
@@ -140,6 +149,22 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         message: 'Configuration saved successfully',
       });
     } catch (error) {
+      // ETag mismatch: stash the server's current state so the UI can
+      // render a reload banner. Skip the generic error toast — the
+      // banner is a richer, less alarming signal for this case.
+      if (error instanceof ConfigAPIError && error.code === 'VERSION_CONFLICT') {
+        const details = (error.details ?? {}) as {
+          currentConfig?: TenantConfig;
+          currentETag?: string;
+        };
+        set((state) => {
+          state.config.conflictState = {
+            currentConfig: details.currentConfig ?? null,
+            currentETag: details.currentETag ?? null,
+          };
+        });
+        throw error;
+      }
       const errorMessage = error instanceof Error ? error.message : 'Failed to save configuration';
       state.ui.addToast({
         type: 'error',
@@ -295,6 +320,8 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
     set((state) => {
       state.config.tenantId = null;
       state.config.baseConfig = null;
+      state.config.etag = null;
+      state.config.conflictState = null;
       state.config.isDirty = false;
       state.config.lastSaved = null;
       state.config.isDraft = false;
@@ -306,6 +333,12 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       state.branches.branches = {};
       state.contentShowcase.content_showcase = [];
       state.validation.clearAll();
+    });
+  },
+
+  clearConflict: () => {
+    set((state) => {
+      state.config.conflictState = null;
     });
   },
 

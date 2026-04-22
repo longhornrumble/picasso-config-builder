@@ -52,6 +52,13 @@ export interface LoadConfigRequest {
 export interface LoadConfigResponse {
   config: TenantConfig;
   metadata: TenantMetadata;
+  /**
+   * S3 ETag of the loaded config object. Callers should pass this back as
+   * the `ifMatch` option on the corresponding save to get optimistic
+   * concurrency control; the server returns 409 if another writer has
+   * modified the object in the meantime.
+   */
+  etag?: string;
 }
 
 // ============================================================================

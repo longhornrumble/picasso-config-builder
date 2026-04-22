@@ -9,6 +9,7 @@ import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { MainContent } from './MainContent';
 import { ValidationPanel } from './ValidationPanel';
+import { ConflictBanner } from './ConflictBanner';
 
 /**
  * Application Layout
@@ -30,6 +31,10 @@ export const Layout: React.FC = () => {
     <div className="app-layout">
       {/* Header */}
       <Header />
+
+      {/* Concurrency-conflict banner — renders only when a save was
+          blocked by a 409 and we need to prompt the user to reload. */}
+      <ConflictBanner />
 
       {/* Main Content Area */}
       <div className="app-main-wrapper">
