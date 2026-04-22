@@ -15,11 +15,18 @@
 
 import React from 'react';
 
+// Shape mirrors what real Clerk publicMetadata carries for a user
+// in this app — role plus the tenant they're bound to. Tests can
+// rely on this so the AuthContext sees a complete user object.
 const E2E_USER = {
   id: 'e2e-test-user',
   fullName: 'E2E Test User',
   primaryEmailAddress: { emailAddress: 'e2e@test.local' },
-  publicMetadata: { role: 'super_admin' } as Record<string, unknown>,
+  publicMetadata: {
+    role: 'super_admin',
+    tenant_id: 'MYR384719',
+    tenant_hash: 'my87674d777bf9',
+  } as Record<string, unknown>,
 };
 
 export function ClerkProvider({ children }: { children: React.ReactNode }) {

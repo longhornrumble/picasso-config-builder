@@ -54,10 +54,12 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({
       try {
         const tenantsList = await listTenants();
 
-        // Convert tenant list to select options
+        // Convert tenant list to select options. Metadata keys drift
+        // between Lambda response and mock fixtures, so accept a few
+        // plausible display-name fields before falling back to the id.
         let options: SelectOption[] = tenantsList.map((tenant: any) => ({
           value: tenant.tenantId,
-          label: tenant.tenantName || tenant.tenantId,
+          label: tenant.tenantName || tenant.name || tenant.chat_title || tenant.tenantId,
         }));
 
         // Filter tenants based on user role

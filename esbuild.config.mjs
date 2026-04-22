@@ -139,6 +139,14 @@ const defineVars = {
   'import.meta.env.VITE_AWS_REGION': JSON.stringify(process.env.VITE_AWS_REGION || 'us-east-1'),
   'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || ''),
   'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_CLERK_PUBLISHABLE_KEY || ''),
+  'import.meta.env.VITE_CHANNELS_API_URL': JSON.stringify(process.env.VITE_CHANNELS_API_URL || ''),
+  'import.meta.env.VITE_BUBBLE_AUTH_URL': JSON.stringify(process.env.VITE_BUBBLE_AUTH_URL || ''),
+  // Catch-all so any future import.meta.env.X read returns undefined
+  // (and falls through to `|| 'default'` at call sites) instead of
+  // throwing "Cannot read properties of undefined". esbuild's define
+  // replaces longest match first, so the specific VITE_* entries above
+  // still resolve correctly.
+  'import.meta.env': '{}',
 
   // Node.js environment compatibility
   'process.env.NODE_ENV': JSON.stringify(isDevelopment ? 'development' : 'production')

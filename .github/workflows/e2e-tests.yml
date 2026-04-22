@@ -10,9 +10,9 @@ jobs:
   test-e2e:
     name: E2E Tests (${{ matrix.browser }})
     runs-on: ubuntu-latest
-    # Tight ceiling so a future hang fails fast instead of eating 20 min.
-    # Locally the chromium suite completes in minutes; 10 is generous.
-    timeout-minutes: 10
+    # 33 specs × ~13s × 3 attempts (+ 2 retries on CI) ≈ 22 min worst case.
+    # 20 is the current equilibrium; revisit if we cut retries or parallelize.
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false
