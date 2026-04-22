@@ -75,6 +75,10 @@ e2e/test-output*.log
 e2e/*.log
 /*.png
 
+# Playwright artifacts from local runs
+test-results/
+playwright-report/
+
 # Environment files (deployment-specific)
 .env.deployment
 .env.production

@@ -10,7 +10,9 @@ jobs:
   test-e2e:
     name: E2E Tests (${{ matrix.browser }})
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Tight ceiling so a future hang fails fast instead of eating 20 min.
+    # Locally the chromium suite completes in minutes; 10 is generous.
+    timeout-minutes: 10
 
     strategy:
       fail-fast: false
@@ -30,8 +32,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
+      # Cache the ~100 MB per-browser download. Keyed on Playwright
+      # version so a version bump triggers a fresh download.
+      - name: Resolve Playwright version
+        id: pw-version
+        run: |
+          version=$(node -p "require('./node_modules/@playwright/test/package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.pw-version.outputs.version }}-${{ matrix.browser }}
+
+      - name: Install Playwright browser (cache miss)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Install Playwright system deps (cache hit)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps ${{ matrix.browser }}
 
       - name: Build application
         run: npm run build:dev
