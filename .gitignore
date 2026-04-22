@@ -66,13 +66,14 @@ debug-*.mjs
 test-*.mjs
 navigate-to-programs.mjs
 
-# Screenshots
-*.png
-
-# Test output and logs
+# Test output, screenshots, and logs
+# Screenshots land in e2e/screenshots/ or as ad-hoc root-level pngs
+# from debug runs. Scope to those locations — a blanket *.png blocks
+# legitimate source assets under src/assets/.
 e2e/screenshots/
 e2e/test-output*.log
 e2e/*.log
+/*.png
 
 # Environment files (deployment-specific)
 .env.deployment
