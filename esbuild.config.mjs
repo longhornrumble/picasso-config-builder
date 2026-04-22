@@ -99,8 +99,19 @@ const isServe = process.argv.includes('--serve');
 const isDevelopment = isServe || environment === 'development';
 const shouldAnalyze = process.env.ANALYZE === 'true';
 
+// E2E auth bypass: aliases @clerk/react to an always-signed-in stub.
+// Dev/test-only. Production builds must never ship this.
+const bypassAuthForE2E = process.env.VITE_E2E_BYPASS_AUTH === 'true';
+if (bypassAuthForE2E && !isDevelopment) {
+  console.error('❌ VITE_E2E_BYPASS_AUTH=true is not permitted in production builds.');
+  process.exit(1);
+}
+
 console.log(`🏗️  ESBuild for environment: ${environment.toUpperCase()}`);
 console.log(`📦 Build mode: ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'}`);
+if (bypassAuthForE2E) {
+  console.log('🔓 E2E auth bypass: @clerk/react → src/e2e/clerk-mock.tsx');
+}
 
 // Clean and create dist directory
 const distDir = 'dist';
@@ -165,6 +176,12 @@ const buildOptions = {
   jsx: 'automatic',
   jsxImportSource: 'react',
   logLevel: 'info',
+
+  ...(bypassAuthForE2E ? {
+    alias: {
+      '@clerk/react': path.resolve(__dirname, 'src/e2e/clerk-mock.tsx'),
+    },
+  } : {}),
 
   plugins: [
     pathAliasPlugin,

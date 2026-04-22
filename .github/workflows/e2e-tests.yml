@@ -35,11 +35,22 @@ jobs:
 
       - name: Build application
         run: npm run build:dev
+        env:
+          # Swap @clerk/react → src/e2e/clerk-mock.tsx at bundle time.
+          # E2E tests assert this app's behavior, not Clerk's SaaS.
+          # Production builds reject this flag (esbuild.config.mjs).
+          VITE_E2E_BYPASS_AUTH: 'true'
+          VITE_API_URL: 'http://localhost:3001'
 
       - name: Run E2E tests
         run: npm run test:e2e:${{ matrix.browser }}
         env:
           CI: true
+          # Use the fixture-backed mock server on :3001 instead of
+          # localDevServerS3 (which needs AWS creds on the runner).
+          E2E_MOCK_BACKEND: 'true'
+          VITE_E2E_BYPASS_AUTH: 'true'
+          VITE_API_URL: 'http://localhost:3001'
 
       - name: Upload test results
         if: always()

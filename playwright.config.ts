@@ -90,23 +90,40 @@ export default defineConfig({
     },
   ],
 
-  // Run your local dev server before starting the tests
+  // Run your local dev server before starting the tests.
+  //
+  // Two backends for the API on :3001:
+  //  - E2E_MOCK_BACKEND=true (CI): in-memory mock with fixture tenants,
+  //    no AWS creds needed. See e2e/fixtures/mock-server.ts.
+  //  - default (local dev): real S3 via `npm run server:dev`, which
+  //    reads the `ai-developer` AWS profile from ~/.aws/credentials.
   webServer: [
-    // Start local dev server with S3 access on port 3001
     {
-      command: 'npm run server:dev',
+      command: process.env.E2E_MOCK_BACKEND === 'true'
+        ? 'npx tsx e2e/fixtures/start-mock-server.ts'
+        : 'npm run server:dev',
       url: 'http://localhost:3001/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
       stdout: 'pipe',
       stderr: 'pipe',
     },
-    // Start frontend dev server on port 3000
+    // Frontend dev server on :3000. In CI the build step already
+    // produced a bundle with the Clerk bypass, so `npm run dev`
+    // (esbuild serve) picks it up consistently.
     {
       command: 'npm run dev',
       url: 'http://localhost:3000',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
+      env: {
+        // Propagate bypass through the dev server build context so
+        // aliasing stays active when webServer respawns esbuild.
+        VITE_E2E_BYPASS_AUTH: process.env.VITE_E2E_BYPASS_AUTH || '',
+        VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:3001',
+        BUILD_ENV: 'development',
+        PATH: process.env.PATH || '',
+      },
       stdout: 'ignore',
       stderr: 'pipe',
     },
