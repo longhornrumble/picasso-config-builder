@@ -18,6 +18,7 @@ import {
   BranchesPage,
   ActionChipsPage,
   CardsPage,
+  PendingChangesPage,
   SettingsPage,
   NotFoundPage,
 } from './pages';
@@ -125,6 +126,9 @@ function renderApp() {
 
             {/* Card inventory section (optional) */}
             <Route path="cards" element={<CardsPage />} />
+
+            {/* KB-freshness review (read-only in Phase 2) */}
+            <Route path="pending-changes" element={<PendingChangesPage />} />
 
             {/* Settings section */}
             <Route path="settings" element={<SettingsPage />} />
