@@ -23,6 +23,7 @@ import {
   NotFoundPage,
 } from './pages';
 import { useAutoSave } from './hooks/useAutoSave';
+import { useSignInToken } from './hooks/useSignInToken';
 import { Spinner } from './components/ui';
 
 /**
@@ -57,8 +58,16 @@ const App: React.FC = () => {
   // Enable auto-save functionality
   useAutoSave();
 
+  // Consume a Clerk sign-in token (ticket strategy) if present in the URL.
+  // Kicks in BEFORE the sign-in gate; when state === 'consuming' we render a
+  // loading screen instead of the sign-in form so the user doesn't see the
+  // login UI flash and vanish. On success, Clerk's session becomes active
+  // and <Show when="signed-in"> renders the app. On error, we fall through
+  // to the sign-in gate with the URL preserved (same flow as no-token).
+  const { state: tokenState } = useSignInToken();
+
   // Preserve the intended destination across Clerk sign-in so deep links like
-  // /pending-changes?tenant=MYR384719&proposal=... survive the auth round-trip.
+  // /pending-changes?h=HASH&proposal=... survive the auth round-trip.
   //
   // Clerk defaults post-sign-in navigation to `/` (or ClerkProvider's afterSignInUrl)
   // unless the SignIn component is given an explicit `forceRedirectUrl`. Reading from
@@ -71,6 +80,20 @@ const App: React.FC = () => {
     if (pathname === '/' && !search) return undefined;
     return pathname + search;
   }, []);
+
+  // While the sign-in token is being consumed, render a loading screen so the user
+  // doesn't see the sign-in form flash. This is a distinct render branch from the
+  // Clerk <Show when> logic because it sits BEFORE the sign-in gate.
+  if (tokenState === 'consuming') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="w-full max-w-sm space-y-4 text-center">
+          <Spinner />
+          <p className="text-sm text-gray-600">Signing you in…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
