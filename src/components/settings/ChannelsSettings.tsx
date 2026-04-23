@@ -25,7 +25,10 @@ import type { ChannelConnection, ChannelsConfig } from '@/types/config';
 // Constants
 // ---------------------------------------------------------------------------
 
-const CHANNELS_API_URL = import.meta.env.VITE_CHANNELS_API_URL || 'https://qwxscz5w6lkzjmhcpyhewijize0jpzzx.lambda-url.us-east-1.on.aws';
+// `import.meta.env` can be undefined under ESBuild's dev pipeline (unlike Vite's
+// auto-injection), which crashed module load and blocked the whole app from
+// rendering. Guard against it so the fallback URL is always reachable.
+const CHANNELS_API_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CHANNELS_API_URL) || 'https://qwxscz5w6lkzjmhcpyhewijize0jpzzx.lambda-url.us-east-1.on.aws';
 
 // ---------------------------------------------------------------------------
 // Helpers
