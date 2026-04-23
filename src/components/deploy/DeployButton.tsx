@@ -141,8 +141,8 @@ export const DeployButton: React.FC<DeployButtonProps> = ({ className = '' }) =>
               }
             `}
           >
-            <Upload className="w-4 h-4 mr-2" />
-            Deploy
+            <Upload className="w-4 h-4 lg:mr-2" />
+            <span className="hidden lg:inline">Deploy</span>
             {isDirty && !isDeployDisabled && (
               <span className="ml-2 w-2 h-2 bg-amber-400 rounded-full" title="Unsaved changes" />
             )}
