@@ -27,6 +27,13 @@ export interface TenantListItem {
   lastModified: number;
   version: string;
   tier: string;
+  /**
+   * Tenant hash — emitted by Picasso_Config_Manager's getTenantMetadata.
+   * Used to resolve hash-based deep links (e.g. /pending-changes?h=HASH) without
+   * putting raw tenant IDs in open surfaces like Slack messages and email bodies.
+   * May be null/undefined for older configs that pre-date the metadata addition.
+   */
+  tenant_hash?: string | null;
 }
 
 // ============================================================================

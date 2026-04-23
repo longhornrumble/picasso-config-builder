@@ -8,18 +8,53 @@
  * See docs/roadmap/KB_FRESHNESS_LIFECYCLE_SYSTEM.md for schema + context.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ClipboardList, RefreshCw, AlertCircle } from 'lucide-react';
 import { Badge, Button, Spinner, Alert, AlertTitle, AlertDescription } from '@/components/ui';
 import { configApiClient } from '@/lib/api/client';
+import { listTenants } from '@/lib/api';
 import { useConfigStore } from '@/store';
 import type { Proposal, ProposalItem, ProposalOperation } from '@/types/proposals';
 
 export const PendingChangesPage: React.FC = () => {
   const tenantId = useConfigStore((state) => state.config.tenantId);
+  const loadConfig = useConfigStore((state) => state.config.loadConfig);
+  const [searchParams] = useSearchParams();
+  // Deep links from Slack/email MUST carry tenant hash only — never tenant ID.
+  // Per internal security policy: tenant IDs are never exposed in open surfaces
+  // (Slack, email, URLs that could leak). The hash maps 1:1 to a tenant and is
+  // resolved server-side via the tenant list endpoint — no new API surface needed.
+  const deepLinkHash = searchParams.get('h') || undefined;
+  const deepLinkProposal = searchParams.get('proposal') || undefined;
+
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Resolve `?h=HASH` against the tenant list and switch tenant if needed. Runs once
+  // per `deepLinkHash` value — the guard ref prevents re-resolution as the store
+  // settles. Requires the Lambda's `getTenantMetadata` to return `tenant_hash`.
+  const resolvedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!deepLinkHash) return;
+    if (resolvedFor.current === deepLinkHash) return;
+    resolvedFor.current = deepLinkHash;
+
+    listTenants()
+      .then((list) => {
+        const match = (list || []).find((t) => t.tenant_hash === deepLinkHash);
+        if (!match) {
+          setError('Deep link references an unknown tenant hash. Check with whoever shared the link.');
+          return;
+        }
+        if (match.tenantId === tenantId) return;
+        return loadConfig(match.tenantId);
+      })
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : 'Failed to resolve deep-link tenant');
+      });
+  }, [deepLinkHash, tenantId, loadConfig]);
 
   const load = React.useCallback(async () => {
     if (!tenantId) {
@@ -41,6 +76,17 @@ export const PendingChangesPage: React.FC = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  // After proposals load, scroll the deep-linked proposal into view + highlight it.
+  // The element has id={proposalId}; we rely on the ProposalCard to render that id.
+  // scrollIntoView is feature-detected — JSDOM (tests) doesn't implement it.
+  useEffect(() => {
+    if (!deepLinkProposal || proposals.length === 0) return;
+    const el = document.getElementById(deepLinkProposal);
+    if (el && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [deepLinkProposal, proposals]);
 
   if (!tenantId) {
     return (
@@ -93,7 +139,11 @@ export const PendingChangesPage: React.FC = () => {
 
       <div className="space-y-4">
         {proposals.map((p) => (
-          <ProposalCard key={p.proposalId} proposal={p} />
+          <ProposalCard
+            key={p.proposalId}
+            proposal={p}
+            highlighted={deepLinkProposal === p.proposalId}
+          />
         ))}
       </div>
     </div>
@@ -114,12 +164,21 @@ const PageHeader: React.FC<{ tenantId?: string; count?: number }> = ({ tenantId,
   </div>
 );
 
-const ProposalCard: React.FC<{ proposal: Proposal }> = ({ proposal }) => {
+const ProposalCard: React.FC<{ proposal: Proposal; highlighted?: boolean }> = ({ proposal, highlighted = false }) => {
   const { summary } = proposal;
   const created = new Date(proposal.createdAt).toLocaleString();
 
+  // `id` on the wrapper lets the page's scroll-into-view effect target this card
+  // after a deep-link load. The ring is a visual cue for the linked-to proposal.
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
+    <div
+      id={proposal.proposalId}
+      className={`rounded-lg border bg-white dark:bg-gray-800 overflow-hidden transition-shadow ${
+        highlighted
+          ? 'border-teal-500 ring-2 ring-teal-400 shadow-lg'
+          : 'border-gray-200 dark:border-gray-700'
+      }`}
+    >
       <div className="px-5 py-3 bg-teal-50 dark:bg-teal-900/20 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-wrap gap-2">
         <div>
           <div className="font-semibold text-gray-900 dark:text-gray-100">

@@ -57,6 +57,21 @@ const App: React.FC = () => {
   // Enable auto-save functionality
   useAutoSave();
 
+  // Preserve the intended destination across Clerk sign-in so deep links like
+  // /pending-changes?tenant=MYR384719&proposal=... survive the auth round-trip.
+  //
+  // Clerk defaults post-sign-in navigation to `/` (or ClerkProvider's afterSignInUrl)
+  // unless the SignIn component is given an explicit `forceRedirectUrl`. Reading from
+  // window.location at render time captures whatever the user arrived on. We only set
+  // it when the user is NOT already on `/` — avoids a meaningless self-redirect and
+  // keeps normal sign-in-from-home flows unchanged.
+  const deepLinkRedirectUrl = React.useMemo(() => {
+    if (typeof window === 'undefined') return undefined;
+    const { pathname, search } = window.location;
+    if (pathname === '/' && !search) return undefined;
+    return pathname + search;
+  }, []);
+
   return (
     <>
       {/* Clerk sign-in gate */}
@@ -70,6 +85,8 @@ const App: React.FC = () => {
             <div className="flex justify-center">
               <SignIn
                 routing="hash"
+                forceRedirectUrl={deepLinkRedirectUrl}
+                fallbackRedirectUrl="/"
                 appearance={{
                   elements: {
                     rootBox: 'w-full',
