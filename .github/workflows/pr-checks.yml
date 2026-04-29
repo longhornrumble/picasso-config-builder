@@ -35,13 +35,8 @@ jobs:
         run: npm run lint
 
   typecheck:
-    # TODO(draft-feature): Flip continue-on-error to false once PR #24
-    # (feat/draft-autosave) lands. The draft slice references
-    # configApiClient.loadDraft/saveDraft/deleteDraft methods that don't
-    # exist on the type yet — PR #24 adds them.
     name: Code Quality - Type Checking
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
