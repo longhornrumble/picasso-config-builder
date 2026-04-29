@@ -21,6 +21,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ConversationFlowDiagram } from '../ConversationFlowDiagram';
 import { useConfigStore } from '@/store';
 import type { Program, ConversationalForm, CTADefinition, ConversationBranch, ActionChip } from '@/types/config';
+import type { ValidationError } from '@/types/validation';
 
 // Mock the store
 vi.mock('@/store', () => ({
@@ -798,7 +799,7 @@ describe('ConversationFlowDiagram', () => {
 
       // Create 15 entities with errors
       const manyPrograms: Record<string, Program> = {};
-      const manyErrors: Record<string, any[]> = {};
+      const manyErrors: Record<string, ValidationError[]> = {};
 
       for (let i = 1; i <= 15; i++) {
         const progId = `prog-${i}`;

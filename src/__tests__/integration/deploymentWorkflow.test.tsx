@@ -22,6 +22,7 @@ import {
   resetConfigStore,
 } from './testUtils';
 import * as configOps from '@/lib/api/config-operations';
+import type { TenantConfig } from '@/types/config';
 
 // Mock the config operations module
 vi.mock('@/lib/api/config-operations', () => ({
@@ -59,17 +60,17 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     mockS3 = createMockS3API();
 
     // Mock all config operations
-    (configOps.loadConfig as any).mockImplementation((tenantId: string) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId: string) =>
       mockS3.loadConfig(tenantId)
     );
-    (configOps.saveConfig as any).mockImplementation((tenantId: string, config: any, options?: any) =>
+    vi.mocked(configOps.saveConfig).mockImplementation((tenantId, config, options) =>
       mockS3.saveConfig(tenantId, config, options)
     );
-    (configOps.deployConfig as any).mockImplementation((tenantId: string, config: any) =>
+    vi.mocked(configOps.deployConfig).mockImplementation((tenantId, config) =>
       mockS3.deployConfig(tenantId, config)
     );
-    (configOps.listTenants as any).mockImplementation(() => mockS3.listTenants());
-    (configOps.getTenantMetadata as any).mockImplementation((tenantId: string) =>
+    vi.mocked(configOps.listTenants).mockImplementation(() => mockS3.listTenants());
+    vi.mocked(configOps.getTenantMetadata).mockImplementation((tenantId: string) =>
       mockS3.getTenantMetadata(tenantId)
     );
 
@@ -197,7 +198,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
         description: 'Test description',
         keywords: ['test'],
       },
-    ] as any;
+    ] as TenantConfig['content_showcase'];
 
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
@@ -222,7 +223,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     // Verify content_showcase preserved (shape is a flat array in the deployed config)
     const deployedConfig = mockS3._getMockConfig('TEST_TENANT');
     expect(deployedConfig!.content_showcase).toBeDefined();
-    expect(deployedConfig!.content_showcase as any[]).toHaveLength(1);
+    expect(deployedConfig!.content_showcase).toHaveLength(1);
   });
 
   it('should bump version on deployment', async () => {
@@ -265,10 +266,10 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     // Create minimal config with only programs. Note: the payload field
     // names are `cta_definitions` and `conversation_branches` (not `ctas`
     // and `routing`), matching the current Lambda contract.
-    const minimalConfig = createTestTenantConfig('TEST_TENANT');
-    delete (minimalConfig as any).conversational_forms;
-    delete (minimalConfig as any).cta_definitions;
-    delete (minimalConfig as any).conversation_branches;
+    const minimalConfig: Partial<TenantConfig> = createTestTenantConfig('TEST_TENANT');
+    delete minimalConfig.conversational_forms;
+    delete minimalConfig.cta_definitions;
+    delete minimalConfig.conversation_branches;
 
     mockS3._setMockConfig('TEST_TENANT', minimalConfig);
 
