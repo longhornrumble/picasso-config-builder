@@ -25,13 +25,13 @@ export const WidgetBehaviorSettings: React.FC = () => {
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
 
   // Update widget_behavior field
-  const updateWidgetBehavior = (field: string, value: any) => {
+  const updateWidgetBehavior = (field: string, value: unknown) => {
     useConfigStore.setState((state) => {
       if (state.config.baseConfig) {
         if (!state.config.baseConfig.widget_behavior) {
-          state.config.baseConfig.widget_behavior = {} as any;
+          state.config.baseConfig.widget_behavior = {} as WidgetBehaviorConfig;
         }
-        (state.config.baseConfig.widget_behavior as any)[field] = value;
+        (state.config.baseConfig.widget_behavior as Record<string, unknown>)[field] = value;
         state.config.isDirty = true;
       }
     });
@@ -122,12 +122,15 @@ export const WidgetBehaviorSettings: React.FC = () => {
                   useConfigStore.setState((state) => {
                     if (state.config.baseConfig) {
                       if (!state.config.baseConfig.widget_behavior) {
-                        state.config.baseConfig.widget_behavior = {} as any;
+                        state.config.baseConfig.widget_behavior = {} as WidgetBehaviorConfig;
                       }
-                      if (!state.config.baseConfig.widget_behavior!.mobile) {
-                        (state.config.baseConfig.widget_behavior as any).mobile = {};
+                      const wb = state.config.baseConfig.widget_behavior as WidgetBehaviorConfig & {
+                        mobile?: { start_open?: boolean };
+                      };
+                      if (!wb.mobile) {
+                        wb.mobile = {};
                       }
-                      (state.config.baseConfig.widget_behavior as any).mobile.start_open = e.target.checked;
+                      wb.mobile.start_open = e.target.checked;
                       state.config.isDirty = true;
                     }
                   });

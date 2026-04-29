@@ -6,7 +6,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Input, Badge } from '@/components/ui';
 import { useConfigStore } from '@/store';
-import type { AWSConfig } from '@/types/config';
+import type { AWSConfig, TenantConfig } from '@/types/config';
 import { Shield } from 'lucide-react';
 
 /**
@@ -25,23 +25,23 @@ export const AWSSettings: React.FC = () => {
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
 
   // Update aws field
-  const updateAWS = (field: string, value: any) => {
+  const updateAWS = (field: string, value: unknown) => {
     useConfigStore.setState((state) => {
       if (state.config.baseConfig) {
         if (!state.config.baseConfig.aws) {
-          state.config.baseConfig.aws = {} as any;
+          state.config.baseConfig.aws = {} as AWSConfig;
         }
-        (state.config.baseConfig.aws as any)[field] = value;
+        (state.config.baseConfig.aws as Record<string, unknown>)[field] = value;
         state.config.isDirty = true;
       }
     });
   };
 
   // Update top-level baseConfig field
-  const updateBaseConfig = (field: string, value: any) => {
+  const updateBaseConfig = (field: string, value: unknown) => {
     useConfigStore.setState((state) => {
       if (state.config.baseConfig) {
-        (state.config.baseConfig as any)[field] = value;
+        (state.config.baseConfig as Record<string, unknown>)[field] = value;
         state.config.isDirty = true;
       }
     });
@@ -69,7 +69,7 @@ export const AWSSettings: React.FC = () => {
         {/* Bedrock Model ID */}
         <Input
           label="Bedrock Model ID"
-          value={(baseConfig as any)?.model_id || ''}
+          value={(baseConfig as TenantConfig & { model_id?: string })?.model_id || ''}
           onChange={(e) => updateBaseConfig('model_id', e.target.value)}
           placeholder="us.anthropic.claude-haiku-4-5-20251001-v1:0"
           helperText="Override the default Bedrock model for this tenant. Leave empty to use system default."

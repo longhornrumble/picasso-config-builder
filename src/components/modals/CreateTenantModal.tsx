@@ -18,6 +18,7 @@ import {
 } from '@/components/ui';
 import { createTenantSchema, type CreateTenantFormData } from '@/lib/schemas';
 import { configApiClient } from '@/lib/api/client';
+import type { TenantConfig } from '@/types/config';
 
 interface CreateTenantModalProps {
   open: boolean;
@@ -32,7 +33,7 @@ interface CreateTenantResponse {
   tenant_id: string;
   tenant_hash: string;
   embed_code: string;
-  config: any;
+  config: TenantConfig;
 }
 
 
@@ -186,7 +187,7 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
                 { value: 'Premium', label: 'Premium' },
               ]}
               value={subscriptionTier}
-              onValueChange={(value) => setValue('subscription_tier', value as any)}
+              onValueChange={(value) => setValue('subscription_tier', value as CreateTenantFormData['subscription_tier'])}
               error={errors.subscription_tier?.message}
             />
 

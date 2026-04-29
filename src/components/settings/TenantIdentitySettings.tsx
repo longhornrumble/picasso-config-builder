@@ -25,10 +25,10 @@ export const TenantIdentitySettings: React.FC = () => {
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
 
   // Update field in baseConfig
-  const updateField = (field: string, value: any) => {
+  const updateField = (field: string, value: unknown) => {
     useConfigStore.setState((state) => {
       if (state.config.baseConfig) {
-        (state.config.baseConfig as any)[field] = value;
+        (state.config.baseConfig as Record<string, unknown>)[field] = value;
         state.config.isDirty = true;
       }
     });
