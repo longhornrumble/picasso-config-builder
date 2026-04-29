@@ -9,9 +9,16 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
 
-  // NOTE: Removed global setup/teardown - using real S3 via local dev server instead of mock
-  // globalSetup: './playwright.global-setup.ts',
-  // globalTeardown: './playwright.global-teardown.ts',
+  // Excluded files: developer debugging scripts that aren't release-quality
+  // e2e tests. `debug-validation.spec.ts` was authored to identify where the
+  // validation workflow was breaking (per its file header) and is not stable
+  // enough for CI. Kept on disk for ad-hoc local debugging.
+  testIgnore: ['**/debug-validation.spec.ts'],
+
+  // Sign in via Clerk once before any test, save storage state to e2e/.auth/user.json.
+  // Every project below loads that state via use.storageState — tests start signed in.
+  // Without this, every test hits the Clerk sign-in gate and times out.
+  globalSetup: './e2e/global-setup.ts',
 
   // Maximum time one test can run for
   timeout: 60 * 1000,
@@ -39,6 +46,9 @@ export default defineConfig({
   use: {
     // Base URL to use in actions like `await page.goto('/')`
     baseURL: 'http://localhost:3000',
+
+    // Storage state from globalSetup — every test starts signed in.
+    storageState: './e2e/.auth/user.json',
 
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',

@@ -75,6 +75,10 @@ e2e/test-output*.log
 e2e/*.log
 /*.png
 
+# Playwright auth state (signed-in storage from globalSetup) — contains
+# session tokens; never commit. Regenerated automatically each test run.
+e2e/.auth/
+
 # Environment files (deployment-specific)
 .env.deployment
 .env.production

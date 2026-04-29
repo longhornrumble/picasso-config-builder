@@ -35,11 +35,25 @@ jobs:
 
       - name: Build application
         run: npm run build:dev
+        env:
+          # Clerk publishable key must be present at build time so esbuild
+          # bakes it into the bundle (main.tsx reads import.meta.env.VITE_CLERK_PUBLISHABLE_KEY).
+          # Without this, the deployed bundle has an empty Clerk key and the
+          # sign-in form never renders.
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
 
       - name: Run E2E tests
         run: npm run test:e2e:${{ matrix.browser }}
         env:
           CI: true
+          # Clerk credentials for the global-setup sign-in. globalSetup uses
+          # E2E_CLERK_USER_EMAIL/PASSWORD to authenticate once and saves the
+          # storage state; every test reuses it.
+          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
+          E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
+          # Same publishable key needed at runtime in case any test triggers
+          # a re-render. Build step bakes it; runtime injection is belt-and-braces.
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
 
       - name: Upload test results
         if: always()
