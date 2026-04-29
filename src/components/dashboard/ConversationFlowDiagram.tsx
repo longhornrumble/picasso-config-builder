@@ -159,7 +159,7 @@ export const ConversationFlowDiagram: React.FC<ConversationFlowDiagramProps> = (
   /**
    * Build tooltip content for metrics
    */
-  const buildTooltipContent = useCallback((entities: any[], maxDisplay = 10) => {
+  const buildTooltipContent = useCallback((entities: Array<{ id: string; label: string; type?: string }>, maxDisplay = 10) => {
     if (!entities || entities.length === 0) return null;
 
     const displayEntities = entities.slice(0, maxDisplay);

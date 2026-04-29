@@ -6,6 +6,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Input } from '@/components/ui';
 import { useConfigStore } from '@/store';
+import type { TenantConfig } from '@/types/config';
 
 /**
  * Integration Settings Component
@@ -22,16 +23,21 @@ import { useConfigStore } from '@/store';
 export const IntegrationSettings: React.FC = () => {
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
 
-  const webhookUrl = (baseConfig as any)?.bubble_integration?.webhook_url ?? '';
-  const apiKey = (baseConfig as any)?.bubble_integration?.api_key ?? '';
+  // bubble_integration is a legacy passthrough not in TenantConfig's typed surface
+  type ConfigWithBubble = TenantConfig & {
+    bubble_integration?: { webhook_url?: string; api_key?: string; [k: string]: unknown };
+  };
+  const webhookUrl = (baseConfig as ConfigWithBubble | null)?.bubble_integration?.webhook_url ?? '';
+  const apiKey = (baseConfig as ConfigWithBubble | null)?.bubble_integration?.api_key ?? '';
 
   const updateField = (field: string, value: string) => {
     useConfigStore.setState((state) => {
       if (state.config.baseConfig) {
-        if (!(state.config.baseConfig as any).bubble_integration) {
-          (state.config.baseConfig as any).bubble_integration = {};
+        const cfg = state.config.baseConfig as ConfigWithBubble;
+        if (!cfg.bubble_integration) {
+          cfg.bubble_integration = {};
         }
-        (state.config.baseConfig as any).bubble_integration[field] = value;
+        cfg.bubble_integration[field] = value;
         state.config.isDirty = true;
       }
     });

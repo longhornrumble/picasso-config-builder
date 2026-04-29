@@ -33,7 +33,7 @@ export interface TreeNode {
   errorCount: number;
   warningCount: number;
   children: TreeNode[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   richMetadata?: BranchMetadata | CTAMetadata | FormMetadata | ProgramMetadata | ActionChipMetadata | ShowcaseMetadata;
   statusIcons?: StatusIcon[];
 }

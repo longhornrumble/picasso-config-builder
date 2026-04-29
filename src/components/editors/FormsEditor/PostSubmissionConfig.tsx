@@ -15,7 +15,7 @@ import type { PostSubmissionConfig as PostSubmissionConfigType, PostSubmissionAc
 export interface PostSubmissionConfigProps {
   value?: PostSubmissionConfigType;
   onChange: (value?: PostSubmissionConfigType) => void;
-  errors?: any;
+  errors?: Record<string, string | undefined>;
   touched?: boolean;
   onBlur?: () => void;
 }
@@ -235,7 +235,7 @@ export const PostSubmissionConfig: React.FC<PostSubmissionConfigProps> = ({
                   <Select
                     label="Action Type"
                     value={action.action}
-                    onValueChange={(value) => handleUpdateAction(idx, { action: value as any })}
+                    onValueChange={(value) => handleUpdateAction(idx, { action: value as PostSubmissionAction['action'] })}
                     options={actionTypeOptions}
                     required
                   />

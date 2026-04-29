@@ -26,13 +26,13 @@ export const BrandingSettings: React.FC = () => {
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
 
   // Update branding field
-  const updateBranding = (field: string, value: any) => {
+  const updateBranding = (field: string, value: unknown) => {
     useConfigStore.setState((state) => {
       if (state.config.baseConfig) {
         if (!state.config.baseConfig.branding) {
-          state.config.baseConfig.branding = {} as any;
+          state.config.baseConfig.branding = {} as BrandingConfig;
         }
-        (state.config.baseConfig.branding as any)[field] = value;
+        (state.config.baseConfig.branding as Record<string, unknown>)[field] = value;
         state.config.isDirty = true;
       }
     });

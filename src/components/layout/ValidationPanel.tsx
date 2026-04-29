@@ -13,7 +13,7 @@ import { useConfigStore } from '@/store';
 import { ValidationGroup } from './validation/ValidationGroup';
 import { ValidationEmptyState } from './validation/ValidationEmptyState';
 import type { ValidationError as StoreValidationError } from '@/store/types';
-import type { ValidationError, ValidationWarning } from '@/lib/validation/types';
+import type { ValidationError, ValidationWarning, EntityType } from '@/lib/validation/types';
 
 export interface ValidationPanelProps {
   /** Whether the panel is initially expanded */
@@ -108,7 +108,7 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
     });
 
     // Helper to determine entity type from entityId
-    const getEntityTypeFromId = (entityId: string): any => {
+    const getEntityTypeFromId = (entityId: string): EntityType => {
       // Try to infer from entity ID or default to 'config'
       if (entityId === 'global') return 'config';
       // For now, we'll need to look at the actual entities to determine type

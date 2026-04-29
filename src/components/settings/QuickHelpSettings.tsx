@@ -29,13 +29,13 @@ export const QuickHelpSettings: React.FC = () => {
   const [newPrompt, setNewPrompt] = useState('');
 
   // Update quick_help field
-  const updateQuickHelp = (field: string, value: any) => {
+  const updateQuickHelp = (field: string, value: unknown) => {
     useConfigStore.setState((state) => {
       if (state.config.baseConfig) {
         if (!state.config.baseConfig.quick_help) {
-          state.config.baseConfig.quick_help = {} as any;
+          state.config.baseConfig.quick_help = {} as QuickHelpConfig;
         }
-        (state.config.baseConfig.quick_help as any)[field] = value;
+        (state.config.baseConfig.quick_help as Record<string, unknown>)[field] = value;
         state.config.isDirty = true;
       }
     });
