@@ -3,7 +3,7 @@
  * Main collapsible validation panel showing all errors and warnings grouped by entity type
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { X, ChevronUp, ChevronDown, AlertCircle, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -185,11 +185,17 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
 
   const hasIssues = totalErrors > 0 || totalWarnings > 0;
 
-  // Auto-expand when new errors appear
+  // Auto-expand only on the 0 → positive transition. A ref-tracked previous count
+  // avoids re-expanding after the user manually collapsed and the count later changes
+  // from one positive value to another (e.g. 1 → 3). Init to 0 so the first render
+  // with errors present (validation completes before panel mounts) still triggers
+  // the auto-expand on its first effect run.
+  const prevTotalErrorsRef = useRef(0);
   useEffect(() => {
-    if (totalErrors > 0 && !isExpanded) {
+    if (prevTotalErrorsRef.current === 0 && totalErrors > 0) {
       setIsExpanded(true);
     }
+    prevTotalErrorsRef.current = totalErrors;
   }, [totalErrors]);
 
   // Don't render if no validation has been run

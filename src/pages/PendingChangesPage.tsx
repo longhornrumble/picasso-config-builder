@@ -74,6 +74,7 @@ export const PendingChangesPage: React.FC = () => {
   }, [tenantId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- canonical async data fetch on mount/deps change (React docs: "You Might Not Need an Effect" — fetching is a real side effect)
     load();
   }, [load]);
 

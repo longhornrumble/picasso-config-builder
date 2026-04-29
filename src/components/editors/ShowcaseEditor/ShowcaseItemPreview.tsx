@@ -14,16 +14,11 @@ interface ShowcaseItemPreviewProps {
 }
 
 export const ShowcaseItemPreview: React.FC<ShowcaseItemPreviewProps> = ({ item }) => {
+  // imageError/imageLoading reset is handled by the parent via a `key={item.image_url}`
+  // prop (see ShowcaseItemFormFields) — changing the URL forces a fresh component
+  // instance, so these initializers re-run.
   const [imageError, setImageError] = React.useState(false);
   const [imageLoading, setImageLoading] = React.useState(true);
-
-  // Reset image states when URL changes
-  React.useEffect(() => {
-    if (item.image_url) {
-      setImageError(false);
-      setImageLoading(true);
-    }
-  }, [item.image_url]);
 
   // Don't show preview if required fields are missing
   if (!item.name || !item.tagline || !item.description) {

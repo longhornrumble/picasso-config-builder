@@ -149,8 +149,11 @@ export function EntityEditor<T extends BaseEntity>({
         />
       )}
 
-      {/* Create/Edit Modal */}
+      {/* Create/Edit Modal — key forces a fresh component instance on each open
+          and on entity switch. This is what lets EntityForm rely on plain useState
+          initializers for reset (no internal sync effect needed). */}
       <EntityForm
+        key={`entity-${crud.editingEntity ? getId(crud.editingEntity) : 'new'}-${crud.isFormOpen}`}
         open={crud.isFormOpen}
         entity={crud.editingEntity}
         entityName={metadata.entityName}
