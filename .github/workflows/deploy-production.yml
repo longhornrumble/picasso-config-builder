@@ -39,10 +39,8 @@ jobs:
         run: npm run lint
 
   typecheck:
-    # See pr-checks.yml — typecheck deferred until PR #24 (draft feature) lands.
     name: Code Quality - Type Checking
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -125,7 +123,7 @@ jobs:
 
   deploy-production:
     name: Deploy to Production
-    needs: [test, security, build]
+    needs: [typecheck, test, security, build]
     runs-on: ubuntu-latest
     environment: production
     permissions:
