@@ -240,6 +240,90 @@ export async function deleteConfig(tenantId) {
 }
 
 /**
+ * Build the S3 key for a tenant's draft config
+ * @param {string} tenantId
+ * @returns {string}
+ */
+function draftKey(tenantId) {
+  return `tenants/${tenantId}/${tenantId}-draft.json`;
+}
+
+/**
+ * Load a tenant's draft config from S3.
+ * Returns { hasDraft: false } when no draft exists (NoSuchKey is not an error).
+ * @param {string} tenantId
+ * @returns {Promise<{ hasDraft: boolean, config?: Object, lastSaved?: string }>}
+ */
+export async function loadDraft(tenantId) {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: draftKey(tenantId),
+    });
+    const response = await s3Client.send(command);
+    const configString = await streamToString(response.Body);
+    const config = JSON.parse(configString);
+    const lastSaved =
+      response.LastModified instanceof Date
+        ? response.LastModified.toISOString()
+        : new Date().toISOString();
+    return { hasDraft: true, config, lastSaved };
+  } catch (error) {
+    if (error.name === 'NoSuchKey') {
+      return { hasDraft: false };
+    }
+    console.error(`Error loading draft for ${tenantId}:`, error);
+    throw new Error(`Failed to load draft: ${error.message}`);
+  }
+}
+
+/**
+ * Persist a tenant's draft config to S3.
+ * No backup is created — drafts are intermediate, last-write-wins.
+ * @param {string} tenantId
+ * @param {Object} config
+ * @returns {Promise<{ success: true, lastSaved: string }>}
+ */
+export async function saveDraft(tenantId, config) {
+  try {
+    const lastSaved = new Date().toISOString();
+    const command = new PutObjectCommand({
+      Bucket: BUCKET,
+      Key: draftKey(tenantId),
+      Body: JSON.stringify(config, null, 2),
+      ContentType: 'application/json',
+    });
+    await s3Client.send(command);
+    return { success: true, lastSaved };
+  } catch (error) {
+    console.error(`Error saving draft for ${tenantId}:`, error);
+    throw new Error(`Failed to save draft: ${error.message}`);
+  }
+}
+
+/**
+ * Delete a tenant's draft config. Idempotent — missing key is not an error.
+ * @param {string} tenantId
+ * @returns {Promise<{ success: true }>}
+ */
+export async function deleteDraft(tenantId) {
+  try {
+    const command = new DeleteObjectCommand({
+      Bucket: BUCKET,
+      Key: draftKey(tenantId),
+    });
+    await s3Client.send(command);
+    return { success: true };
+  } catch (error) {
+    if (error.name === 'NoSuchKey') {
+      return { success: true };
+    }
+    console.error(`Error deleting draft for ${tenantId}:`, error);
+    throw new Error(`Failed to delete draft: ${error.message}`);
+  }
+}
+
+/**
  * Permanently delete a tenant and all associated data
  * Removes config, all backups, and the hash mapping file
  * @param {string} tenantId - The tenant ID

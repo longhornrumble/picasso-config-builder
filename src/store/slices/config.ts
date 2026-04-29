@@ -77,7 +77,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         set((state) => {
           state.config.hasDraft = draftCheck.hasDraft;
           state.config.isDraft = false;
-          state.config.draftLastSaved = null;
+          state.config.draftLastSaved = draftCheck.lastSaved ?? null;
         });
       } catch {
         // Non-fatal: draft check failure should not block loading the live config
@@ -374,12 +374,15 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         throw new Error('Failed to merge configuration');
       }
 
-      await configApiClient.saveDraft(state.config.tenantId, mergedConfig);
+      const { lastSaved } = await configApiClient.saveDraft(
+        state.config.tenantId,
+        mergedConfig
+      );
 
       set((state) => {
         state.config.isDraft = true;
         state.config.hasDraft = true;
-        state.config.draftLastSaved = Date.now();
+        state.config.draftLastSaved = lastSaved;
         state.config.isDirty = false;
       });
 
@@ -424,6 +427,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       }
 
       const draftConfig = response.config;
+      const draftLastSaved = response.lastSaved ?? null;
 
       // Populate all domain slices from the draft config (same pattern as loadConfig)
       set((state) => {
@@ -452,6 +456,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         state.config.isDraft = true;
         state.config.hasDraft = true;
         state.config.isDirty = false;
+        state.config.draftLastSaved = draftLastSaved;
 
         // Clear validation state
         state.validation.clearAll();
@@ -535,6 +540,14 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       // Non-fatal: draft cleanup failure should not surface as an error to the user
     }
 
+    set((state) => {
+      state.config.isDraft = false;
+      state.config.hasDraft = false;
+      state.config.draftLastSaved = null;
+    });
+  },
+
+  clearDraftState: () => {
     set((state) => {
       state.config.isDraft = false;
       state.config.hasDraft = false;

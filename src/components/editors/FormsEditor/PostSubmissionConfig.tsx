@@ -8,7 +8,7 @@
  */
 
 import React, { useState } from 'react';
-import { Input, Textarea, Button, Badge } from '@/components/ui';
+import { Input, Textarea, Button, Badge, Select } from '@/components/ui';
 import { Plus, X, Trash2, Webhook } from 'lucide-react';
 import type { PostSubmissionConfig as PostSubmissionConfigType, PostSubmissionAction, Fulfillment } from '@/types/config';
 

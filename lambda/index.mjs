@@ -16,6 +16,9 @@ import {
   listBackups,
   generateTenantHash,
   createTenantMapping,
+  loadDraft,
+  saveDraft,
+  deleteDraft,
 } from './s3Operations.mjs';
 
 import {
@@ -278,6 +281,68 @@ export const handler = async (event) => {
           success: true,
           ...result,
         }),
+      };
+    }
+
+    // GET /draft/{tenantId} - Load draft (or report no draft exists)
+    if (httpMethod === 'GET' && path.match(/^\/draft\/([^/]+)$/)) {
+      const tenantId = path.match(/^\/draft\/([^/]+)$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
+
+      const result = await loadDraft(tenantId);
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify(result),
+      };
+    }
+
+    // POST /draft/{tenantId} - Create or replace draft (last-write-wins, no backup)
+    if (httpMethod === 'POST' && path.match(/^\/draft\/([^/]+)$/)) {
+      const tenantId = path.match(/^\/draft\/([^/]+)$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
+
+      let requestBody;
+      try {
+        requestBody = JSON.parse(body || '{}');
+      } catch {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'Bad Request', message: 'Invalid JSON body' }),
+        };
+      }
+
+      const { config: draftConfig } = requestBody;
+      if (!draftConfig || typeof draftConfig !== 'object') {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'Bad Request', message: 'Missing or invalid config in body' }),
+        };
+      }
+
+      const result = await saveDraft(tenantId, draftConfig);
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify(result),
+      };
+    }
+
+    // DELETE /draft/{tenantId} - Delete draft (idempotent)
+    if (httpMethod === 'DELETE' && path.match(/^\/draft\/([^/]+)$/)) {
+      const tenantId = path.match(/^\/draft\/([^/]+)$/)[1];
+      const idError = validateTenantId(tenantId, headers);
+      if (idError) return idError;
+
+      const result = await deleteDraft(tenantId);
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify(result),
       };
     }
 

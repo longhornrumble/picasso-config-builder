@@ -32,6 +32,23 @@ vi.mock('@/lib/api/config-operations', () => ({
   getTenantMetadata: vi.fn(),
 }));
 
+// See deploymentWorkflow.test.tsx for rationale — keep the slice's draft
+// check from hitting real fetch in tests.
+vi.mock('@/lib/api/client', async (importOriginal) => {
+  const mod = (await importOriginal()) as typeof import('@/lib/api/client');
+  return {
+    ...mod,
+    configApiClient: {
+      ...mod.configApiClient,
+      loadDraft: vi.fn().mockResolvedValue({ hasDraft: false }),
+      saveDraft: vi
+        .fn()
+        .mockResolvedValue({ lastSaved: new Date().toISOString() }),
+      deleteDraft: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+});
+
 describe('Edge Cases Integration Tests', () => {
   beforeEach(() => {
     resetIdCounter();

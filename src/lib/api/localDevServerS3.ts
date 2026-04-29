@@ -471,6 +471,102 @@ app.get('/config/:tenantId/backups', async (req, res) => {
 });
 
 /**
+ * Draft endpoints — backed by real S3, last-write-wins, no backup.
+ * Stored at `tenants/{tenantId}/{tenantId}-draft.json`.
+ */
+
+const draftKey = (tenantId: string) => `tenants/${tenantId}/${tenantId}-draft.json`;
+
+/**
+ * GET /draft/{tenantId}
+ */
+app.get('/draft/:tenantId', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: draftKey(tenantId) });
+
+    try {
+      const response = await s3Client.send(command);
+      const body = await response.Body?.transformToString();
+      const config = body ? JSON.parse(body) : null;
+      const lastSaved =
+        response.LastModified instanceof Date
+          ? response.LastModified.toISOString()
+          : new Date().toISOString();
+      return res.json({ hasDraft: true, config, lastSaved });
+    } catch (error: any) {
+      if (error.name === 'NoSuchKey') {
+        return res.json({ hasDraft: false });
+      }
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error loading draft:', error);
+    res.status(500).json({
+      error: 'Failed to load draft',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
+ * POST /draft/{tenantId} — body: { config }
+ */
+app.post('/draft/:tenantId', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const { config } = req.body || {};
+
+    if (!config || typeof config !== 'object') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Missing or invalid config in body',
+      });
+    }
+
+    const lastSaved = new Date().toISOString();
+    const command = new PutObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: draftKey(tenantId),
+      Body: JSON.stringify(config, null, 2),
+      ContentType: 'application/json',
+    });
+    await s3Client.send(command);
+
+    res.json({ success: true, lastSaved });
+  } catch (error) {
+    console.error('Error saving draft:', error);
+    res.status(500).json({
+      error: 'Failed to save draft',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
+ * DELETE /draft/{tenantId} — idempotent
+ */
+app.delete('/draft/:tenantId', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    try {
+      await s3Client.send(
+        new DeleteObjectCommand({ Bucket: S3_BUCKET, Key: draftKey(tenantId) })
+      );
+    } catch (error: any) {
+      if (error.name !== 'NoSuchKey') throw error;
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting draft:', error);
+    res.status(500).json({
+      error: 'Failed to delete draft',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
  * Get section information
  * GET /sections
  */
