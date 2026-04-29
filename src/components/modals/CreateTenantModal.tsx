@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Copy, Check, Loader2, Plus } from 'lucide-react';
 import {
@@ -48,7 +48,7 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
     handleSubmit,
     formState: { errors },
     reset,
-    watch,
+    control,
     setValue,
   } = useForm<CreateTenantFormData>({
     resolver: zodResolver(createTenantSchema),
@@ -64,7 +64,8 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
     },
   });
 
-  const primaryColor = watch('primary_color');
+  const primaryColor = useWatch({ control, name: 'primary_color' });
+  const subscriptionTier = useWatch({ control, name: 'subscription_tier' });
 
   const handleClose = () => {
     reset();
@@ -184,7 +185,7 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
                 { value: 'Standard', label: 'Standard' },
                 { value: 'Premium', label: 'Premium' },
               ]}
-              value={watch('subscription_tier')}
+              value={subscriptionTier}
               onValueChange={(value) => setValue('subscription_tier', value as any)}
               error={errors.subscription_tier?.message}
             />
