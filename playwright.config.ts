@@ -9,6 +9,14 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
 
+  // Excluded files: developer debugging scripts that aren't release-quality
+  // e2e tests. `debug-validation.spec.ts` was authored to identify where the
+  // validation workflow was breaking (per its file header) — it makes
+  // assertions about specific tenant data, times out at ~1.1 min per test,
+  // and consumes ~13 min of the 20-min CI job timeout when retried. Keeping
+  // the file in the repo for ad-hoc local debugging; excluding from CI runs.
+  testIgnore: ['**/debug-validation.spec.ts'],
+
   // NOTE: Removed global setup/teardown - using real S3 via local dev server instead of mock
   // globalSetup: './playwright.global-setup.ts',
   // globalTeardown: './playwright.global-teardown.ts',
