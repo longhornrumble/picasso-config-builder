@@ -266,7 +266,8 @@ export interface ConfigSlice {
   // Draft state
   isDraft: boolean;
   hasDraft: boolean;
-  draftLastSaved: number | null;
+  /** ISO 8601 string from the server (S3 LastModified). Null when no draft. */
+  draftLastSaved: string | null;
 
   // Actions
   loadConfig: (tenantId: string) => Promise<void>;
@@ -283,6 +284,9 @@ export interface ConfigSlice {
   loadDraft: () => Promise<void>;
   discardDraft: () => Promise<void>;
   promoteDraft: () => Promise<void>;
+  /** Reset draft-related flags without touching server state. Used by Deploy
+   *  after it removes the draft itself. */
+  clearDraftState: () => void;
 
   // Merge strategy
   getMergedConfig: () => TenantConfig | null;

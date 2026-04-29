@@ -303,6 +303,117 @@ export class ConfigAPIClient {
   }
 
   /**
+   * Load any existing draft for a tenant.
+   * Returns { hasDraft: false } when none exists (not an error).
+   */
+  async loadDraft(
+    tenantId: string
+  ): Promise<{ hasDraft: boolean; config?: TenantConfig; lastSaved?: string }> {
+    if (!tenantId || tenantId.trim() === '') {
+      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
+    }
+
+    return fetchWithRetry(async () => {
+      const response = await fetch(`${this.baseUrl}/draft/${tenantId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(await this.getAuthHeaders()),
+        },
+      });
+
+      if (response.status === 401) {
+        this.handle401Response();
+        throw await parseHTTPError(response);
+      }
+
+      if (!response.ok) {
+        throw await parseHTTPError(response);
+      }
+
+      const data = await response.json();
+      return {
+        hasDraft: Boolean(data.hasDraft),
+        config: data.config as TenantConfig | undefined,
+        lastSaved: data.lastSaved,
+      };
+    });
+  }
+
+  /**
+   * Persist work-in-progress as a draft (separate from live config).
+   * Last-write-wins; no backup.
+   */
+  async saveDraft(
+    tenantId: string,
+    config: TenantConfig
+  ): Promise<{ lastSaved: string }> {
+    if (!tenantId || tenantId.trim() === '') {
+      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
+    }
+    if (!config) {
+      throw new ConfigAPIError('VALIDATION_ERROR', 'Config cannot be null or undefined');
+    }
+
+    return fetchWithRetry(
+      async () => {
+        const response = await fetch(`${this.baseUrl}/draft/${tenantId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(await this.getAuthHeaders()),
+          },
+          body: JSON.stringify({ config }),
+        });
+
+        if (response.status === 401) {
+          this.handle401Response();
+          throw await parseHTTPError(response);
+        }
+
+        if (!response.ok) {
+          throw await parseHTTPError(response);
+        }
+
+        const data = await response.json();
+        return { lastSaved: data.lastSaved };
+      },
+      { maxRetries: 2 }
+    );
+  }
+
+  /**
+   * Discard the draft for a tenant. Idempotent — succeeds even if no draft exists.
+   */
+  async deleteDraft(tenantId: string): Promise<void> {
+    if (!tenantId || tenantId.trim() === '') {
+      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
+    }
+
+    return fetchWithRetry(
+      async () => {
+        const response = await fetch(`${this.baseUrl}/draft/${tenantId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(await this.getAuthHeaders()),
+          },
+        });
+
+        if (response.status === 401) {
+          this.handle401Response();
+          throw await parseHTTPError(response);
+        }
+
+        if (!response.ok) {
+          throw await parseHTTPError(response);
+        }
+      },
+      { maxRetries: 1 }
+    );
+  }
+
+  /**
    * Delete tenant configuration (admin operation)
    * @param full - If true, permanently deletes config, all backups, and hash mapping
    */

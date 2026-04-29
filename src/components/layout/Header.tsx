@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Save, Eye, Menu } from 'lucide-react';
+import { Save, Eye, Menu, Bookmark } from 'lucide-react';
 import { UserButton } from '@clerk/react';
 import logoImg from '@/assets/myrecruiter-logo.png';
 import { TenantSelector } from '../TenantSelector';
@@ -38,11 +38,13 @@ export const Header: React.FC = () => {
   const isDirty = useConfigStore((state) => state.config.isDirty);
   const isValid = useConfigStore((state) => state.validation.isValid);
   const saveConfig = useConfigStore((state) => state.config.saveConfig);
+  const saveDraft = useConfigStore((state) => state.config.saveDraft);
   const loading = useConfigStore((state) => state.ui.loading);
   const toggleSidebar = useConfigStore((state) => state.ui.toggleSidebar);
 
 
   const isSaving = loading?.save || false;
+  const isSavingDraft = loading?.saveDraft || false;
 
   const handleSave = async () => {
     try {
@@ -50,6 +52,14 @@ export const Header: React.FC = () => {
     } catch (err) {
       // Error handling is done in the store
       console.error('Save failed:', err);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    try {
+      await saveDraft();
+    } catch (err) {
+      console.error('Save draft failed:', err);
     }
   };
 
@@ -126,6 +136,24 @@ export const Header: React.FC = () => {
                 <Save className="w-4 h-4" />
                 <span className="hidden lg:inline">
                   {isSaving ? 'Saving...' : 'Save'}
+                </span>
+              </Button>
+            )}
+
+            {/* Save Draft Button — checkpoint work-in-progress separately
+                from the live config. Visible whenever a tenant is loaded. */}
+            {tenantId && (
+              <Button
+                onClick={handleSaveDraft}
+                variant="outline"
+                size="sm"
+                disabled={isSavingDraft}
+                className="flex items-center gap-1 sm:gap-2"
+                title="Save current edits as a draft (separate from live config)"
+              >
+                <Bookmark className="w-4 h-4" />
+                <span className="hidden lg:inline">
+                  {isSavingDraft ? 'Saving Draft...' : 'Save Draft'}
                 </span>
               </Button>
             )}

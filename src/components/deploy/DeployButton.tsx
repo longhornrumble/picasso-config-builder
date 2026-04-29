@@ -10,6 +10,7 @@ import { DeployDialog } from './DeployDialog';
 import { useConfigStore } from '@/store';
 import { prepareConfigForDeployment } from '@/lib/api/mergeStrategy';
 import { deployConfig } from '@/lib/api/config-operations';
+import { configApiClient } from '@/lib/api/client';
 
 export interface DeployButtonProps {
   className?: string;
@@ -50,6 +51,9 @@ export const DeployButton: React.FC<DeployButtonProps> = ({ className = '' }) =>
 
   const markClean = useConfigStore((state) => state.config.markClean);
   const addToast = useConfigStore((state) => state.ui.addToast);
+  const hasDraft = useConfigStore((state) => state.config.hasDraft);
+  const isDraft = useConfigStore((state) => state.config.isDraft);
+  const clearDraftState = useConfigStore((state) => state.config.clearDraftState);
 
   // Calculate counts
   const programsCount = Object.keys(programs).length;
@@ -111,6 +115,18 @@ export const DeployButton: React.FC<DeployButtonProps> = ({ className = '' }) =>
 
       // Mark as not dirty
       markClean();
+
+      // Promote-draft semantics: if a draft existed (or we were viewing one),
+      // remove it now that the live config is authoritative again. Cleanup
+      // failure is non-fatal — the deploy succeeded.
+      if (hasDraft || isDraft) {
+        try {
+          await configApiClient.deleteDraft(tenantId);
+        } catch (err) {
+          console.warn('Draft cleanup after deploy failed (non-fatal):', err);
+        }
+        clearDraftState();
+      }
 
       // Show success toast
       addToast({

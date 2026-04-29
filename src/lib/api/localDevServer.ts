@@ -374,6 +374,100 @@ app.delete('/config/:tenantId', async (req, res) => {
 });
 
 /**
+ * Draft endpoints — file-based, no backups, last-write-wins.
+ * Stored alongside live configs as `{tenantId}-draft.json`.
+ */
+
+/**
+ * GET /draft/{tenantId} — returns { hasDraft, config?, lastSaved? }
+ */
+app.get('/draft/:tenantId', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const draftPath = path.join(MOCK_S3_DIR, `${tenantId}-draft.json`);
+
+    try {
+      const [stat, raw] = await Promise.all([
+        fs.stat(draftPath),
+        fs.readFile(draftPath, 'utf-8'),
+      ]);
+      const config = JSON.parse(raw);
+      return res.json({
+        hasDraft: true,
+        config,
+        lastSaved: stat.mtime.toISOString(),
+      });
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return res.json({ hasDraft: false });
+      }
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error loading draft:', error);
+    res.status(500).json({
+      error: 'Failed to load draft',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
+ * POST /draft/{tenantId} — body: { config }
+ */
+app.post('/draft/:tenantId', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const { config } = req.body || {};
+
+    if (!config || typeof config !== 'object') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Missing or invalid config in body',
+      });
+    }
+
+    const draftPath = path.join(MOCK_S3_DIR, `${tenantId}-draft.json`);
+    await fs.writeFile(draftPath, JSON.stringify(config, null, 2));
+
+    res.json({
+      success: true,
+      lastSaved: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error saving draft:', error);
+    res.status(500).json({
+      error: 'Failed to save draft',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
+ * DELETE /draft/{tenantId} — idempotent
+ */
+app.delete('/draft/:tenantId', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const draftPath = path.join(MOCK_S3_DIR, `${tenantId}-draft.json`);
+    try {
+      await fs.unlink(draftPath);
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw error;
+      }
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting draft:', error);
+    res.status(500).json({
+      error: 'Failed to delete draft',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
  * Get section information
  * GET /sections
  */

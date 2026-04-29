@@ -32,6 +32,25 @@ vi.mock('@/lib/api/config-operations', () => ({
   getTenantMetadata: vi.fn(),
 }));
 
+// Stub draft methods on the singleton client. The slice's loadConfig action
+// calls configApiClient.loadDraft after every successful load — without this
+// mock those calls hit jsdom fetch and exhaust retries (~3-7s each), which
+// pushes order-dependent tests past the 5s timeout.
+vi.mock('@/lib/api/client', async (importOriginal) => {
+  const mod = (await importOriginal()) as typeof import('@/lib/api/client');
+  return {
+    ...mod,
+    configApiClient: {
+      ...mod.configApiClient,
+      loadDraft: vi.fn().mockResolvedValue({ hasDraft: false }),
+      saveDraft: vi
+        .fn()
+        .mockResolvedValue({ lastSaved: new Date().toISOString() }),
+      deleteDraft: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+});
+
 describe('S3 Deployment Workflow Integration Tests', () => {
   let mockS3: ReturnType<typeof createMockS3API>;
 
