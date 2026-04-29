@@ -30,8 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Install Playwright browsers (chromium for globalSetup + matrix browser for tests)
+        run: npx playwright install --with-deps chromium ${{ matrix.browser }}
 
       - name: Build application
         run: npm run build:dev
