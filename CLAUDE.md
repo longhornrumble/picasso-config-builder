@@ -53,7 +53,7 @@ The Picasso Config Builder is a web-based internal operations tool for managing 
 - **State Management**: Zustand
 - **Forms**: React Hook Form + Zod validation
 - **Styling**: Tailwind CSS (green theme matching analytics dashboard)
-- **Testing**: Vitest (unit/integration) + Playwright (E2E)
+- **Testing**: Vitest (unit/integration)
 - **Backend**: AWS Lambda (Node.js 20.x) + API Gateway
 - **Storage**: S3 (`myrecruiter-picasso` bucket)
 
@@ -130,8 +130,6 @@ picasso-config-builder/
 ├── mock-s3/                  # Local dev tenant configs
 │   ├── TEST001.json
 │   └── TEST002.json
-├── e2e/                      # Playwright E2E tests
-├── tests/                    # Additional test files
 ├── docs/                     # Comprehensive documentation
 │   ├── API_DOCUMENTATION.md
 │   ├── ARCHITECTURE.md
@@ -186,18 +184,6 @@ npm run test:ui                       # Run tests with Vitest UI
 npm run test:run                      # Run tests once
 npm run test:coverage                 # Generate coverage report
 npm run test:all                      # Run all tests
-
-# E2E tests (Playwright)
-npm run test:e2e                      # Run all E2E tests
-npm run test:e2e:headed               # Run E2E tests with browser visible
-npm run test:e2e:ui                   # Run E2E tests with Playwright UI
-npm run test:e2e:chromium             # Run E2E tests in Chromium only
-npm run test:e2e:firefox              # Run E2E tests in Firefox only
-npm run test:e2e:webkit               # Run E2E tests in WebKit only
-npm run test:e2e:report               # Show E2E test report
-
-# All tests
-npm run test:all               # Run all tests (unit + E2E)
 ```
 
 ### Validation
@@ -306,8 +292,8 @@ NODE_ENV=development
 
 ### Testing Workflow
 
-1. Write tests in `src/**/__tests__/` (unit/integration) or `e2e/` (E2E)
-2. Run tests: `npm test` (unit) or `npm run test:e2e` (E2E)
+1. Write tests in `src/**/__tests__/` (unit/integration)
+2. Run tests: `npm test`
 3. Check coverage: `npm run test:coverage`
 4. Fix any failing tests before committing
 
@@ -396,7 +382,6 @@ The Dashboard page (`/dashboard`) provides a visual representation of the config
 - `tailwind.config.js`: Tailwind CSS configuration
 - `tsconfig.json`: TypeScript configuration
 - `vitest.config.ts`: Vitest test configuration
-- `playwright.config.ts`: Playwright E2E test configuration
 
 ### State Management
 
@@ -433,13 +418,6 @@ The Dashboard page (`/dashboard`) provides a visual representation of the config
 - Test state management flows
 - Test API integration
 - Located in `src/__tests__/integration/`
-
-### E2E Tests
-
-- Test complete user workflows
-- Use Playwright
-- Test across browsers (Chromium, Firefox, WebKit)
-- Located in `e2e/`
 
 ## Common Development Tasks
 

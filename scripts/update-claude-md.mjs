@@ -168,24 +168,10 @@ function generateCommandsSection(packageJson) {
     markdown += '### Testing\n\n```bash\n';
     markdown += '# Unit/Integration tests (Vitest)\n';
 
-    const vitestCommands = categories.testing.filter(s => !s.name.includes('e2e'));
-    for (const { name, command } of vitestCommands) {
+    for (const { name, command } of categories.testing) {
       const description = getScriptDescription(name, command);
       const padding = ' '.repeat(Math.max(1, 30 - name.length));
       markdown += `npm ${name === 'test' ? 'test' : `run ${name}`}${padding}# ${description}\n`;
-    }
-
-    markdown += '\n# E2E tests (Playwright)\n';
-    const e2eCommands = categories.testing.filter(s => s.name.includes('e2e'));
-    for (const { name, command } of e2eCommands) {
-      const description = getScriptDescription(name, command);
-      const padding = ' '.repeat(Math.max(1, 30 - name.length));
-      markdown += `npm run ${name}${padding}# ${description}\n`;
-    }
-
-    if (categories.testing.find(s => s.name === 'test:all')) {
-      markdown += '\n# All tests\n';
-      markdown += 'npm run test:all               # Run all tests (unit + E2E)\n';
     }
 
     markdown += '```\n\n';
@@ -239,13 +225,6 @@ function getScriptDescription(name, command) {
     'test:ui': 'Run tests with Vitest UI',
     'test:run': 'Run tests once',
     'test:coverage': 'Generate coverage report',
-    'test:e2e': 'Run all E2E tests',
-    'test:e2e:headed': 'Run E2E tests with browser visible',
-    'test:e2e:ui': 'Run E2E tests with Playwright UI',
-    'test:e2e:chromium': 'Run E2E tests in Chromium only',
-    'test:e2e:firefox': 'Run E2E tests in Firefox only',
-    'test:e2e:webkit': 'Run E2E tests in WebKit only',
-    'test:e2e:report': 'Show E2E test report',
     'test:all': 'Run all tests',
 
     // Validation
