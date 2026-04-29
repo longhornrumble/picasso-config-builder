@@ -17,7 +17,7 @@
  * Reference: https://clerk.com/docs/testing/playwright/overview
  */
 
-import { clerk, clerkSetup, setupClerkTestingToken } from '@clerk/testing/playwright';
+import { clerk, clerkSetup } from '@clerk/testing/playwright';
 import { chromium, FullConfig } from '@playwright/test';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -32,12 +32,11 @@ async function globalSetup(config: FullConfig) {
   const publishableKey = process.env.VITE_CLERK_PUBLISHABLE_KEY;
   const secretKey = process.env.CLERK_SECRET_KEY;
   const email = process.env.E2E_CLERK_USER_EMAIL;
-  const password = process.env.E2E_CLERK_USER_PASSWORD;
 
-  if (!publishableKey || !secretKey || !email || !password) {
+  if (!publishableKey || !secretKey || !email) {
     throw new Error(
       'Missing one or more required env vars: VITE_CLERK_PUBLISHABLE_KEY, ' +
-      'CLERK_SECRET_KEY, E2E_CLERK_USER_EMAIL, E2E_CLERK_USER_PASSWORD. ' +
+      'CLERK_SECRET_KEY, E2E_CLERK_USER_EMAIL. ' +
       'CI: confirm GitHub repo secrets are set and injected via the workflow. ' +
       'Local: export them in your shell before running.'
     );
@@ -58,50 +57,25 @@ async function globalSetup(config: FullConfig) {
   const page = await context.newPage();
 
   try {
-    // Inject the testing token into the page's request headers so Clerk
-    // recognizes this session as a test (bypasses bot detection / CAPTCHA).
-    // Must be called BEFORE the first page navigation so the token is on
-    // every request, including the Clerk SDK initialization request.
-    await setupClerkTestingToken({ page });
-
     await page.goto(baseURL);
 
-    // Programmatic sign-in via Clerk Frontend API. Bypasses the form, OAuth
-    // redirects, and bot protection. Authenticates the page's Clerk session
-    // directly with the password strategy.
-    await clerk.signIn({
-      page,
-      signInParams: {
-        strategy: 'password',
-        identifier: email,
-        password,
-      },
-    });
-    console.log('[global-setup] clerk.signIn() returned without error');
-
-    // Diagnostic: log what Clerk thinks the auth state is + which cookies are set.
-    const diag = await page.evaluate(() => {
-      const w = window as any;
-      const clerk = w.Clerk;
-      return {
-        hasClerk: !!clerk,
-        clerkLoaded: clerk?.loaded ?? null,
-        userId: clerk?.user?.id ?? null,
-        sessionId: clerk?.session?.id ?? null,
-        sessionStatus: clerk?.session?.status ?? null,
-        cookieNames: document.cookie.split(';').map((c) => c.trim().split('=')[0]).filter(Boolean),
-      };
-    });
-    console.log('[global-setup] Clerk diagnostic:', JSON.stringify(diag, null, 2));
-
-    // Reload so React detects the new Clerk session and re-renders to the
-    // signed-in branch. Without this, <Show when="signed-out"> can stay
-    // mounted indefinitely even though cookies/localStorage are now signed-in.
-    await page.reload();
+    // Email-based sign-in via @clerk/testing. Internally:
+    //   1. Uses CLERK_SECRET_KEY to look up the user by email (Backend API).
+    //   2. Creates a short-lived sign-in token (ticket) via the Backend API.
+    //   3. Calls window.Clerk.client.signIn with strategy='ticket' in the page.
+    //   4. WAITS for window.Clerk.user !== null before returning.
+    //
+    // This path is more robust than the signInParams/password path because:
+    //   - No password verification flake (secret-key-issued ticket).
+    //   - Wraps setupClerkTestingToken automatically (bypasses bot protection).
+    //   - Synchronously waits for the session to be active before returning,
+    //     so the next page interaction sees the signed-in state.
+    await clerk.signIn({ emailAddress: email, page });
+    console.log('[global-setup] clerk.signIn() returned; window.Clerk.user is set.');
 
     // Wait for the app to render in signed-in state. The tenant selector
     // (button[role="combobox"]) only mounts inside <Show when="signed-in">,
-    // so its presence confirms auth completed.
+    // so its presence confirms React has reacted to the auth change.
     await page.waitForSelector('button[role="combobox"]', { timeout: 30_000 });
 
     await context.storageState({ path: AUTH_FILE });
