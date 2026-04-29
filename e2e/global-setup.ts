@@ -71,6 +71,12 @@ async function globalSetup(config: FullConfig) {
         password,
       },
     });
+    console.log('[global-setup] clerk.signIn() returned without error');
+
+    // Reload so React detects the new Clerk session and re-renders to the
+    // signed-in branch. Without this, <Show when="signed-out"> can stay
+    // mounted indefinitely even though cookies/localStorage are now signed-in.
+    await page.reload();
 
     // Wait for the app to render in signed-in state. The tenant selector
     // (button[role="combobox"]) only mounts inside <Show when="signed-in">,

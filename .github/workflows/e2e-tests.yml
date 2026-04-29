@@ -72,6 +72,15 @@ jobs:
           path: test-results/
           retention-days: 7
 
+      - name: Upload globalSetup failure screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-setup-failure-${{ matrix.browser }}
+          path: e2e/.auth/global-setup-failure.png
+          if-no-files-found: ignore
+          retention-days: 7
+
   test-coverage:
     name: Unit Test Coverage
     runs-on: ubuntu-latest
