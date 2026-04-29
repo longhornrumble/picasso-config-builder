@@ -101,7 +101,6 @@ export const CTACard: React.FC<CTACardProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const ActionIcon = getActionIcon(cta.action);
   const styleVariant = getStyleVariant(''); // style field removed in v1.5
 
   return (
@@ -109,7 +108,9 @@ export const CTACard: React.FC<CTACardProps> = ({
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <ActionIcon className="w-5 h-5 text-purple-600 shrink-0" />
+            {React.createElement(getActionIcon(cta.action), {
+              className: 'w-5 h-5 text-purple-600 shrink-0',
+            })}
             <div className="min-w-0 flex-1">
               <CardTitle className="text-lg truncate">{cta.label}</CardTitle>
               <CardDescription className="mt-1">

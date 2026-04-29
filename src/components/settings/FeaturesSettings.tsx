@@ -8,6 +8,32 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, Input } from
 import { useConfigStore } from '@/store';
 import type { FeaturesConfig, CalloutConfig } from '@/types/config';
 
+type FeatureToggleProps = {
+  label: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  description?: string;
+};
+
+const FeatureToggle: React.FC<FeatureToggleProps> = ({ label, checked, onChange, description }) => (
+  <div className="flex items-start justify-between py-2 border-b border-gray-200 dark:border-gray-700 last:border-0">
+    <div className="flex-1 pr-4">
+      <label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+        {label}
+      </label>
+      {description && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{description}</p>
+      )}
+    </div>
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={(e) => onChange(e.target.checked)}
+      className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer"
+    />
+  </div>
+);
+
 /**
  * Features Settings Component
  *
@@ -56,25 +82,11 @@ export const FeaturesSettings: React.FC = () => {
   const features: Partial<FeaturesConfig> = baseConfig?.features || {};
   const callout: Partial<CalloutConfig> = features.callout || {};
 
-  // Feature toggle component
-  const FeatureToggle: React.FC<{ label: string; field: string; description?: string }> = ({ label, field, description }) => (
-    <div className="flex items-start justify-between py-2 border-b border-gray-200 dark:border-gray-700 last:border-0">
-      <div className="flex-1 pr-4">
-        <label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
-          {label}
-        </label>
-        {description && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{description}</p>
-        )}
-      </div>
-      <input
-        type="checkbox"
-        checked={(features as any)[field] || false}
-        onChange={(e) => updateFeatures(field, e.target.checked)}
-        className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer"
-      />
-    </div>
-  );
+  // Helper to bind a feature flag to FeatureToggle's checked/onChange props
+  const flag = (field: string) => ({
+    checked: !!(features as any)[field],
+    onChange: (v: boolean) => updateFeatures(field, v),
+  });
 
   return (
     <Card>
@@ -91,47 +103,47 @@ export const FeaturesSettings: React.FC = () => {
           <div className="space-y-1">
             <FeatureToggle
               label="File Uploads"
-              field="uploads"
+              {...flag('uploads')}
               description="Allow users to upload files"
             />
             <FeatureToggle
               label="Photo Uploads (Coming Soon)"
-              field="photo_uploads"
+              {...flag('photo_uploads')}
               description="Allow users to upload photos/images — not yet implemented"
             />
             <FeatureToggle
               label="Voice Input (Coming Soon)"
-              field="voice_input"
+              {...flag('voice_input')}
               description="Enable voice-to-text input — not yet implemented"
             />
             <FeatureToggle
               label="Streaming Responses"
-              field="streaming"
+              {...flag('streaming')}
               description="Stream AI responses in real-time"
             />
             <FeatureToggle
               label="Conversational Forms"
-              field="conversational_forms"
+              {...flag('conversational_forms')}
               description="Enable forms collected through conversation"
             />
             <FeatureToggle
               label="Smart Response Cards"
-              field="smart_cards"
+              {...flag('smart_cards')}
               description="Show contextual action cards"
             />
             <FeatureToggle
               label="SMS Notifications"
-              field="sms"
+              {...flag('sms')}
               description="Enable SMS notifications"
             />
             <FeatureToggle
               label="Web Chat"
-              field="webchat"
+              {...flag('webchat')}
               description="Enable web-based chat interface"
             />
             <FeatureToggle
               label="QR Code Access (Coming Soon)"
-              field="qr"
+              {...flag('qr')}
               description="Allow QR code scanning for quick access — not yet implemented"
             />
           </div>
@@ -143,17 +155,17 @@ export const FeaturesSettings: React.FC = () => {
           <div className="space-y-1">
             <FeatureToggle
               label="Bedrock Knowledge Base"
-              field="bedrock_kb"
+              {...flag('bedrock_kb')}
               description="Use AWS Bedrock for knowledge retrieval"
             />
             <FeatureToggle
               label="ATS Integration (Coming Soon)"
-              field="ats"
+              {...flag('ats')}
               description="Applicant Tracking System integration — not yet implemented"
             />
             <FeatureToggle
               label="Interview Scheduling (Coming Soon)"
-              field="interview_scheduling"
+              {...flag('interview_scheduling')}
               description="Enable automated interview scheduling — not yet implemented"
             />
           </div>
@@ -165,22 +177,22 @@ export const FeaturesSettings: React.FC = () => {
           <div className="space-y-1">
             <FeatureToggle
               label="Conversations Dashboard"
-              field="dashboard_conversations"
+              {...flag('dashboard_conversations')}
               description="Access to conversation analytics"
             />
             <FeatureToggle
               label="Forms Dashboard"
-              field="dashboard_forms"
+              {...flag('dashboard_forms')}
               description="Access to form submission data"
             />
             <FeatureToggle
               label="Attribution Dashboard"
-              field="dashboard_attribution"
+              {...flag('dashboard_attribution')}
               description="Access to attribution tracking"
             />
             <FeatureToggle
               label="Notifications Dashboard"
-              field="dashboard_notifications"
+              {...flag('dashboard_notifications')}
               description="Access to notification delivery tracking, recipient management, and template editing"
             />
           </div>
