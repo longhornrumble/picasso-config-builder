@@ -17,7 +17,7 @@
  * Reference: https://clerk.com/docs/testing/playwright/overview
  */
 
-import { clerk, clerkSetup } from '@clerk/testing/playwright';
+import { clerk, clerkSetup, setupClerkTestingToken } from '@clerk/testing/playwright';
 import { chromium, FullConfig } from '@playwright/test';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -58,6 +58,12 @@ async function globalSetup(config: FullConfig) {
   const page = await context.newPage();
 
   try {
+    // Inject the testing token into the page's request headers so Clerk
+    // recognizes this session as a test (bypasses bot detection / CAPTCHA).
+    // Must be called BEFORE the first page navigation so the token is on
+    // every request, including the Clerk SDK initialization request.
+    await setupClerkTestingToken({ page });
+
     await page.goto(baseURL);
 
     // Programmatic sign-in via Clerk Frontend API. Bypasses the form, OAuth
@@ -72,6 +78,21 @@ async function globalSetup(config: FullConfig) {
       },
     });
     console.log('[global-setup] clerk.signIn() returned without error');
+
+    // Diagnostic: log what Clerk thinks the auth state is + which cookies are set.
+    const diag = await page.evaluate(() => {
+      const w = window as any;
+      const clerk = w.Clerk;
+      return {
+        hasClerk: !!clerk,
+        clerkLoaded: clerk?.loaded ?? null,
+        userId: clerk?.user?.id ?? null,
+        sessionId: clerk?.session?.id ?? null,
+        sessionStatus: clerk?.session?.status ?? null,
+        cookieNames: document.cookie.split(';').map((c) => c.trim().split('=')[0]).filter(Boolean),
+      };
+    });
+    console.log('[global-setup] Clerk diagnostic:', JSON.stringify(diag, null, 2));
 
     // Reload so React detects the new Clerk session and re-renders to the
     // signed-in branch. Without this, <Show when="signed-out"> can stay
