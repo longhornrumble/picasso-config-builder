@@ -73,10 +73,36 @@ async function globalSetup(config: FullConfig) {
     await clerk.signIn({ emailAddress: email, page });
     console.log('[global-setup] clerk.signIn() returned; window.Clerk.user is set.');
 
-    // Wait for the app to render in signed-in state. The tenant selector
-    // (button[role="combobox"]) only mounts inside <Show when="signed-in">,
-    // so its presence confirms React has reacted to the auth change.
-    await page.waitForSelector('button[role="combobox"]', { timeout: 30_000 });
+    // Wait for the app to render in signed-in state. Try multiple anchor
+    // selectors — the tenant selector (button[role="combobox"]) is the
+    // canonical signed-in indicator, but it depends on TenantSelector
+    // having loaded tenants. Fall back to any sidebar nav link, which
+    // mounts as soon as the Layout is rendered.
+    try {
+      await Promise.race([
+        page.waitForSelector('button[role="combobox"]', { timeout: 60_000 }),
+        page.waitForSelector('nav a[href="/programs"]', { timeout: 60_000 }),
+      ]);
+    } catch (waitErr) {
+      // Surface what's actually on the page when the wait times out.
+      const pageState = await page.evaluate(() => {
+        const w = window as any;
+        return {
+          url: location.href,
+          title: document.title,
+          bodyTextSnippet: document.body?.innerText?.slice(0, 500) ?? '',
+          combobox: !!document.querySelector('button[role="combobox"]'),
+          signInForm: !!document.querySelector('input[name="identifier"]'),
+          navLinks: Array.from(document.querySelectorAll('nav a')).map(
+            (a) => (a as HTMLAnchorElement).href
+          ).slice(0, 10),
+          clerkUser: w.Clerk?.user?.id ?? null,
+          clerkSessionStatus: w.Clerk?.session?.status ?? null,
+        };
+      });
+      console.error('[global-setup] Page state at timeout:', JSON.stringify(pageState, null, 2));
+      throw waitErr;
+    }
 
     await context.storageState({ path: AUTH_FILE });
     console.log(`[global-setup] Auth state saved to ${AUTH_FILE}`);
