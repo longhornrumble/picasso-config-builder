@@ -80,3 +80,21 @@ export {
   createTenantSchema,
   type CreateTenantFormData,
 } from './createTenant.schema';
+
+// Scheduling schemas (v1 scheduling config block — see scheduling/docs/scheduling_config_schema.md)
+export {
+  reminderEntrySchema,
+  reminderTierSchema,
+  reminderCadenceSchema,
+  tagConditionSchema,
+  routingPolicySchema,
+  appointmentTypeSchema,
+  schedulingConfigSchema,
+  type ReminderEntry,
+  type ReminderTier,
+  type ReminderCadence,
+  type TagCondition,
+  type RoutingPolicy,
+  type AppointmentType,
+  type SchedulingConfig,
+} from './scheduling.schema';
