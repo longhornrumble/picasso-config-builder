@@ -11,13 +11,8 @@ env:
 
 jobs:
   lint:
-    # TODO(lint-cleanup): Flip continue-on-error to false once the ESLint
-    # debt cleanup PR lands. ESLint has never been configured in this repo;
-    # enabling it surfaces ~200 pre-existing problems that are being
-    # cleaned up on a separate branch (feat/lint-cleanup-phase-a).
     name: Code Quality - Linting
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
