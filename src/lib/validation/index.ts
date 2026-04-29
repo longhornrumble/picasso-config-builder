@@ -8,6 +8,7 @@ import type {
   ConversationalForm,
   CTADefinition,
   ConversationBranch,
+  TenantConfig,
 } from '@/types/config';
 import type {
   ValidationError,
@@ -59,7 +60,7 @@ export function validateConfigFromStore(state: {
   forms: { forms: Record<string, ConversationalForm> };
   ctas: { ctas: Record<string, CTADefinition> };
   branches: { branches: Record<string, ConversationBranch> };
-  config: { baseConfig: any };
+  config: { baseConfig: Partial<TenantConfig> | null };
 }): ConfigValidationResult {
   // Extract max CTAs per response from global settings (default to 4)
   const maxCtasPerResponse = state.config?.baseConfig?.cta_settings?.max_ctas_per_response || 4;

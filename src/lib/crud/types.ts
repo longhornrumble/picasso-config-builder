@@ -13,6 +13,13 @@ import type { ValidationErrors } from '@/types/validation';
  * Ensures entities have a unique identifier field
  */
 export interface BaseEntity {
+  // The generic CRUD framework treats entities as opaque objects with string
+  // keys; using `unknown` here would force every domain entity (Program, CTA,
+  // FormField, ShowcaseItem, etc.) to declare an explicit index signature
+  // even though they have well-defined property sets. The `any` here is the
+  // framework's "any object" constraint, not unchecked field access at use
+  // sites — call sites work with the concrete `T extends BaseEntity` type.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -122,7 +129,7 @@ export interface FormFieldsProps<T extends BaseEntity> {
  */
 export interface CardContentProps<T extends BaseEntity> {
   entity: T;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**

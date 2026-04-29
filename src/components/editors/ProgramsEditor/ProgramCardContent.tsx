@@ -16,7 +16,7 @@ export const ProgramCardContent: React.FC<CardContentProps<Program>> = ({
   metadata,
 }) => {
   // Get form count from metadata (if provided)
-  const formCount = metadata?.formCount || 0;
+  const formCount = (metadata?.formCount as number | undefined) ?? 0;
 
   return (
     <div className="space-y-3">

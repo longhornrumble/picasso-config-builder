@@ -468,7 +468,7 @@ export class ConfigAPIClient {
     tenant_id: string;
     tenant_hash: string;
     embed_code: string;
-    config: any;
+    config: TenantConfig;
   }> {
     return fetchWithRetry(
       async () => {

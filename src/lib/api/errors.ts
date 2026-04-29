@@ -40,8 +40,11 @@ export class ConfigAPIError extends Error {
     this.statusCode = statusCode;
 
     // Maintain proper stack trace for where our error was thrown (only available on V8)
-    if ('captureStackTrace' in Error && typeof (Error as any).captureStackTrace === 'function') {
-      (Error as any).captureStackTrace(this, ConfigAPIError);
+    const ErrorWithCapture = Error as ErrorConstructor & {
+      captureStackTrace?: (target: object, ctor: Function) => void;
+    };
+    if (typeof ErrorWithCapture.captureStackTrace === 'function') {
+      ErrorWithCapture.captureStackTrace(this, ConfigAPIError);
     }
   }
 
