@@ -173,7 +173,7 @@ export const FormFormFields: React.FC<FormFieldsProps<ConversationalForm>> = ({
       <PostSubmissionConfig
         value={value.post_submission}
         onChange={(newConfig) => onChange({ ...value, post_submission: newConfig })}
-        errors={errors.post_submission}
+        errors={errors.post_submission ? { confirmation_message: errors.post_submission } : undefined}
         touched={touched.post_submission}
         onBlur={() => onBlur('post_submission')}
       />

@@ -17,7 +17,7 @@ import { BranchCardContent } from './BranchCardContent';
 import { validateBranch } from '@/lib/validation/formValidators';
 import { useConfigStore } from '@/store';
 import type { BranchEntity } from './types';
-import type { EntityDependencies } from '@/lib/crud/types';
+import type { EntityDependencies, ValidationContext } from '@/lib/crud/types';
 import type { ConversationBranch } from '@/types/config';
 
 /**
@@ -52,7 +52,7 @@ export const BranchesEditor: React.FC = () => {
 
   // Wrap validator to inject maxCtasPerResponse
   const branchValidator = useMemo(() => {
-    return (data: BranchEntity, context: any) => {
+    return (data: BranchEntity, context: ValidationContext<BranchEntity>) => {
       return validateBranch(data, { ...context, maxCtasPerResponse });
     };
   }, [maxCtasPerResponse]);

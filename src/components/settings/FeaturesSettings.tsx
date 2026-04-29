@@ -51,29 +51,29 @@ export const FeaturesSettings: React.FC = () => {
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
 
   // Update features field
-  const updateFeatures = (field: string, value: any) => {
+  const updateFeatures = (field: string, value: unknown) => {
     useConfigStore.setState((state) => {
       if (state.config.baseConfig) {
         if (!state.config.baseConfig.features) {
-          state.config.baseConfig.features = {} as any;
+          state.config.baseConfig.features = {} as FeaturesConfig;
         }
-        (state.config.baseConfig.features as any)[field] = value;
+        (state.config.baseConfig.features as Record<string, unknown>)[field] = value;
         state.config.isDirty = true;
       }
     });
   };
 
   // Update callout sub-field
-  const updateCallout = (field: string, value: any) => {
+  const updateCallout = (field: string, value: unknown) => {
     useConfigStore.setState((state) => {
       if (state.config.baseConfig) {
         if (!state.config.baseConfig.features) {
-          state.config.baseConfig.features = {} as any;
+          state.config.baseConfig.features = {} as FeaturesConfig;
         }
         if (!state.config.baseConfig.features.callout) {
-          state.config.baseConfig.features.callout = {} as any;
+          state.config.baseConfig.features.callout = {} as CalloutConfig;
         }
-        (state.config.baseConfig.features.callout as any)[field] = value;
+        (state.config.baseConfig.features.callout as Record<string, unknown>)[field] = value;
         state.config.isDirty = true;
       }
     });
@@ -84,7 +84,7 @@ export const FeaturesSettings: React.FC = () => {
 
   // Helper to bind a feature flag to FeatureToggle's checked/onChange props
   const flag = (field: string) => ({
-    checked: !!(features as any)[field],
+    checked: !!(features as Record<string, unknown>)[field],
     onChange: (v: boolean) => updateFeatures(field, v),
   });
 

@@ -168,7 +168,7 @@ export const CTAForm: React.FC<CTAFormProps> = ({
     query: cta?.query || '',
     prompt: cta?.prompt || '',
     type: cta?.type || 'form_trigger',
-    style: (cta as any)?.style || 'primary', // style deprecated in v1.5
+    style: (cta as CTADefinition & { style?: CTAStyle })?.style || 'primary', // style deprecated in v1.5
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -205,7 +205,7 @@ export const CTAForm: React.FC<CTAFormProps> = ({
         query: cta?.query || '',
         prompt: cta?.prompt || '',
         type: cta?.type || 'form_trigger',
-        style: (cta as any)?.style || 'primary', // style deprecated in v1.5
+        style: (cta as CTADefinition & { style?: CTAStyle })?.style || 'primary', // style deprecated in v1.5
       });
       setErrors({});
       setTouched({});

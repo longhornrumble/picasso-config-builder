@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import { useConfigStore } from '@/store';
+import type { ConversationalForm } from '@/types/config';
 
 export interface AutoSaveOptions {
   /**
@@ -122,7 +123,7 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
           state.forms.forms = Object.fromEntries(
             Object.entries(autoSaveData.forms).map(([key, form]) => [
               key,
-              { ...(form as any), form_id: key } // Override form_id to match the key
+              { ...(form as ConversationalForm), form_id: key } // Override form_id to match the key
             ])
           );
         }

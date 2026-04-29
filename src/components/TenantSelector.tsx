@@ -10,6 +10,7 @@ import { useConfigStore } from '@/store';
 import { listTenants } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import type { SelectOption } from './ui/Select';
+import type { TenantListItem } from '@/types/api';
 
 interface TenantSelectorProps {
   className?: string;
@@ -55,7 +56,7 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({
         const tenantsList = await listTenants();
 
         // Convert tenant list to select options
-        let options: SelectOption[] = tenantsList.map((tenant: any) => ({
+        let options: SelectOption[] = tenantsList.map((tenant: TenantListItem) => ({
           value: tenant.tenantId,
           label: tenant.tenantName || tenant.tenantId,
         }));

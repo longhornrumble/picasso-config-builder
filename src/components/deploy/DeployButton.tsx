@@ -11,6 +11,7 @@ import { useConfigStore } from '@/store';
 import { prepareConfigForDeployment } from '@/lib/api/mergeStrategy';
 import { deployConfig } from '@/lib/api/config-operations';
 import { configApiClient } from '@/lib/api/client';
+import type { TenantConfig } from '@/types/config';
 
 export interface DeployButtonProps {
   className?: string;
@@ -111,7 +112,7 @@ export const DeployButton: React.FC<DeployButtonProps> = ({ className = '' }) =>
       });
 
       // Deploy to S3 (or local dev server) with merge=false for full replacement
-      await deployConfig(tenantId, mergedConfig as any);
+      await deployConfig(tenantId, mergedConfig as TenantConfig);
 
       // Mark as not dirty
       markClean();
