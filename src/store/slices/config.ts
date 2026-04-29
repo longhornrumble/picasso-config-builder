@@ -3,7 +3,7 @@
  * Manages configuration lifecycle: load, save, deploy, and merge operations
  */
 
-import type { TenantConfig } from '@/types/config';
+import type { TenantConfig, ConversationalForm } from '@/types/config';
 import type { SliceCreator, ConfigSlice } from '../types';
 import * as configAPI from '@/lib/api/config-operations';
 import { configApiClient } from '@/lib/api/client';
@@ -232,8 +232,11 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         // Preserve topic_definitions from baseConfig for V4.1 Lambda compat (read-only passthrough)
         ...(mergedConfig.topic_definitions?.length && { topic_definitions: mergedConfig.topic_definitions }),
         feature_flags: mergedConfig.feature_flags || {},
-        ...((mergedConfig as any).form_settings && { form_settings: (mergedConfig as any).form_settings }),
-        ...((mergedConfig as any).monitor && { monitor: (mergedConfig as any).monitor }),
+        // form_settings is a legacy passthrough not in TenantConfig's typed surface
+        ...((mergedConfig as TenantConfig & { form_settings?: unknown }).form_settings
+          ? { form_settings: (mergedConfig as TenantConfig & { form_settings?: unknown }).form_settings }
+          : {}),
+        ...(mergedConfig.monitor ? { monitor: mergedConfig.monitor } : {}),
         // Metadata fields
         chat_title: mergedConfig.chat_title,
         welcome_message: mergedConfig.welcome_message,
@@ -436,7 +439,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         // Normalize forms: ensure form_id matches the dictionary key
         const forms = draftConfig.conversational_forms || {};
         state.forms.forms = Object.fromEntries(
-          Object.entries(forms).map(([key, form]: [string, any]) => [
+          Object.entries(forms).map(([key, form]: [string, ConversationalForm]) => [
             key,
             { ...form, form_id: key },
           ])
@@ -606,16 +609,35 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       ...(state.config.baseConfig.topic_definitions?.length && { topic_definitions: state.config.baseConfig.topic_definitions }),
       // Feature flags — always include so V4 flags can be set from scratch
       feature_flags: state.config.baseConfig.feature_flags || {},
-      ...((state.config.baseConfig as any).form_settings && { form_settings: (state.config.baseConfig as any).form_settings }),
+      // form_settings is a legacy passthrough not in TenantConfig's typed surface
+      ...((state.config.baseConfig as TenantConfig & { form_settings?: unknown }).form_settings
+        ? { form_settings: (state.config.baseConfig as TenantConfig & { form_settings?: unknown }).form_settings }
+        : {}),
       ...(state.config.baseConfig.notification_settings && { notification_settings: state.config.baseConfig.notification_settings }),
     };
 
     // Post-process forms: map post_submission.fulfillment → root-level fulfillment
     // for Lambda compatibility (Lambda reads form.fulfillment.type, not form.post_submission.fulfillment.method)
+    // Lift post_submission.fulfillment → root-level fulfillment for Lambda compat.
+    // The deployed shape uses different field names (type/email_to/template) than
+    // the local Fulfillment type — cast through unknown to express the intentional
+    // shape divergence at the Lambda boundary.
+    type DeployedFulfillment = {
+      type: string;
+      email_to?: string[];
+      cc?: string[];
+      webhook_url?: string;
+      template: string;
+    };
     for (const [formId, form] of Object.entries(mergedConfig.conversational_forms)) {
-      const ps = (form as any).post_submission;
-      if (ps?.fulfillment && !((form as any).fulfillment)) {
-        (mergedConfig.conversational_forms[formId] as any).fulfillment = {
+      const ps = form.post_submission;
+      const formWithLambdaFulfillment = form as ConversationalForm & {
+        fulfillment?: DeployedFulfillment;
+      };
+      if (ps?.fulfillment && !formWithLambdaFulfillment.fulfillment) {
+        (mergedConfig.conversational_forms[formId] as ConversationalForm & {
+          fulfillment?: DeployedFulfillment;
+        }).fulfillment = {
           type: ps.fulfillment.method || 'email',
           email_to: ps.fulfillment.recipients,
           cc: ps.fulfillment.cc,

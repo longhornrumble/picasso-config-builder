@@ -51,7 +51,7 @@ export const createUISlice: SliceCreator<UISlice> = (set, get) => ({
     });
   },
 
-  pushModal: (type: string, props: Record<string, any>) => {
+  pushModal: (type: string, props: Record<string, unknown>) => {
     set((state) => {
       state.ui.modalStack.push({ type, props });
     });

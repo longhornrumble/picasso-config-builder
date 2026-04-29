@@ -3,6 +3,7 @@
  * Type definitions for Zustand store slices and state
  */
 
+import type { StoreApi } from 'zustand';
 import type {
   Program,
   ConversationalForm,
@@ -39,7 +40,7 @@ export interface Toast {
 
 export interface Modal {
   type: string;
-  props: Record<string, any>;
+  props: Record<string, unknown>;
 }
 
 // ============================================================================
@@ -193,7 +194,7 @@ export interface UISlice {
   toggleSidebar: () => void;
   openEditor: (editor: EditorType, entityId: string | null) => void;
   closeEditor: () => void;
-  pushModal: (type: string, props: Record<string, any>) => void;
+  pushModal: (type: string, props: Record<string, unknown>) => void;
   popModal: () => void;
   clearModals: () => void;
   setLoading: (key: string, loading: boolean) => void;
@@ -320,5 +321,5 @@ export interface ConfigBuilderState {
 export type SliceCreator<T> = (
   set: (fn: (state: ConfigBuilderState) => void) => void,
   get: () => ConfigBuilderState,
-  api: any
+  api: StoreApi<ConfigBuilderState>
 ) => T;
