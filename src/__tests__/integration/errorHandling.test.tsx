@@ -178,12 +178,12 @@ describe('Error Handling Integration Tests', () => {
     expect(result.current.validation.isValid).toBe(false);
 
     // Attempt to deploy
-    let error: Error | null = null;
+    let _error: Error | null = null;
     await act(async () => {
       try {
         await result.current.config.deployConfig();
       } catch (e) {
-        error = e as Error;
+        _error = e as Error;
       }
     });
 
@@ -272,12 +272,12 @@ describe('Error Handling Integration Tests', () => {
     );
 
     // Attempt to load
-    let error: Error | null = null;
+    let _error: Error | null = null;
     await act(async () => {
       try {
         await result.current.config.loadConfig('TEST_TENANT');
       } catch (e) {
-        error = e as Error;
+        _error = e as Error;
       }
     });
 

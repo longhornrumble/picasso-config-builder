@@ -131,7 +131,7 @@ describe('appointmentTypeSchema', () => {
   });
 
   it('requires routing_policy_id', () => {
-    const { routing_policy_id, ...without } = validAppointmentType;
+    const { routing_policy_id: _routing_policy_id, ...without } = validAppointmentType;
     expect(() => appointmentTypeSchema.parse(without)).toThrow();
   });
 });

@@ -89,7 +89,6 @@ export const DraftBanner: React.FC = () => {
             onClick={handleResume}
             disabled={isLoadingDraft || isDiscarding}
             className="border-amber-500 text-amber-300 hover:bg-amber-900/40 text-xs"
-            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
           >
             {isLoadingDraft ? 'Resuming...' : 'Resume Draft'}

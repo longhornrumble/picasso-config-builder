@@ -20,10 +20,7 @@ import {
   createTestFormField,
   resetIdCounter,
   extractValidationErrors,
-  extractValidationWarnings,
-  getEntityErrors,
   getEntityWarnings,
-  getValidationSummary,
   resetConfigStore,
 } from './testUtils';
 import type { FormField } from '@/types/config';
