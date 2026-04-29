@@ -3,7 +3,14 @@
  * Implements section-based editing to preserve read-only sections
  */
 
-import type { TenantConfig } from '@/types/config';
+import type {
+  TenantConfig,
+  Program,
+  ConversationalForm,
+  CTADefinition,
+  ConversationBranch,
+  ShowcaseItem,
+} from '@/types/config';
 
 /**
  * Editable sections that can be modified through the config builder
@@ -61,7 +68,7 @@ export interface ValidationResult {
 }
 
 export interface ConfigDiff {
-  metadata_changes: Record<string, { old: any; new: any }>;
+  metadata_changes: Record<string, { old: unknown; new: unknown }>;
   section_changes: Record<string, {
     old_count: number;
     new_count: number;
@@ -89,17 +96,22 @@ export function mergeConfigSections(
   // Start with the base config
   const merged = { ...baseConfig };
 
-  // Update editable sections if provided
+  // Update editable sections if provided.
+  // Cast through unknown so we can copy each section by key without TS
+  // complaining that the union of EditableSection values can't be assigned
+  // back as a single discriminated entry.
   EDITABLE_SECTIONS.forEach((section) => {
     if (section in editedSections) {
-      (merged as any)[section] = (editedSections as any)[section];
+      (merged as Record<string, unknown>)[section] =
+        (editedSections as Record<string, unknown>)[section];
     }
   });
 
   // Update metadata fields if provided (except those we control)
   METADATA_FIELDS.forEach((field) => {
     if (field in editedSections && field !== 'generated_at') {
-      (merged as any)[field] = (editedSections as any)[field];
+      (merged as Record<string, unknown>)[field] =
+        (editedSections as Record<string, unknown>)[field];
     }
   });
 
@@ -131,14 +143,16 @@ export function extractEditableSections(
   // Include metadata
   METADATA_FIELDS.forEach((field) => {
     if (field in fullConfig) {
-      (editable as any)[field] = (fullConfig as any)[field];
+      (editable as Record<string, unknown>)[field] =
+        (fullConfig as Record<string, unknown>)[field];
     }
   });
 
   // Include editable sections
   EDITABLE_SECTIONS.forEach((section) => {
     if (section in fullConfig) {
-      (editable as any)[section] = (fullConfig as any)[section];
+      (editable as Record<string, unknown>)[section] =
+        (fullConfig as Record<string, unknown>)[section];
     }
   });
 
@@ -152,12 +166,13 @@ export function validateEditedSections(
   editedSections: Partial<TenantConfig>
 ): ValidationResult {
   const errors: string[] = [];
-  const allowedKeys = [...EDITABLE_SECTIONS, ...METADATA_FIELDS];
+  const allowedKeys: readonly string[] = [...EDITABLE_SECTIONS, ...METADATA_FIELDS];
+  const readOnlyKeys: readonly string[] = READ_ONLY_SECTIONS;
 
   // Check for disallowed sections
   const editedKeys = Object.keys(editedSections);
   const disallowedKeys = editedKeys.filter(
-    (key) => !allowedKeys.includes(key as any) && !READ_ONLY_SECTIONS.includes(key as any)
+    (key) => !allowedKeys.includes(key) && !readOnlyKeys.includes(key)
   );
 
   if (disallowedKeys.length > 0) {
@@ -165,9 +180,7 @@ export function validateEditedSections(
   }
 
   // Check for attempts to edit read-only sections
-  const readOnlyAttempts = editedKeys.filter((key) =>
-    READ_ONLY_SECTIONS.includes(key as any)
-  );
+  const readOnlyAttempts = editedKeys.filter((key) => readOnlyKeys.includes(key));
   if (readOnlyAttempts.length > 0) {
     errors.push(`Cannot edit read-only sections: ${readOnlyAttempts.join(', ')}`);
   }
@@ -242,8 +255,8 @@ export function generateConfigDiff(
 
   // Check metadata changes
   METADATA_FIELDS.forEach((field) => {
-    const oldValue = (oldConfig as any)[field];
-    const newValue = (newConfig as any)[field];
+    const oldValue = (oldConfig as Record<string, unknown>)[field];
+    const newValue = (newConfig as Record<string, unknown>)[field];
 
     if (oldValue !== newValue) {
       diff.metadata_changes[field] = {
@@ -256,8 +269,10 @@ export function generateConfigDiff(
 
   // Check editable section changes
   EDITABLE_SECTIONS.forEach((section) => {
-    const oldSection = (oldConfig as any)[section] || {};
-    const newSection = (newConfig as any)[section] || {};
+    const oldSection =
+      ((oldConfig as Record<string, unknown>)[section] as Record<string, unknown>) || {};
+    const newSection =
+      ((newConfig as Record<string, unknown>)[section] as Record<string, unknown>) || {};
 
     const oldKeys = Object.keys(oldSection);
     const newKeys = Object.keys(newSection);
@@ -291,15 +306,15 @@ export function generateConfigDiff(
 export function prepareConfigForDeployment(
   baseConfig: Partial<TenantConfig>,
   currentState: {
-    programs: Record<string, any>;
-    forms: Record<string, any>;
-    ctas: Record<string, any>;
-    branches: Record<string, any>;
-    contentShowcase?: any[];
+    programs: Record<string, Program>;
+    forms: Record<string, ConversationalForm>;
+    ctas: Record<string, CTADefinition>;
+    branches: Record<string, ConversationBranch>;
+    contentShowcase?: ShowcaseItem[];
   }
 ): MergeResult {
   // Start from baseConfig and overlay all editable slices
-  const merged: any = { ...baseConfig };
+  const merged: Partial<TenantConfig> = { ...baseConfig };
 
   // Domain slices from store
   merged.programs = currentState.programs;

@@ -494,8 +494,8 @@ app.get('/draft/:tenantId', async (req, res) => {
           ? response.LastModified.toISOString()
           : new Date().toISOString();
       return res.json({ hasDraft: true, config, lastSaved });
-    } catch (error: any) {
-      if (error.name === 'NoSuchKey') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'NoSuchKey') {
         return res.json({ hasDraft: false });
       }
       throw error;
@@ -553,8 +553,8 @@ app.delete('/draft/:tenantId', async (req, res) => {
       await s3Client.send(
         new DeleteObjectCommand({ Bucket: S3_BUCKET, Key: draftKey(tenantId) })
       );
-    } catch (error: any) {
-      if (error.name !== 'NoSuchKey') throw error;
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name !== 'NoSuchKey') throw error;
     }
     res.json({ success: true });
   } catch (error) {

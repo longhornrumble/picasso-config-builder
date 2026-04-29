@@ -3,7 +3,7 @@
  * Message templates and helpers for consistent validation messages
  */
 
-import type { ValidationError, ValidationWarning } from './types';
+import type { ValidationError, ValidationWarning, EntityType } from './types';
 
 // ============================================================================
 // MESSAGE TEMPLATES
@@ -93,7 +93,7 @@ export const messages = {
  */
 export function createError(
   message: string,
-  entityType: string,
+  entityType: EntityType,
   options?: {
     field?: string;
     entityId?: string;
@@ -104,7 +104,7 @@ export function createError(
     level: 'error',
     message: `❌ ${message}`,
     field: options?.field,
-    entityType: entityType as any,
+    entityType,
     entityId: options?.entityId,
     suggestedFix: options?.suggestedFix,
   };
@@ -115,7 +115,7 @@ export function createError(
  */
 export function createWarning(
   message: string,
-  entityType: string,
+  entityType: EntityType,
   options?: {
     field?: string;
     entityId?: string;
@@ -128,7 +128,7 @@ export function createWarning(
     level: options?.level || 'warning',
     message: `${emoji} ${message}`,
     field: options?.field,
-    entityType: entityType as any,
+    entityType,
     entityId: options?.entityId,
     suggestedFix: options?.suggestedFix,
   };
@@ -139,7 +139,7 @@ export function createWarning(
  */
 export function createInfo(
   message: string,
-  entityType: string,
+  entityType: EntityType,
   options?: {
     field?: string;
     entityId?: string;
