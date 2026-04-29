@@ -11,7 +11,13 @@ import { createProgramsSlice } from '../slices/programs';
 import { createFormsSlice } from '../slices/forms';
 import { createUISlice } from '../slices/ui';
 import { createConfigSlice } from '../slices/config';
-import type { AppState } from '../types';
+import type {
+  AppState,
+  CTAsSlice,
+  BranchesSlice,
+  ContentShowcaseSlice,
+  ValidationSlice,
+} from '../types';
 
 describe('Programs Slice', () => {
   let useStore: ReturnType<typeof create<AppState>>;
@@ -22,13 +28,13 @@ describe('Programs Slice', () => {
       immer((...args) => ({
         programs: createProgramsSlice(...args),
         forms: createFormsSlice(...args),
-        ctas: {} as any,
-        branches: {} as any,
-        cardInventory: {} as any,
-        contentShowcase: {} as any,
+        ctas: {} as unknown as CTAsSlice,
+        branches: {} as unknown as BranchesSlice,
+        cardInventory: {} as unknown as Record<string, never>,
+        contentShowcase: {} as unknown as ContentShowcaseSlice,
         ui: createUISlice(...args),
         config: createConfigSlice(...args),
-        validation: { validateAll: vi.fn() } as any,
+        validation: { validateAll: vi.fn() } as unknown as ValidationSlice,
       }))
     );
   });

@@ -24,6 +24,7 @@ import {
   getEntityWarnings,
 } from './testUtils';
 import * as configOps from '@/lib/api/config-operations';
+import type { TenantConfig } from '@/types/config';
 
 vi.mock('@/lib/api/config-operations', () => ({
   loadConfig: vi.fn(),
@@ -64,7 +65,7 @@ describe('Error Handling Integration Tests', () => {
 
     // Setup mock to fail on load
     const mockS3 = createMockS3APIWithErrors('notfound');
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
 
@@ -95,10 +96,10 @@ describe('Error Handling Integration Tests', () => {
     const testConfig = createTestTenantConfig('TEST_TENANT');
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
-    (configOps.saveConfig as any).mockRejectedValue(new Error('Network timeout'));
+    vi.mocked(configOps.saveConfig).mockRejectedValue(new Error('Network timeout'));
 
     // Load config
     await act(async () => {
@@ -144,10 +145,10 @@ describe('Error Handling Integration Tests', () => {
     const testConfig = createTestTenantConfig('TEST_TENANT');
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
-    (configOps.deployConfig as any).mockImplementation((tenantId, config) =>
+    vi.mocked(configOps.deployConfig).mockImplementation((tenantId, config) =>
       mockS3.deployConfig(tenantId, config)
     );
 
@@ -256,18 +257,19 @@ describe('Error Handling Integration Tests', () => {
   it('should handle invalid config structure on load', async () => {
     const { result } = renderHook(() => useConfigStore());
 
-    // Create invalid config
+    // Create invalid config — intentionally violates the TenantConfig schema
+    // so we can exercise the validation pipeline's bad-input branch.
     const invalidConfig = {
       tenant_id: 'TEST_TENANT',
       // Missing version
       // Missing generated_at
       programs: 'invalid', // Should be object
-    } as any;
+    } as unknown as TenantConfig;
 
     const mockS3 = createMockS3API();
     mockS3._setMockConfig('TEST_TENANT', invalidConfig);
 
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
 
@@ -295,14 +297,14 @@ describe('Error Handling Integration Tests', () => {
 
     // Setup mock to fail validation
     const mockS3 = createMockS3APIWithErrors('validation');
-    (configOps.saveConfig as any).mockImplementation((tenantId, config, options) =>
+    vi.mocked(configOps.saveConfig).mockImplementation((tenantId, config, options) =>
       mockS3.saveConfig(tenantId, config, options)
     );
 
     const testConfig = createTestTenantConfig('TEST_TENANT');
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
 
@@ -343,10 +345,10 @@ describe('Error Handling Integration Tests', () => {
     const testConfig = createTestTenantConfig('TEST_TENANT');
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
-    (configOps.saveConfig as any).mockImplementation((tenantId, config, options) =>
+    vi.mocked(configOps.saveConfig).mockImplementation((tenantId, config, options) =>
       mockS3.saveConfig(tenantId, config, options)
     );
 
@@ -535,7 +537,7 @@ describe('Error Handling Integration Tests', () => {
     const { result } = renderHook(() => useConfigStore());
 
     const mockS3 = createMockS3API();
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
 
@@ -562,10 +564,10 @@ describe('Error Handling Integration Tests', () => {
     const testConfig = createTestTenantConfig('TEST_TENANT');
     mockS3._setMockConfig('TEST_TENANT', testConfig);
 
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
-    (configOps.deployConfig as any).mockRejectedValue(new Error('Deployment failed'));
+    vi.mocked(configOps.deployConfig).mockRejectedValue(new Error('Deployment failed'));
 
     // Load config
     await act(async () => {

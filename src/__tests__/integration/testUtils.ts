@@ -12,6 +12,21 @@ import type {
   ConversationBranch,
   TenantConfig,
 } from '@/types/config';
+import type { ValidationError } from '@/types/validation';
+import type { ConfigBuilderState } from '@/store/types';
+
+// Minimal validation-state shape used by the helpers below.
+// Matches the relevant subset of ValidationSlice from the store.
+type ValidationStateLike = {
+  errors?: Record<string, ValidationError[]>;
+  warnings?: Record<string, ValidationError[]>;
+};
+
+// Minimal store shape used by resetConfigStore — anything exposing
+// Immer-style setState against ConfigBuilderState satisfies it.
+type ConfigStoreLike = {
+  setState: (fn: (state: ConfigBuilderState) => void) => void;
+};
 
 // ============================================================================
 // MOCK FACTORIES
@@ -176,7 +191,7 @@ export function createTestTenantConfig(
       'branch-1': branch,
     },
     ...overrides,
-  } as any;
+  } as TenantConfig;
 }
 
 // ============================================================================
@@ -284,20 +299,15 @@ export function createLargeTenantConfig(
   ctasPerForm: number = 2,
   branchCount: number = 30
 ): TenantConfig {
-  const config: any = {
-    tenant_id: 'LARGE_TENANT',
-    version: '1.3.0',
-    generated_at: Date.now(),
-    programs: {},
-    conversational_forms: {},
-    cta_definitions: {},
-    conversation_branches: {},
-  };
+  const programs: Record<string, Program> = {};
+  const conversational_forms: Record<string, ConversationalForm> = {};
+  const cta_definitions: Record<string, CTADefinition> = {};
+  const conversation_branches: Record<string, ConversationBranch> = {};
 
   // Create programs
   for (let p = 0; p < programCount; p++) {
     const programId = `program-${p + 1}`;
-    config.programs[programId] = createTestProgram({
+    programs[programId] = createTestProgram({
       program_id: programId,
       program_name: `Program ${p + 1}`,
     });
@@ -305,7 +315,7 @@ export function createLargeTenantConfig(
     // Create forms for each program
     for (let f = 0; f < formsPerProgram; f++) {
       const formId = `form-${p + 1}-${f + 1}`;
-      config.conversational_forms![formId] = createTestForm(programId, 5, {
+      conversational_forms[formId] = createTestForm(programId, 5, {
         form_id: formId,
         title: `Form ${p + 1}-${f + 1}`,
       });
@@ -313,7 +323,7 @@ export function createLargeTenantConfig(
       // Create CTAs for each form
       for (let c = 0; c < ctasPerForm; c++) {
         const ctaId = `cta-${p + 1}-${f + 1}-${c + 1}`;
-        config.cta_definitions[ctaId] = createTestCTA(formId, {
+        cta_definitions[ctaId] = createTestCTA(formId, {
           label: `CTA ${p + 1}-${f + 1}-${c + 1}`,
         });
       }
@@ -321,16 +331,24 @@ export function createLargeTenantConfig(
   }
 
   // Create branches
-  const allCtaIds = Object.keys(config.cta_definitions);
+  const allCtaIds = Object.keys(cta_definitions);
   for (let b = 0; b < branchCount; b++) {
     const branchId = `branch-${b + 1}`;
     const primaryCtaId = allCtaIds[b % allCtaIds.length];
-    config.conversation_branches[branchId] = createTestBranch(primaryCtaId, {
+    conversation_branches[branchId] = createTestBranch(primaryCtaId, {
       detection_keywords: [`keyword-${b + 1}`, `topic-${b + 1}`],
     });
   }
 
-  return config;
+  return {
+    tenant_id: 'LARGE_TENANT',
+    version: '1.3.0',
+    generated_at: Date.now(),
+    programs,
+    conversational_forms,
+    cta_definitions,
+    conversation_branches,
+  } as TenantConfig;
 }
 
 // ============================================================================
@@ -354,14 +372,14 @@ export async function waitForStoreUpdate(checkFn: () => boolean, timeout: number
 /**
  * Extract all validation errors from store state
  */
-export function extractValidationErrors(validationState: any): string[] {
+export function extractValidationErrors(validationState: ValidationStateLike): string[] {
   const errors: string[] = [];
 
   // New validation structure uses errors and warnings objects keyed by entityId
   if (validationState.errors) {
-    Object.values(validationState.errors).forEach((entityErrors: any) => {
+    Object.values(validationState.errors).forEach((entityErrors) => {
       if (Array.isArray(entityErrors)) {
-        entityErrors.forEach((error: any) => {
+        entityErrors.forEach((error) => {
           errors.push(error.message);
         });
       }
@@ -374,13 +392,13 @@ export function extractValidationErrors(validationState: any): string[] {
 /**
  * Extract all validation warnings from store state
  */
-export function extractValidationWarnings(validationState: any): string[] {
+export function extractValidationWarnings(validationState: ValidationStateLike): string[] {
   const warnings: string[] = [];
 
   if (validationState.warnings) {
-    Object.values(validationState.warnings).forEach((entityWarnings: any) => {
+    Object.values(validationState.warnings).forEach((entityWarnings) => {
       if (Array.isArray(entityWarnings)) {
-        entityWarnings.forEach((warning: any) => {
+        entityWarnings.forEach((warning) => {
           warnings.push(warning.message);
         });
       }
@@ -393,26 +411,34 @@ export function extractValidationWarnings(validationState: any): string[] {
 /**
  * Get validation errors for a specific entity
  */
-export function getEntityErrors(validationState: any, entityId: string): any[] {
+export function getEntityErrors(
+  validationState: ValidationStateLike,
+  entityId: string,
+): ValidationError[] {
   return validationState.errors?.[entityId] || [];
 }
 
 /**
  * Get validation warnings for a specific entity
  */
-export function getEntityWarnings(validationState: any, entityId: string): any[] {
+export function getEntityWarnings(
+  validationState: ValidationStateLike,
+  entityId: string,
+): ValidationError[] {
   return validationState.warnings?.[entityId] || [];
 }
 
 /**
  * Calculate validation summary from errors and warnings
  */
-export function getValidationSummary(validationState: any): { totalErrors: number; totalWarnings: number } {
+export function getValidationSummary(
+  validationState: ValidationStateLike,
+): { totalErrors: number; totalWarnings: number } {
   let totalErrors = 0;
   let totalWarnings = 0;
 
   if (validationState.errors) {
-    Object.values(validationState.errors).forEach((entityErrors: any) => {
+    Object.values(validationState.errors).forEach((entityErrors) => {
       if (Array.isArray(entityErrors)) {
         totalErrors += entityErrors.length;
       }
@@ -420,7 +446,7 @@ export function getValidationSummary(validationState: any): { totalErrors: numbe
   }
 
   if (validationState.warnings) {
-    Object.values(validationState.warnings).forEach((entityWarnings: any) => {
+    Object.values(validationState.warnings).forEach((entityWarnings) => {
       if (Array.isArray(entityWarnings)) {
         totalWarnings += entityWarnings.length;
       }
@@ -434,8 +460,8 @@ export function getValidationSummary(validationState: any): { totalErrors: numbe
  * Reset Zustand store to clean state for testing
  * Import useConfigStore in your test and call this in beforeEach
  */
-export function resetConfigStore(useConfigStore: any) {
-  useConfigStore.setState((state: any) => {
+export function resetConfigStore(useConfigStore: ConfigStoreLike) {
+  useConfigStore.setState((state) => {
     // Reset only data properties, preserve all action methods
     state.programs.programs = {};
     state.programs.activeProgramId = null;

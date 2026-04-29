@@ -23,6 +23,7 @@ import {
   getEntityWarnings,
 } from './testUtils';
 import * as configOps from '@/lib/api/config-operations';
+import type { FormField } from '@/types/config';
 
 vi.mock('@/lib/api/config-operations', () => ({
   loadConfig: vi.fn(),
@@ -75,7 +76,7 @@ describe('Edge Cases Integration Tests', () => {
     };
 
     mockS3._setMockConfig('EMPTY_TENANT', emptyConfig);
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
 
@@ -111,10 +112,10 @@ describe('Edge Cases Integration Tests', () => {
     const largeConfig = createLargeTenantConfig(10, 3, 2, 30);
 
     mockS3._setMockConfig('LARGE_TENANT', largeConfig);
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
-    (configOps.saveConfig as any).mockImplementation((tenantId, config, options) =>
+    vi.mocked(configOps.saveConfig).mockImplementation((tenantId, config, options) =>
       mockS3.saveConfig(tenantId, config, options)
     );
 
@@ -248,8 +249,8 @@ describe('Edge Cases Integration Tests', () => {
             label: 'Select',
             prompt: 'Choose an option',
             required: true,
-            options: [], // Select with no options — should be invalid
-          } as any,
+            options: [], // Select with no options — intentionally invalid for the validation test
+          } as unknown as FormField,
         ],
       });
     });
@@ -452,7 +453,7 @@ describe('Edge Cases Integration Tests', () => {
     };
 
     mockS3._setMockConfig('MINIMAL_TENANT', minimalConfig);
-    (configOps.loadConfig as any).mockImplementation((tenantId) =>
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
       mockS3.loadConfig(tenantId)
     );
 
