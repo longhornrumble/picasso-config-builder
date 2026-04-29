@@ -614,7 +614,7 @@ export const ShowcaseItemFormFields: React.FC<FormFieldsProps<ShowcaseItemEntity
 
       {/* Live Preview */}
       <div className="w-full mt-6">
-        <ShowcaseItemPreview item={value} />
+        <ShowcaseItemPreview key={value.image_url || 'no-image'} item={value} />
       </div>
     </>
   );

@@ -57,6 +57,7 @@ export function useTenantList(): UseTenantListResult {
   // Wait for auth to be ready before fetching tenants
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- canonical async data fetch on mount/deps change (React docs: "You Might Not Need an Effect" — fetching is a real side effect)
       fetchTenants();
     }
   }, [fetchTenants, authLoading, isAuthenticated]);
@@ -111,6 +112,7 @@ export function useTenantMetadata(tenantId: string | null): UseTenantMetadataRes
   }, [tenantId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- canonical async data fetch on mount/deps change (React docs: "You Might Not Need an Effect" — fetching is a real side effect)
     fetchMetadata();
   }, [fetchMetadata]);
 
@@ -166,6 +168,7 @@ export function useLoadConfig(tenantId: string | null): UseLoadConfigResult {
   }, [tenantId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- canonical async data fetch on mount/deps change (React docs: "You Might Not Need an Effect" — fetching is a real side effect)
     fetchConfig();
   }, [fetchConfig]);
 

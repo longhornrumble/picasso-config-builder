@@ -103,6 +103,7 @@ export function useSignInToken(): UseSignInTokenResult {
     startedRef.current = true;
 
     if (!signIn || !setActive) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- error report from one-shot token-exchange side effect (guarded by startedRef)
       setState('error');
       setError('Clerk sign-in client not ready');
       return;

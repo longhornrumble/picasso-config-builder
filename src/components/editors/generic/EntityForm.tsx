@@ -4,7 +4,7 @@
  * Handles form state, validation, and submission for any entity type.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Modal,
   ModalContent,
@@ -62,9 +62,12 @@ export function EntityForm<T extends BaseEntity>({
   // Get entity ID for inline validation display
   const entityId = entity && getId ? getId(entity) : null;
 
-  // Form state
+  // Form state.
+  // Reset-on-open/reset-on-entity-change is handled by the parent via a `key` prop
+  // (see EntityEditor) — keying on entity+open forces a fresh component instance
+  // each time the modal opens or the edited entity changes, so these initializers
+  // run from scratch. This eliminates the prior reset useEffect (set-state-in-effect).
   const [formData, setFormData] = useState<T>((entity || initialValue) as T);
-  const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -82,20 +85,16 @@ export function EntityForm<T extends BaseEntity>({
     [isEditMode, existingIds, validation, entity]
   );
 
-  // Reset form when modal opens or entity changes
-  useEffect(() => {
-    if (open) {
-      const initialData = (entity || initialValue) as T;
-      setFormData(initialData);
-      setTouched({});
-      setIsSubmitting(false);
-
-      // Run initial validation to determine button state
-      // But don't show errors until user interacts
-      const initialErrors = validate(initialData);
-      setErrors(initialErrors);
-    }
-  }, [entity, open, initialValue, validate]);
+  // Seed initial validation so the submit button reflects current validity from
+  // the first render (same goal as the deleted effect, but computed at mount).
+  const [errors, setErrors] = useState<ValidationErrors>(() =>
+    validation((entity || initialValue) as T, {
+      isEditMode,
+      existingIds,
+      existingEntities: {},
+      originalEntity: entity || undefined,
+    })
+  );
 
   // Handle field change
   const handleChange = useCallback((value: T) => {
