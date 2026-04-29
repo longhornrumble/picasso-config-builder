@@ -98,11 +98,17 @@ export default defineConfig({
     },
   ],
 
-  // Run your local dev server before starting the tests
+  // Run your local dev server before starting the tests.
+  // CI uses the purpose-built E2E mock server (e2e/fixtures/mock-server.ts) which
+  // pre-loads MYR384719 + TEST001 fixtures from disk — avoids the AWS-credentials
+  // dependency that hangs every tenant-load test in GitHub Actions runners.
+  // Local development continues to use the real-S3 dev server.
   webServer: [
-    // Start local dev server with S3 access on port 3001
+    // API server on port 3001 — mock in CI, real S3 locally
     {
-      command: 'npm run server:dev',
+      command: process.env.CI
+        ? 'tsx e2e/fixtures/start-mock-server.ts'
+        : 'npm run server:dev',
       url: 'http://localhost:3001/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
