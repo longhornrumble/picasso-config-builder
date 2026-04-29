@@ -1,0 +1,123 @@
+name: PR Quality Gates
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: '22'
+  AWS_REGION: 'us-east-1'
+
+jobs:
+  lint:
+    # TODO(lint-cleanup): Flip continue-on-error to false once the ESLint
+    # debt cleanup PR lands. ESLint has never been configured in this repo;
+    # enabling it surfaces ~200 pre-existing problems that are being
+    # cleaned up on a separate branch (feat/lint-cleanup-phase-a).
+    name: Code Quality - Linting
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+  typecheck:
+    # TODO(draft-feature): Flip continue-on-error to false once PR #24
+    # (feat/draft-autosave) lands. The draft slice references
+    # configApiClient.loadDraft/saveDraft/deleteDraft methods that don't
+    # exist on the type yet — PR #24 adds them.
+    name: Code Quality - Type Checking
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run typecheck
+        run: npm run typecheck
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:run
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --omit=dev --audit-level=high
+
+  build:
+    name: Build Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for production
+        run: npm run build:production
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: config-builder-build
+          path: dist/
+          retention-days: 7

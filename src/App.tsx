@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Show, SignIn, UserButton } from '@clerk/react';
+import { Show, SignIn } from '@clerk/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer } from './components/ToastContainer';
 import { Layout } from './components/layout';
