@@ -9,6 +9,12 @@ import { Plus, AlertCircle } from 'lucide-react';
 import { FieldEditor } from './FieldEditor';
 import type { FormField } from '@/types/config';
 
+// Module-scope ID generators — keeps the impure Date.now() call outside the
+// component body so react-hooks/purity is satisfied. Both run only in click
+// handlers (post-render), but the rule flags Date.now() syntactically.
+const newFieldId = () => `field_${Date.now()}`;
+const duplicateFieldId = (originalId: string) => `${originalId}_copy_${Date.now()}`;
+
 export interface FieldCollectionProps {
   fields: FormField[];
   onChange: (fields: FormField[]) => void;
@@ -26,7 +32,7 @@ export const FieldCollection: React.FC<FieldCollectionProps> = ({
 }) => {
   const handleAddField = () => {
     const newField: FormField = {
-      id: `field_${Date.now()}`,
+      id: newFieldId(),
       type: 'text',
       label: '',
       prompt: '',
@@ -52,7 +58,7 @@ export const FieldCollection: React.FC<FieldCollectionProps> = ({
     const fieldToDuplicate = fields[index];
     const duplicatedField: FormField = {
       ...fieldToDuplicate,
-      id: `${fieldToDuplicate.id}_copy_${Date.now()}`,
+      id: duplicateFieldId(fieldToDuplicate.id),
       label: `${fieldToDuplicate.label} (Copy)`,
     };
     const newFields = [...fields];

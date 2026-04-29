@@ -4,7 +4,7 @@
  * Recovers unsaved work on page reload
  */
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useConfigStore } from '@/store';
 
 export interface AutoSaveOptions {
@@ -46,7 +46,7 @@ const DEFAULT_OPTIONS: Required<AutoSaveOptions> = {
  * ```
  */
 export function useAutoSave(options: AutoSaveOptions = {}) {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const { debounceMs, enabled, storageKey } = { ...DEFAULT_OPTIONS, ...options };
 
   const tenantId = useConfigStore((state) => state.config.tenantId);
   const isDirty = useConfigStore((state) => state.config.isDirty);
@@ -62,8 +62,8 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
   /**
    * Save current state to sessionStorage
    */
-  const saveToStorage = () => {
-    if (!tenantId || !isDirty || !opts.enabled) {
+  const saveToStorage = useCallback(() => {
+    if (!tenantId || !isDirty || !enabled) {
       return;
     }
 
@@ -78,7 +78,7 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
         contentShowcase,
       };
 
-      const key = `${opts.storageKey}-${tenantId}`;
+      const key = `${storageKey}-${tenantId}`;
       sessionStorage.setItem(key, JSON.stringify(autoSaveData));
       lastSaveRef.current = Date.now();
 
@@ -86,18 +86,18 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
     } catch (error) {
       console.error('Failed to auto-save:', error);
     }
-  };
+  }, [tenantId, isDirty, enabled, programs, forms, ctas, branches, contentShowcase, storageKey]);
 
   /**
    * Load saved state from sessionStorage
    */
-  const loadFromStorage = () => {
-    if (!tenantId || !opts.enabled) {
+  const loadFromStorage = useCallback(() => {
+    if (!tenantId || !enabled) {
       return false;
     }
 
     try {
-      const key = `${opts.storageKey}-${tenantId}`;
+      const key = `${storageKey}-${tenantId}`;
       const saved = sessionStorage.getItem(key);
 
       if (!saved) {
@@ -146,39 +146,39 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
       console.error('Failed to load autosave:', error);
       return false;
     }
-  };
+  }, [tenantId, enabled, storageKey]);
 
   /**
    * Clear autosave for current tenant
    */
-  const clearAutoSave = () => {
+  const clearAutoSave = useCallback(() => {
     if (!tenantId) {
       return;
     }
 
     try {
-      const key = `${opts.storageKey}-${tenantId}`;
+      const key = `${storageKey}-${tenantId}`;
       sessionStorage.removeItem(key);
       console.log('Cleared autosave for:', tenantId);
     } catch (error) {
       console.error('Failed to clear autosave:', error);
     }
-  };
+  }, [tenantId, storageKey]);
 
   /**
    * Load autosave on mount (when tenant changes)
    */
   useEffect(() => {
-    if (tenantId && opts.enabled) {
+    if (tenantId && enabled) {
       loadFromStorage();
     }
-  }, [tenantId]); // Only run when tenant changes
+  }, [tenantId, enabled, loadFromStorage]);
 
   /**
    * Set up debounced auto-save
    */
   useEffect(() => {
-    if (!opts.enabled || !isDirty || !tenantId) {
+    if (!enabled || !isDirty || !tenantId) {
       return;
     }
 
@@ -190,7 +190,7 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
     // Set up new timer
     saveTimerRef.current = setTimeout(() => {
       saveToStorage();
-    }, opts.debounceMs);
+    }, debounceMs);
 
     // Cleanup on unmount or deps change
     return () => {
@@ -198,7 +198,7 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
         clearTimeout(saveTimerRef.current);
       }
     };
-  }, [programs, forms, ctas, branches, contentShowcase, isDirty, tenantId, opts.enabled, opts.debounceMs]);
+  }, [isDirty, tenantId, enabled, debounceMs, saveToStorage]);
 
   /**
    * Clear autosave when config is no longer dirty (after successful save/deploy)
@@ -207,13 +207,13 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
     if (!isDirty && tenantId) {
       clearAutoSave();
     }
-  }, [isDirty, tenantId]);
+  }, [isDirty, tenantId, clearAutoSave]);
 
   /**
    * Save immediately before page unload if there are unsaved changes
    */
   useEffect(() => {
-    if (!opts.enabled) {
+    if (!enabled) {
       return;
     }
 
@@ -234,13 +234,14 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isDirty, tenantId, programs, forms, ctas, branches, contentShowcase, opts.enabled]);
+  }, [isDirty, tenantId, enabled, saveToStorage]);
 
-  // Return utilities
+  // Return utilities. lastSaveTime is exposed as a getter so callers don't
+  // read ref.current during render (react-hooks/refs).
   return {
     saveToStorage,
     loadFromStorage,
     clearAutoSave,
-    lastSaveTime: lastSaveRef.current,
+    getLastSaveTime: () => lastSaveRef.current,
   };
 }

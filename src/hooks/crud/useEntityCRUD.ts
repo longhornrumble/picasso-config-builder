@@ -104,7 +104,7 @@ export function useEntityCRUD<T extends BaseEntity>(
   const openEditModal = useCallback((entity: T) => {
     setEditingEntity(entity);
     setIsFormOpen(true);
-  }, [getId]);
+  }, []);
 
   // Open delete modal
   const openDeleteModal = useCallback((entity: T) => {

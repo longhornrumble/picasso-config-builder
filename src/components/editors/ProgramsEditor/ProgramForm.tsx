@@ -104,7 +104,9 @@ export const ProgramForm: React.FC<ProgramFormProps> = ({
     }
   }, [program, open]);
 
-  // Validate form data
+  // Validate form data — current program id extracted to local so the
+  // useCallback dep array is statically analyzable (preserves manual memo)
+  const currentProgramId = program?.program_id;
   const validate = useCallback(
     (data: FormData): FormErrors => {
       const newErrors: FormErrors = {};
@@ -119,7 +121,7 @@ export const ProgramForm: React.FC<ProgramFormProps> = ({
 
         // Check for duplicate program_id (only in create mode or if ID changed)
         if (
-          (!isEditMode || data.program_id !== program?.program_id) &&
+          (!isEditMode || data.program_id !== currentProgramId) &&
           existingProgramIds.includes(data.program_id)
         ) {
           newErrors.program_id = 'A program with this ID already exists';
@@ -137,7 +139,7 @@ export const ProgramForm: React.FC<ProgramFormProps> = ({
 
       return newErrors;
     },
-    [isEditMode, program?.program_id, existingProgramIds]
+    [isEditMode, currentProgramId, existingProgramIds]
   );
 
   // Handle field changes
