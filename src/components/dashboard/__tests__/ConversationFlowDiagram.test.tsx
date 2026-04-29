@@ -844,7 +844,7 @@ describe('ConversationFlowDiagram', () => {
 
         // Should show "...and 5 more" (max 10 displayed)
         await waitFor(() => {
-          const moreText = screen.queryByText(/...and 5 more/);
+          const _moreText = screen.queryByText(/...and 5 more/);
           // This is implementation-dependent, may need adjustment
         });
       }

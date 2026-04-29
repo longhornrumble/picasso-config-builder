@@ -247,13 +247,13 @@ app.get('/config/:tenantId', async (req, res) => {
       const editableConfig: Record<string, unknown> = {};
 
       METADATA_FIELDS.forEach(field => {
-        if (config.hasOwnProperty(field)) {
+        if (Object.prototype.hasOwnProperty.call(config, field)) {
           editableConfig[field] = config[field];
         }
       });
 
       EDITABLE_SECTIONS.forEach(section => {
-        if (config.hasOwnProperty(section)) {
+        if (Object.prototype.hasOwnProperty.call(config, section)) {
           editableConfig[section] = config[section];
         }
       });
@@ -340,7 +340,7 @@ app.put('/config/:tenantId', async (req, res) => {
           finalConfig = { ...baseConfig, ...editedConfig };
           finalConfig.tenant_id = tenantId;
         }
-      } catch (error) {
+      } catch {
         console.log('Creating new config (no existing config found)');
       }
     }

@@ -17,7 +17,6 @@ import {
   createTestForm,
   resetIdCounter,
   extractValidationErrors,
-  extractValidationWarnings,
   getEntityErrors,
   getEntityWarnings,
   getValidationSummary,
