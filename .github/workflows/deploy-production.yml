@@ -18,10 +18,8 @@ env:
 
 jobs:
   lint:
-    # See pr-checks.yml — same lint debt deferral applies on main pushes.
     name: Code Quality - Linting
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -123,7 +121,7 @@ jobs:
 
   deploy-production:
     name: Deploy to Production
-    needs: [typecheck, test, security, build]
+    needs: [lint, typecheck, test, security, build]
     runs-on: ubuntu-latest
     environment: production
     permissions:
