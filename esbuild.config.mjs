@@ -126,7 +126,11 @@ const defineVars = {
   'import.meta.env.MODE': JSON.stringify(environment),
   'import.meta.env.VITE_S3_BUCKET': JSON.stringify(process.env.VITE_S3_BUCKET || 'myrecruiter-picasso'),
   'import.meta.env.VITE_AWS_REGION': JSON.stringify(process.env.VITE_AWS_REGION || 'us-east-1'),
-  'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || ''),
+  // Production Lambda Function URL for the Config Manager API. Hardcoded as
+  // the default so CI builds work without an explicit VITE_API_URL secret. The
+  // empty-string fallback shipped to production with the placeholder
+  // 'api.yourapi.com' baked into client.ts, breaking tenant loads.
+  'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'https://56mwo4zatkiqzpancrkkzqr43e0nkrui.lambda-url.us-east-1.on.aws'),
   // Clerk publishable keys are designed to be public (they ship in the browser
   // bundle by design). Hardcoding the production key as a default keeps CI
   // builds working without an extra Secret/env-var configuration step.
