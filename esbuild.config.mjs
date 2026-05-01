@@ -127,7 +127,10 @@ const defineVars = {
   'import.meta.env.VITE_S3_BUCKET': JSON.stringify(process.env.VITE_S3_BUCKET || 'myrecruiter-picasso'),
   'import.meta.env.VITE_AWS_REGION': JSON.stringify(process.env.VITE_AWS_REGION || 'us-east-1'),
   'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || ''),
-  'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_CLERK_PUBLISHABLE_KEY || ''),
+  // Clerk publishable keys are designed to be public (they ship in the browser
+  // bundle by design). Hardcoding the production key as a default keeps CI
+  // builds working without an extra Secret/env-var configuration step.
+  'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_live_Y2xlcmsuY29uZmlnLm15cmVjcnVpdGVyLmFpJA'),
   'import.meta.env.VITE_CHANNELS_API_URL': JSON.stringify(process.env.VITE_CHANNELS_API_URL || ''),
 
   // Node.js environment compatibility
