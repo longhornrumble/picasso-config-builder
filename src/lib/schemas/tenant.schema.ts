@@ -7,6 +7,7 @@ import { programSchema } from './program.schema';
 import { conversationalFormSchema } from './form.schema';
 import { ctaDefinitionSchema } from './cta.schema';
 import { conversationBranchSchema } from './branch.schema';
+import { schedulingConfigSchema } from './scheduling.schema';
 
 // ============================================================================
 // BRANDING SCHEMA
@@ -222,6 +223,19 @@ export const channelsConfigSchema = z
   .optional();
 
 // ============================================================================
+// FEATURE FLAGS SCHEMA
+// ============================================================================
+
+// Passthrough so existing flags (V4_ACTION_SELECTOR, DYNAMIC_ACTIONS, etc.)
+// remain valid without listing them all here. Only fields whose values gate
+// other invariants (per scheduling_config_schema §1) are typed.
+export const featureFlagsSchema = z
+  .object({
+    scheduling_enabled: z.boolean().optional().default(false),
+  })
+  .passthrough();
+
+// ============================================================================
 // FULL TENANT CONFIG SCHEMA
 // ============================================================================
 
@@ -258,6 +272,10 @@ export const tenantConfigSchema = z.object({
 
   // Channel integrations
   channels: channelsConfigSchema,
+
+  // Scheduling (optional v1 block — schema spec §1)
+  scheduling: schedulingConfigSchema.optional(),
+  feature_flags: featureFlagsSchema.optional(),
 
 }).superRefine((data, ctx) => {
   // Validate feature dependencies
@@ -334,6 +352,97 @@ export const tenantConfigSchema = z.object({
     });
   });
 
+  // ==========================================================================
+  // Scheduling cross-section invariants (schema spec §10)
+  // ==========================================================================
+
+  const schedulingEnabled = data.feature_flags?.scheduling_enabled === true;
+
+  // Invariant 1: scheduling_enabled === true ⟹ scheduling block present
+  if (schedulingEnabled && !data.scheduling) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['scheduling'],
+      message: 'scheduling_enabled requires a scheduling configuration block',
+    });
+  }
+
+  if (data.scheduling) {
+    const scheduling = data.scheduling;
+    const routingPolicyIds = new Set(Object.keys(scheduling.routing_policies ?? {}));
+    const tagVocabulary = new Set(scheduling.scheduling_tag_vocabulary ?? []);
+
+    // Invariant 2: every appointment_types[*].routing_policy_id ∈ routing_policies
+    Object.entries(scheduling.appointment_types ?? {}).forEach(([typeId, appt]) => {
+      if (!routingPolicyIds.has(appt.routing_policy_id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['scheduling', 'appointment_types', typeId, 'routing_policy_id'],
+          message: `Appointment type references non-existent routing_policy: ${appt.routing_policy_id}`,
+        });
+      }
+    });
+
+    // Invariant 3: every routing_policies[*].tag_conditions[*].tag ∈ scheduling_tag_vocabulary
+    Object.entries(scheduling.routing_policies ?? {}).forEach(([policyId, policy]) => {
+      (policy.tag_conditions ?? []).forEach((condition, index) => {
+        if (!tagVocabulary.has(condition.tag)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['scheduling', 'routing_policies', policyId, 'tag_conditions', index, 'tag'],
+            message: `Tag condition references unknown tag: ${condition.tag}`,
+          });
+        }
+      });
+    });
+
+    // Invariant 4: scheduling.pre_call_form_id, when set, ∈ conversational_forms
+    if (scheduling.pre_call_form_id && !data.conversational_forms[scheduling.pre_call_form_id]) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['scheduling', 'pre_call_form_id'],
+        message: `pre_call_form_id references non-existent form: ${scheduling.pre_call_form_id}`,
+      });
+    }
+
+    // Invariant 5: scheduling.default_locale ∈ scheduling.available_locales
+    if (
+      scheduling.default_locale &&
+      Array.isArray(scheduling.available_locales) &&
+      !scheduling.available_locales.includes(scheduling.default_locale)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['scheduling', 'default_locale'],
+        message: `default_locale "${scheduling.default_locale}" is not in available_locales`,
+      });
+    }
+  }
+
+  // Invariant 6: every CTA with action ∈ {start_scheduling, resume_scheduling}
+  // requires scheduling_enabled === true and non-empty scheduling.appointment_types
+  const hasAppointmentTypes =
+    !!data.scheduling && Object.keys(data.scheduling.appointment_types ?? {}).length > 0;
+
+  Object.entries(data.cta_definitions).forEach(([ctaId, cta]) => {
+    if (cta.action === 'start_scheduling' || cta.action === 'resume_scheduling') {
+      if (!schedulingEnabled) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['cta_definitions', ctaId, 'action'],
+          message: `CTA action "${cta.action}" requires feature_flags.scheduling_enabled === true`,
+        });
+      }
+      if (!hasAppointmentTypes) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['cta_definitions', ctaId, 'action'],
+          message: `CTA action "${cta.action}" requires non-empty scheduling.appointment_types`,
+        });
+      }
+    }
+  });
+
 });
 
 // ============================================================================
@@ -358,3 +467,4 @@ export type TenantConfig = z.infer<typeof tenantConfigSchema>;
 export type ChannelConnection = z.infer<typeof channelConnectionSchema>;
 export type InstagramChannelConnection = z.infer<typeof instagramChannelConnectionSchema>;
 export type ChannelsConfig = z.infer<typeof channelsConfigSchema>;
+export type FeatureFlags = z.infer<typeof featureFlagsSchema>;
