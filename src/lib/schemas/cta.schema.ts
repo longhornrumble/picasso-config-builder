@@ -11,16 +11,22 @@ import { z } from 'zod';
 export const ctaDefinitionSchema = z.object({
   text: z.string().max(100, 'Legacy text field must be 100 characters or less').optional(),
   label: z.string().min(1, 'Label is required').max(100, 'Label must be 100 characters or less'),
-  action: z.enum(['start_form', 'external_link', 'send_query', 'show_info'], {
-    errorMap: () => ({ message: 'Invalid action type' }),
-  }),
+  action: z.enum(
+    ['start_form', 'external_link', 'send_query', 'show_info', 'start_scheduling', 'resume_scheduling'],
+    {
+      errorMap: () => ({ message: 'Invalid action type' }),
+    }
+  ),
   formId: z.string().optional(),
   url: z.string().url('Must be a valid URL').optional(),
   query: z.string().optional(), // No max length - supports paragraphs
   prompt: z.string().optional(), // No max length - supports paragraphs
-  type: z.enum(['form_trigger', 'external_link', 'bedrock_query', 'info_request'], {
-    errorMap: () => ({ message: 'Invalid CTA type' }),
-  }),
+  type: z.enum(
+    ['form_trigger', 'external_link', 'bedrock_query', 'info_request', 'scheduling_trigger'],
+    {
+      errorMap: () => ({ message: 'Invalid CTA type' }),
+    }
+  ),
   target_branch: z
     .string()
     .min(1, 'Target branch ID cannot be empty')
@@ -90,6 +96,8 @@ export const ctaDefinitionSchema = z.object({
     external_link: 'external_link',
     send_query: 'bedrock_query',
     show_info: 'info_request',
+    start_scheduling: 'scheduling_trigger',
+    resume_scheduling: 'scheduling_trigger',
   };
 
   const expectedType = typeActionMap[data.action];
