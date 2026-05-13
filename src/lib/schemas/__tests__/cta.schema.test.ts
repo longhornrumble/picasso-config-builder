@@ -79,6 +79,41 @@ describe('ctaDefinitionSchema — scheduling actions (A4)', () => {
   });
 });
 
+describe('ctaDefinitionSchema — selection_metadata (CF1)', () => {
+  it('round-trips a CTA with selection_metadata.topic_tags and role_axis populated', () => {
+    const input = {
+      label: 'Learn about volunteering',
+      action: 'show_info',
+      type: 'info_request',
+      prompt: 'Tell me about volunteering opportunities',
+      ai_available: true,
+      selection_metadata: {
+        topic_tags: ['volunteer', 'get_involved'],
+        depth_level: 'info' as const,
+        role_axis: 'give' as const,
+        core_learning: true,
+        priority: 30,
+      },
+    };
+    const parsed = ctaDefinitionSchema.parse(input);
+    expect(parsed.selection_metadata?.topic_tags).toEqual(['volunteer', 'get_involved']);
+    expect(parsed.selection_metadata?.role_axis).toBe('give');
+    expect(parsed.selection_metadata?.depth_level).toBe('info');
+    expect(parsed.selection_metadata?.core_learning).toBe(true);
+    expect(parsed.selection_metadata?.priority).toBe(30);
+  });
+
+  it('accepts a CTA without selection_metadata (field is optional)', () => {
+    const parsed = ctaDefinitionSchema.parse({
+      label: 'Apply Now',
+      action: 'start_form',
+      type: 'form_trigger',
+      formId: 'volunteer_apply',
+    });
+    expect(parsed.selection_metadata).toBeUndefined();
+  });
+});
+
 describe('ctaDefinitionSchema — pre-existing actions remain valid', () => {
   it('still accepts start_form + form_trigger with formId', () => {
     expect(() =>

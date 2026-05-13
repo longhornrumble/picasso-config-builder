@@ -43,6 +43,16 @@ export const ctaDefinitionSchema = z.object({
     .boolean()
     .optional()
     .describe('When true, includes this CTA in the AI vocabulary for dynamic selection (Tier 1-2 scoring).'),
+  selection_metadata: z
+    .object({
+      topic_tags: z.array(z.string()),
+      depth_level: z.enum(['info', 'action', 'lateral']),
+      role_axis: z.enum(['give', 'receive', 'learn', 'connect']).optional(),
+      core_learning: z.boolean().optional(),
+      priority: z.number().optional(),
+    })
+    .optional()
+    .describe('V4.1 Pool Selection metadata. Controls how this CTA is filtered and ranked by selectCTAsFromPool().'),
 }).superRefine((data, ctx) => {
   // Validate action-specific required fields (v1.3+)
 
