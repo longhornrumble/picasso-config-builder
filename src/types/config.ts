@@ -174,8 +174,19 @@ export interface ConversationalForm {
 // CTAs (Call-to-Actions)
 // ============================================================================
 
-export type CTAActionType = 'start_form' | 'external_link' | 'send_query' | 'show_info';
-export type CTAType = 'form_trigger' | 'external_link' | 'bedrock_query' | 'info_request';
+export type CTAActionType =
+  | 'start_form'
+  | 'external_link'
+  | 'send_query'
+  | 'show_info'
+  | 'start_scheduling'
+  | 'resume_scheduling';
+export type CTAType =
+  | 'form_trigger'
+  | 'external_link'
+  | 'bedrock_query'
+  | 'info_request'
+  | 'scheduling_trigger';
 
 export interface CTADefinition {
   text?: string; // Legacy field, use label instead
@@ -542,6 +553,8 @@ export interface TopicDefinition {
 export interface FeatureFlags {
   /** V4.0 Action Selector — LLM-based CTA selection from ai_available vocabulary */
   V4_ACTION_SELECTOR?: boolean;
+  /** Enables the v1 scheduling block — gates scheduling CTAs and the scheduling config section */
+  scheduling_enabled?: boolean;
   /** Allow additional flags from existing configs */
   [key: string]: boolean | undefined;
 }

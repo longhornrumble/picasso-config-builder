@@ -32,6 +32,8 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
     { value: 'external_link', label: 'External Link' },
     { value: 'send_query', label: 'Send Query' },
     { value: 'show_info', label: 'Show Info' },
+    { value: 'start_scheduling', label: 'Start Scheduling' },
+    { value: 'resume_scheduling', label: 'Resume Scheduling' },
   ];
 
   const typeOptions = [
@@ -39,6 +41,7 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
     { value: 'external_link', label: 'External Link' },
     { value: 'bedrock_query', label: 'Bedrock Query' },
     { value: 'info_request', label: 'Info Request' },
+    { value: 'scheduling_trigger', label: 'Scheduling Trigger' },
   ];
 
   const formOptions = forms.map((f) => ({
@@ -101,6 +104,8 @@ export const CTAFormFields: React.FC<FormFieldsProps<CTAEntity>> = ({
               external_link: 'external_link',
               send_query: 'bedrock_query',
               show_info: 'info_request',
+              start_scheduling: 'scheduling_trigger',
+              resume_scheduling: 'scheduling_trigger',
             };
 
             // Update action, type, and clear conditional fields
