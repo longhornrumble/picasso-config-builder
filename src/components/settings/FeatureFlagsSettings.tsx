@@ -25,6 +25,11 @@ const FLAG_DEFINITIONS: FlagDefinition[] = [
     label: 'V4.0 Action Selector',
     description: 'LLM-based CTA selection — AI picks 0-4 relevant CTAs per turn from ai_available vocabulary',
   },
+  {
+    key: 'scheduling_enabled',
+    label: 'Scheduling',
+    description: 'Enables the v1 scheduling block — required for start_scheduling/resume_scheduling CTAs and the scheduling configuration section',
+  },
 ];
 
 // ============================================================================
