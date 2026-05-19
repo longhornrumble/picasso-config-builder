@@ -136,13 +136,8 @@ export const ctaDefinitionSchema = z.object({
     });
   }
 
-  if (data.action !== 'send_query' && data.query) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['query'],
-      message: 'Query is only used when action is "send_query"',
-    });
-  }
+  // No `query`-exclusivity check: real form/link CTAs legitimately carry a
+  // human-readable query (forward-compat with prod configs, e.g. MYR384719).
 
   if (data.action !== 'show_info' && data.prompt) {
     ctx.addIssue({
