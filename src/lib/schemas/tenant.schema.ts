@@ -41,8 +41,8 @@ export const featuresConfigSchema = z.object({
   photo_uploads: z.boolean(),
   voice_input: z.boolean(),
   streaming: z.boolean(),
-  conversational_forms: z.boolean(),
-  smart_cards: z.boolean(),
+  conversational_forms: z.boolean().optional(),
+  smart_cards: z.boolean().optional(),
   callout: calloutConfigSchema,
 });
 
@@ -66,7 +66,7 @@ export const quickHelpConfigSchema = z.object({
 // ============================================================================
 
 export const actionChipSchema = z.object({
-  label: z.string().min(1, 'Label is required').max(30, 'Label must be 30 characters or less'),
+  label: z.string().min(1, 'Label is required').max(50, 'Label must be 50 characters or less'),
   action: z.enum(['send_query', 'show_info'], {
     errorMap: () => ({ message: 'Action must be either send_query or show_info' }),
   }).optional().default('send_query'),
@@ -76,10 +76,13 @@ export const actionChipSchema = z.object({
 
 export const actionChipsConfigSchema = z.object({
   enabled: z.boolean(),
-  max_display: z.number().int().min(1).max(5, 'Max display must be between 1 and 5'),
+  max_display: z.number().int().min(1).max(8, 'Max display must be between 1 and 8'),
   show_on_welcome: z.boolean(),
-  short_text_threshold: z.number().int().min(10).max(30, 'Threshold should be between 10 and 30'),
-  default_chips: z.array(actionChipSchema).max(8, 'Maximum 8 default chips'),
+  short_text_threshold: z.number().int().min(10).max(30, 'Threshold should be between 10 and 30').optional(),
+  default_chips: z.record(z.string(), actionChipSchema).refine(
+    (chips) => Object.keys(chips).length <= 8,
+    'Maximum 8 default chips',
+  ),
 });
 
 // ============================================================================
@@ -245,7 +248,7 @@ export const tenantConfigSchema = z.object({
   tenant_hash: z.string().min(1, 'Tenant hash is required').max(100, 'Tenant hash must be 100 characters or less'),
   subscription_tier: z.enum(['Free', 'Standard', 'Premium', 'Enterprise']),
   chat_title: z.string().min(1, 'Chat title is required').max(100, 'Chat title must be 100 characters or less'),
-  tone_prompt: z.string().min(1, 'Tone prompt is required').max(2000, 'Tone prompt must be 2000 characters or less'),
+  tone_prompt: z.string().max(2000, 'Tone prompt must be 2000 characters or less'),
   welcome_message: z.string().min(1, 'Welcome message is required').max(500, 'Welcome message must be 500 characters or less'),
   callout_text: z.string().max(200, 'Callout text must be 200 characters or less').optional(),
   version: z.string().regex(/^\d+\.\d+(\.\d+)?$/, 'Version must be in semver format (e.g., 1.3 or 1.3.0)'),

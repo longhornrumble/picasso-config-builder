@@ -27,5 +27,23 @@
     "knowledge_base_id": "KBACMEKB0001",
     "aws_region": "us-east-1"
   },
-  "channels": {}
+  "channels": {},
+  "action_chips": {
+    "enabled": true,
+    "max_display": 4,
+    "show_on_welcome": true,
+    "default_chips": {
+      "learn_more": {
+        "label": "📖 Learn about our programs",
+        "action": "send_query",
+        "value": "Tell me about your programs."
+      },
+      "contact": {
+        "label": "☎️ Contact Us",
+        "action": "send_query",
+        "value": "How do I contact you?",
+        "target_branch": "branch_contact"
+      }
+    }
+  }
 }
