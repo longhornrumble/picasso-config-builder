@@ -186,3 +186,4 @@ export type TagCondition = z.infer<typeof tagConditionSchema>;
 export type RoutingPolicy = z.infer<typeof routingPolicySchema>;
 export type AppointmentType = z.infer<typeof appointmentTypeSchema>;
 export type SchedulingConfig = z.infer<typeof schedulingConfigSchema>;
+
