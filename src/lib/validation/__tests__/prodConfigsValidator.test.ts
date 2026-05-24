@@ -9,14 +9,13 @@
  * operator-configured strings (program IDs, form IDs). If those flow into CI
  * logs or artifacts, the gate becomes its own data-exfiltration channel.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   fetchAndValidate,
   parseTenantIdsFromCommonPrefixes,
   runProdConfigsValidation,
   S3FetchError,
   type S3Reader,
-  type ValidationResult,
 } from '../prodConfigsValidator';
 
 // Minimal valid tenant body — anything missing here would surface as
