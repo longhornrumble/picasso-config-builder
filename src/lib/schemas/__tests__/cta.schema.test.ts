@@ -114,6 +114,66 @@ describe('ctaDefinitionSchema — selection_metadata (CF1)', () => {
   });
 });
 
+describe('ctaDefinitionSchema — warning branches for mis-wired fields (audit B8)', () => {
+  // Audit memory: project_scheduling_subphase_a_phase_completion_audit_2026-05-24
+  // B8 specifically calls out start_scheduling + formId as a silent-pass case
+  // existing tests didn't cover. The cta.schema superRefine warning block at
+  // lines 122-148 was completely uncovered (65% file coverage).
+
+  it('flags formId on start_scheduling (B8: scheduling CTA accidentally carrying formId)', () => {
+    const r = ctaDefinitionSchema.safeParse({
+      label: 'Schedule',
+      action: 'start_scheduling',
+      type: 'scheduling_trigger',
+      formId: 'leftover_form_ref',
+    });
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(
+        r.error.issues.some(
+          (i) =>
+            i.path.join('.') === 'formId' &&
+            i.message === 'Form ID is only used when action is "start_form"',
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('flags url on start_scheduling', () => {
+    const r = ctaDefinitionSchema.safeParse({
+      label: 'Schedule',
+      action: 'start_scheduling',
+      type: 'scheduling_trigger',
+      url: 'https://example.com/leftover',
+    });
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(
+        r.error.issues.some(
+          (i) => i.path.join('.') === 'url' && i.message?.includes('external_link'),
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('flags prompt on start_scheduling (and on any non-show_info action)', () => {
+    const r = ctaDefinitionSchema.safeParse({
+      label: 'Schedule',
+      action: 'start_scheduling',
+      type: 'scheduling_trigger',
+      prompt: 'leftover prompt copy',
+    });
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(
+        r.error.issues.some(
+          (i) => i.path.join('.') === 'prompt' && i.message?.includes('show_info'),
+        ),
+      ).toBe(true);
+    }
+  });
+});
+
 describe('ctaDefinitionSchema — pre-existing actions remain valid', () => {
   it('still accepts start_form + form_trigger with formId', () => {
     expect(() =>

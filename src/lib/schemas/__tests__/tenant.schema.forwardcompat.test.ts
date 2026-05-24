@@ -145,6 +145,57 @@ describe('tenant.schema forward-compat: loosened bounds for real prod configs', 
   });
 });
 
+describe('tenant.schema forward-compat: program ref-join handles unknown form.program (audit R11 pin)', () => {
+  // Audit R11 lock-in. Today programSchema REQUIRES program_id, so
+  // `undefined` can't reach the superRefine join. The R11 risk is forward-
+  // compat: if program_id becomes optional later, the join code at
+  // tenant.schema.ts:319-321 must NOT add `undefined` into the set (it would
+  // silently match form.program === undefined). The guard `if
+  // (program.program_id) validProgramRefs.add(...)` makes that explicit; this
+  // test pins the cross-form join semantics so a regression that combines a
+  // programSchema loosening with a removed guard becomes visible.
+  it('rejects form.program that matches neither key nor any program_id (single-program shape)', () => {
+    const cfg = {
+      ...baseTenant(),
+      programs: {
+        love_box_application: {
+          program_id: 'love_box_request',
+          program_name: 'Love Box Application',
+        },
+      },
+      conversational_forms: {
+        broken_ref: {
+          enabled: true,
+          form_id: 'broken_ref',
+          program: 'something_that_doesnt_exist',
+          title: 'Broken',
+          description: 'no match',
+          fields: [
+            {
+              id: 'q',
+              type: 'text' as const,
+              label: 'Q',
+              prompt: 'Q?',
+              required: true,
+            },
+          ],
+        },
+      },
+    };
+    const r = tenantConfigSchema.safeParse(cfg);
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(
+        r.error.issues.some(
+          (i) =>
+            i.path.join('.') === 'conversational_forms.broken_ref.program' &&
+            i.code === 'custom',
+        ),
+      ).toBe(true);
+    }
+  });
+});
+
 describe('cta.schema forward-compat: query allowed on non-send_query CTAs', () => {
   it('accepts an external_link CTA that also carries a human-readable query', () => {
     const r = ctaDefinitionSchema.safeParse({
