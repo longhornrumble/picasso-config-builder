@@ -118,8 +118,8 @@ jobs:
     # any PR that touches src/lib/schemas/**. Catches forward-compat breakage
     # before merge. Design + threat model: project_scheduling_subphase_a_ci2_phase0_design_2026-05-19.
     #
-    # Trigger conditions (defense in depth — IAM trust also pins event_name):
-    #   - pull_request event only (not pull_request_target — silently bypasses fork-OIDC)
+    # Trigger conditions (T-02 mitigation lives in workflow-trigger-guard job below):
+    #   - pull_request event only (the PR-target event variant is blocked at PR time by the trigger-guard)
     #   - skip fork PRs (head.repo.fork == false)
     #   - skip dependabot/renovate bot PRs (cannot assume the OIDC role meaningfully)
     if: |
@@ -168,3 +168,49 @@ jobs:
         run: npx tsx scripts/validate-prod-configs.ts
         env:
           S3_BUCKET: myrecruiter-picasso
+
+  workflow-trigger-guard:
+    name: Workflow Trigger Safety (T-02 mitigation)
+    # CI-2 design R-1 / T-02 mitigation — relocated 2026-05-24 from IAM trust
+    # to this lint job after empirically discovering that AWS STS does NOT
+    # expose `event_name` as an IAM condition key (the original R-1 fold-in
+    # produced AccessDenied on PR #51 step-12 verification — see CloudTrail
+    # event 6ba91f74-ed8b-4ecf-ba85-f3a8fc286031).
+    #
+    # GitHub's OIDC `sub` claim is identical for `pull_request` and the
+    # PR-target event variant. Since the IAM trust can only filter by sub+aud,
+    # introducing a PR-target trigger anywhere in this repo's workflows would
+    # let a fork PR assume picasso-config-ci-readonly in base-repo context
+    # with write permissions = privilege escalation.
+    #
+    # This job fails any PR that introduces such a trigger.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Forbid PR-target trigger in any workflow file
+        run: |
+          set -u
+          # Build the search literal at runtime so this script does not contain
+          # the literal token itself (would otherwise trip the guard when it
+          # scans pr-checks.yml).
+          pat="pull_request""_target"
+          hits=""
+          shopt -s nullglob
+          for f in .github/workflows/*.yml .github/workflows/*.yaml; do
+            # Strip YAML comment tails (everything after #) before searching so
+            # that this file's own explanatory comments don't trip the guard.
+            if sed -E 's/#.*$//' "$f" | grep -qF "$pat"; then
+              hits="${hits}${f}\n"
+            fi
+          done
+          if [ -n "$hits" ]; then
+            echo "::error::T-02 trigger detected in workflow file(s):"
+            printf "%b" "$hits"
+            echo ""
+            echo "This is BLOCKED by CI-2 design's T-02 mitigation. See pr-checks.yml workflow-trigger-guard job header for full rationale."
+            exit 1
+          fi
+          echo "OK: no T-02 trigger found in any workflow file."
