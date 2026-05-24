@@ -18,6 +18,7 @@ import {
   runProdConfigsValidation,
   parseTenantIdsFromCommonPrefixes,
   S3FetchError,
+  NoTenantsFoundError,
   type S3Reader,
 } from '../src/lib/validation/prodConfigsValidator';
 
@@ -63,11 +64,6 @@ async function main(): Promise<void> {
     log: (line) => process.stdout.write(line + '\n'),
   });
 
-  if (outcome.results.length === 0) {
-    process.stderr.write(`FATAL: no tenants found in s3://${bucket}/tenants/\n`);
-    process.exit(2);
-  }
-
   process.stdout.write('\n');
   if (outcome.failures > 0) {
     process.stderr.write(
@@ -81,6 +77,10 @@ async function main(): Promise<void> {
 }
 
 main().catch((err: unknown) => {
+  if (err instanceof NoTenantsFoundError) {
+    process.stderr.write(`FATAL: ${err.message}\n`);
+    process.exit(2);
+  }
   const name = (err as Error)?.name ?? 'UnknownError';
   const code = (err as { code?: string | number })?.code;
   const codeStr = code !== undefined ? ` (code=${String(code)})` : '';
