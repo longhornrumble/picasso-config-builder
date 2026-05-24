@@ -42,6 +42,21 @@ export class S3FetchError extends Error {
 }
 
 /**
+ * Thrown when listTenantIds returns an empty array. Audit re-audit RE-B4:
+ * empty-bucket case must NOT silently return `failures: 0` from
+ * runProdConfigsValidation — that would be a false-PASS for any caller that
+ * doesn't separately inspect results.length.
+ */
+export class NoTenantsFoundError extends Error {
+  bucket: string;
+  constructor(bucket: string) {
+    super(`No tenants found in s3://${bucket}/tenants/`);
+    this.name = 'NoTenantsFoundError';
+    this.bucket = bucket;
+  }
+}
+
+/**
  * Parses the CommonPrefixes payload that `aws s3api list-objects-v2 --prefix
  * tenants/ --delimiter /` returns. Pulled out for direct unit-testing.
  */
@@ -111,6 +126,14 @@ export async function runProdConfigsValidation(
 
   const tenantIds = await opts.s3.listTenantIds(opts.bucket);
   log(`Found ${tenantIds.length} tenant(s): ${tenantIds.join(', ')}`);
+
+  // Audit re-audit RE-B4: empty bucket is a hard error, not a silent
+  // success. Pre-refactor the CLI shell had this guard at top-level; the
+  // extraction moved it out of the module which let any non-CLI caller
+  // false-PASS. Throw here so the guard travels with the function.
+  if (tenantIds.length === 0) {
+    throw new NoTenantsFoundError(opts.bucket);
+  }
 
   const results = await Promise.all(
     tenantIds.map((id) => fetchAndValidate(opts.s3, opts.bucket, id)),

@@ -15,6 +15,7 @@ import {
   parseTenantIdsFromCommonPrefixes,
   runProdConfigsValidation,
   S3FetchError,
+  NoTenantsFoundError,
   type S3Reader,
 } from '../prodConfigsValidator';
 
@@ -181,6 +182,28 @@ describe('runProdConfigsValidation', () => {
       // a leaked message string.
       expect(line).toMatch(/^\s*path=[^\s]*\s+code=[^\s]+\s*$/);
     }
+  });
+
+  it('throws NoTenantsFoundError when listTenantIds returns an empty array (audit RE-B4)', async () => {
+    // Re-audit RE-B4 regression: pre-refactor the CLI shell guarded against
+    // empty buckets at top-level. The extraction moved that guard into the
+    // CLI shell only, leaving any non-CLI caller to silently false-PASS on
+    // `failures: 0`. The guard now lives in runProdConfigsValidation so it
+    // travels with the function. This test pins that behavior.
+    const s3: S3Reader = {
+      async listTenantIds() {
+        return [];
+      },
+      async fetchObjectBody() {
+        throw new Error('should not be called');
+      },
+    };
+    await expect(
+      runProdConfigsValidation({ bucket: 'empty-bucket', s3, log: () => {} }),
+    ).rejects.toBeInstanceOf(NoTenantsFoundError);
+    await expect(
+      runProdConfigsValidation({ bucket: 'empty-bucket', s3, log: () => {} }),
+    ).rejects.toMatchObject({ bucket: 'empty-bucket' });
   });
 
   it('returns failures=0 when every tenant passes', async () => {
