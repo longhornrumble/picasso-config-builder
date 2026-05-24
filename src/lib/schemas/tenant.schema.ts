@@ -318,7 +318,11 @@ export const tenantConfigSchema = z.object({
     const validProgramRefs = new Set<string>();
     for (const [programKey, program] of Object.entries(data.programs)) {
       validProgramRefs.add(programKey);
-      validProgramRefs.add(program.program_id);
+      // Forward-compat (CLAUDE.md Schema Discipline + audit R11): if a future
+      // programSchema relaxation makes program_id optional, this guard stops
+      // `undefined` from poisoning the set and silently matching the same on
+      // form.program.
+      if (program.program_id) validProgramRefs.add(program.program_id);
     }
     Object.entries(data.conversational_forms).forEach(([formId, form]) => {
       if (!validProgramRefs.has(form.program)) {
