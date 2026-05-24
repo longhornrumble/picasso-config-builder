@@ -307,11 +307,21 @@ export const tenantConfigSchema = z.object({
     }
   }
 
-  // Validate that all form programs reference existing programs (if programs are defined)
+  // Validate that all form programs reference existing programs (if programs are defined).
+  // A form.program is valid if it matches EITHER the programs object key OR a
+  // program's .program_id field. This matches FormCardContent.tsx:18 (the canonical
+  // display lookup: `programs[entity.program] || Object.values(programs).find(p => p.program_id === entity.program)`),
+  // accommodates real prod data where key !== .program_id (verified on AUS123957
+  // 2026-05-23), and stays consistent with the runtime which treats refs as flat
+  // strings and doesn't enforce join semantics.
   if (data.programs) {
-    const programIds = new Set(Object.keys(data.programs));
+    const validProgramRefs = new Set<string>();
+    for (const [programKey, program] of Object.entries(data.programs)) {
+      validProgramRefs.add(programKey);
+      validProgramRefs.add(program.program_id);
+    }
     Object.entries(data.conversational_forms).forEach(([formId, form]) => {
-      if (!programIds.has(form.program)) {
+      if (!validProgramRefs.has(form.program)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['conversational_forms', formId, 'program'],
