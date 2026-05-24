@@ -157,3 +157,64 @@ describe('cta.schema forward-compat: query allowed on non-send_query CTAs', () =
     expect(r.success).toBe(true);
   });
 });
+
+describe('tenant.schema forward-compat: form->program join accepts key OR .program_id (matches FormCardContent.tsx:18)', () => {
+  // Real AUS123957 shape: programs object keyed by something other than the
+  // program_id field (e.g. key="love_box_application", program_id="love_box_request",
+  // and key="request_daretodream", program_id="daretodream_request"). Forms reference
+  // either form. Schema must match pcb's actual display lookup at
+  // FormCardContent.tsx:18 (key first, .program_id fallback).
+  const cfgWithFormRef = (formProgramRef: string) => ({
+    ...baseTenant(),
+    programs: {
+      love_box_application: {
+        program_id: 'love_box_request',
+        program_name: 'Love Box Application',
+      },
+      request_daretodream: {
+        program_id: 'daretodream_request',
+        program_name: 'Dare to Dream Request',
+      },
+    },
+    conversational_forms: {
+      love_box_referral: {
+        enabled: true,
+        form_id: 'love_box_referral',
+        program: formProgramRef,
+        title: 'Love Box Referral',
+        description: 'Refer a family for a Love Box.',
+        fields: [
+          {
+            id: 'family_name',
+            type: 'text' as const,
+            label: 'Family name',
+            prompt: 'What is the family name?',
+            required: true,
+          },
+        ],
+      },
+    },
+  });
+
+  it('accepts form.program matching a program.program_id (key !== program_id)', () => {
+    expect(tenantConfigSchema.safeParse(cfgWithFormRef('love_box_request')).success).toBe(true);
+  });
+
+  it('accepts form.program matching only the object key (real AUS dare2dream_referral shape)', () => {
+    expect(tenantConfigSchema.safeParse(cfgWithFormRef('request_daretodream')).success).toBe(true);
+  });
+
+  it('REJECTS form.program matching neither key nor any program_id', () => {
+    const r = tenantConfigSchema.safeParse(cfgWithFormRef('nonexistent_program'));
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(
+        r.error.issues.some(
+          (i) =>
+            i.path.join('.') === 'conversational_forms.love_box_referral.program' &&
+            i.code === 'custom',
+        ),
+      ).toBe(true);
+    }
+  });
+});
