@@ -112,6 +112,28 @@ jobs:
           path: dist/
           retention-days: 7
 
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [lint, typecheck, test, security, build]
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    # PR preview to the staging-account bucket (CI-modernization Phase 2.3 —
+    # bucket + per-product role applied via picasso#492). Shared deploy
+    # mechanics live in the reusable workflow; serves the production-mode
+    # bundle (UI preview — pcb has one build target). No CloudFront: plain
+    # S3 website endpoint, so no invalidation needed.
+    uses: longhornrumble/picasso/.github/workflows/deploy-frontend.yml@main
+    with:
+      environment: staging
+      artifact_name: config-builder-build
+      bucket: picasso-config-builder-staging
+      website_url: http://picasso-config-builder-staging.s3-website-us-east-1.amazonaws.com
+      comment_pr: true
+    secrets:
+      deploy_role_arn: ${{ secrets.AWS_DEPLOY_ROLE_ARN_STAGING }}
+
   prod-config-validation:
     name: Prod Config Schema Validation
     # CI-2 gate: validate all prod tenant configs against the live schema on

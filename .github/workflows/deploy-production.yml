@@ -10,10 +10,12 @@ on:
       - main
   workflow_dispatch: {}
 
-# TODO(staging-env): No staging S3 bucket exists for picasso-config-builder
-# yet. When created, mirror the gold-standard pattern (analytics-dashboard)
-# by adding a deploy-staging job between the gates and deploy-production,
-# and a Deploy to Staging gate to pr-checks.yml.
+# Staging: PRs deploy a preview to picasso-config-builder-staging via
+# pr-checks.yml's Deploy to Staging job (CI-modernization Phase 2.3 closed
+# the old TODO(staging-env) — bucket + role live in the staging account 525,
+# applied by picasso#492). Note the preview serves the production-mode
+# bundle (pcb has one build target); it previews the UI, not a separate
+# staging backend.
 
 env:
   NODE_VERSION: '22'
@@ -124,38 +126,33 @@ jobs:
           path: dist/
           retention-days: 7
 
-  deploy-production:
-    name: Deploy to Production
+  # The human gate. Reusable-caller jobs can't carry `environment:`, so the
+  # required-reviewer pause lives in this tiny job in front (widget pattern).
+  approve-production:
+    name: Approve Production Deploy
     needs: [lint, typecheck, test, security, build]
     # Dispatch-only (see `on:` comment): pushes stop after the build job.
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: production
+    steps:
+      - name: Approval received
+        run: echo "Production deploy approved by ${{ github.actor }}"
+
+  deploy-production:
+    name: Deploy to Production
+    needs: approve-production
     permissions:
       id-token: write
       contents: read
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
-        with:
-          name: config-builder-build
-          path: dist/
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # v4
-        with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Deploy to production S3
-        run: aws s3 sync dist/ s3://${{ env.S3_BUCKET_PRODUCTION }}/ --delete
-
-      # CloudFront caches main.js etc. at edge POPs. Without invalidation,
-      # browsers continue serving the previous bundle until the configured
-      # TTL expires (can be hours). Invalidate /* so the new deploy is
-      # immediately visible to all users.
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+    # Shared deploy mechanics (sync → invalidate → smoke) + the immutable
+    # releases/<sha>/ rollback copy — CI-modernization Phase 2.1/2.2.
+    uses: longhornrumble/picasso/.github/workflows/deploy-frontend.yml@main
+    with:
+      environment: production
+      artifact_name: config-builder-build
+      bucket: picasso-config-builder-prod
+      cloudfront_distribution_id: E3OTEE0UFN347Y
+      website_url: https://config.myrecruiter.ai
+    secrets:
+      deploy_role_arn: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
