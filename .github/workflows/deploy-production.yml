@@ -1,6 +1,10 @@
 name: Deploy Picasso Config Builder
 
 on:
+  # Push to main runs the quality gates + build only. The deploy-production
+  # job is dispatch-only, so prod deploys are deliberate acts and merges never
+  # queue waiting-approval runs (CI-modernization Phase 0.3 — the queue had
+  # 8 runs stuck since 2026-05-24).
   push:
     branches:
       - main
@@ -123,6 +127,8 @@ jobs:
   deploy-production:
     name: Deploy to Production
     needs: [lint, typecheck, test, security, build]
+    # Dispatch-only (see `on:` comment): pushes stop after the build job.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: production
     permissions:
