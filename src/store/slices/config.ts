@@ -3,11 +3,35 @@
  * Manages configuration lifecycle: load, save, deploy, and merge operations
  */
 
-import type { TenantConfig, ConversationalForm } from '@/types/config';
+import type { TenantConfig, ConversationalForm, ConversationBranch } from '@/types/config';
 import type { SliceCreator, ConfigSlice } from '../types';
 import * as configAPI from '@/lib/api/config-operations';
 import { configApiClient } from '@/lib/api/client';
 import { ConfigAPIError } from '@/lib/api/errors';
+
+/**
+ * Schema discipline: stored configs may carry old-shape branches (no `secondary`
+ * array — hand-authored or pre-builder records). Readers across the app assume
+ * the canonical {primary, secondary[]} shape, so normalize once at the store
+ * boundary instead of guarding every consumer.
+ */
+export function normalizeBranches(
+  branches: Record<string, ConversationBranch> | undefined | null
+): Record<string, ConversationBranch> {
+  return Object.fromEntries(
+    Object.entries(branches || {}).map(([key, branch]) => [
+      key,
+      {
+        ...branch,
+        available_ctas: {
+          ...branch?.available_ctas,
+          primary: branch?.available_ctas?.primary ?? '',
+          secondary: branch?.available_ctas?.secondary ?? [],
+        },
+      },
+    ])
+  );
+}
 
 export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
   // State
@@ -58,7 +82,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         );
 
         state.ctas.ctas = response.config.cta_definitions || {};
-        state.branches.branches = response.config.conversation_branches || {};
+        state.branches.branches = normalizeBranches(response.config.conversation_branches);
         state.contentShowcase.content_showcase = response.config.content_showcase || [];
 
         // Clear any active selections
@@ -303,7 +327,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         );
 
         state.ctas.ctas = state.config.baseConfig.cta_definitions || {};
-        state.branches.branches = state.config.baseConfig.conversation_branches || {};
+        state.branches.branches = normalizeBranches(state.config.baseConfig.conversation_branches);
         state.contentShowcase.content_showcase = state.config.baseConfig.content_showcase || [];
 
         state.config.isDirty = false;
@@ -446,7 +470,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         );
 
         state.ctas.ctas = draftConfig.cta_definitions || {};
-        state.branches.branches = draftConfig.conversation_branches || {};
+        state.branches.branches = normalizeBranches(draftConfig.conversation_branches);
         state.contentShowcase.content_showcase = draftConfig.content_showcase || [];
 
         // Clear active selections
