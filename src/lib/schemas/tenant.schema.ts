@@ -389,9 +389,11 @@ export const tenantConfigSchema = z.object({
     const routingPolicyIds = new Set(Object.keys(scheduling.routing_policies ?? {}));
     const tagVocabulary = new Set(scheduling.scheduling_tag_vocabulary ?? []);
 
-    // Invariant 2: every appointment_types[*].routing_policy_id ∈ routing_policies
+    // Invariant 2: every appointment_types[*].routing_policy_id ∈ routing_policies.
+    // routing_policy_id is optional (transitional); only cross-check when set,
+    // so old configs without routing wired up still validate (forward-compat).
     Object.entries(scheduling.appointment_types ?? {}).forEach(([typeId, appt]) => {
-      if (!routingPolicyIds.has(appt.routing_policy_id)) {
+      if (appt.routing_policy_id && !routingPolicyIds.has(appt.routing_policy_id)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['scheduling', 'appointment_types', typeId, 'routing_policy_id'],

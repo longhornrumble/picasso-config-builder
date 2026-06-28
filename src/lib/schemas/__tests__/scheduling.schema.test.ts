@@ -52,10 +52,17 @@ describe('schedulingConfigSchema', () => {
     expect(parsed.scheduling_tag_vocabulary).toEqual(['program', 'language']);
   });
 
-  it('rejects empty workspace_domains', () => {
+  it('rejects empty workspace_domains (min-1 still enforced when present)', () => {
     expect(() =>
       schedulingConfigSchema.parse({ ...validSchedulingConfig, workspace_domains: [] }),
     ).toThrow(/At least one workspace domain/);
+  });
+
+  it('treats workspace_domains and routing_policies as optional (transitional forward-compat)', () => {
+    // Live configs (MYR384719) have neither. Made optional so existing configs
+    // parse; regression direction pinned (re-requiring either turns this red).
+    const { workspace_domains: _wd, routing_policies: _rp, ...without } = validSchedulingConfig;
+    expect(() => schedulingConfigSchema.parse(without)).not.toThrow();
   });
 
   it('rejects malformed default_locale (must be BCP-47)', () => {
@@ -124,15 +131,24 @@ describe('appointmentTypeSchema', () => {
     ).toThrow();
   });
 
-  it('rejects unknown location_mode', () => {
+  it('rejects unknown location_mode (still validated when present)', () => {
     expect(() =>
       appointmentTypeSchema.parse({ ...validAppointmentType, location_mode: 'video_call' }),
     ).toThrow();
   });
 
-  it('requires routing_policy_id', () => {
+  it('treats location_mode as optional (transitional; runtime reads conference_type)', () => {
+    // Forward-compat: live configs (MYR384719) have no location_mode. Re-make
+    // required once the runtime adopts it. Regression direction pinned here.
+    const { location_mode: _location_mode, ...without } = validAppointmentType;
+    expect(() => appointmentTypeSchema.parse(without)).not.toThrow();
+  });
+
+  it('treats routing_policy_id as optional (transitional; routing not yet wired)', () => {
+    // Forward-compat: live configs predate routing. The cross-ref to
+    // routing_policies is enforced in tenant.schema.ts only when it IS set.
     const { routing_policy_id: _routing_policy_id, ...without } = validAppointmentType;
-    expect(() => appointmentTypeSchema.parse(without)).toThrow();
+    expect(() => appointmentTypeSchema.parse(without)).not.toThrow();
   });
 });
 

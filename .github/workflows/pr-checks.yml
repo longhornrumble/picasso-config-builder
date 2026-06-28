@@ -112,24 +112,66 @@ jobs:
           path: dist/
           retention-days: 7
 
+  build-staging:
+    name: Build for Staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The bundle deployed to staging.config.myrecruiter.ai must talk to the
+      # STAGING config backend + bucket, not prod. esbuild defaults VITE_API_URL
+      # to the prod Lambda URL when the env var is unset (esbuild.config.mjs
+      # defineVars), so this job MUST pass the staging values explicitly —
+      # otherwise the "staging" UI writes tenant edits to the PROD config bucket.
+      # These are a public Function URL + bucket name, not secrets (mirroring
+      # esbuild's hardcoded prod default).
+      - name: Build for staging
+        run: npm run build:staging
+        env:
+          VITE_API_URL: https://zlbf6onlzdj3hqzxhrrqdxte5m0wudxf.lambda-url.us-east-1.on.aws
+          VITE_S3_BUCKET: myrecruiter-picasso-staging
+
+      - name: Upload staging build artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: config-builder-staging-build
+          path: dist/
+          retention-days: 7
+
   deploy-staging:
     name: Deploy to Staging
-    needs: [lint, typecheck, test, security, build]
+    needs: [lint, typecheck, test, security, build-staging]
     permissions:
       id-token: write
       contents: read
       pull-requests: write
-    # PR preview to the staging-account bucket (CI-modernization Phase 2.3 —
-    # bucket + per-product role applied via picasso#492). Shared deploy
-    # mechanics live in the reusable workflow; serves the production-mode
-    # bundle (UI preview — pcb has one build target). No CloudFront: plain
-    # S3 website endpoint, so no invalidation needed.
+    # Deploy to the staging-account bucket (CI-modernization Phase 2.3 — bucket
+    # + per-product role applied via picasso#492). Consumes config-builder-staging-build
+    # (built with the STAGING config-API URL + bucket), so staging.config.myrecruiter.ai
+    # is a self-contained staging environment that writes to myrecruiter-picasso-staging,
+    # NOT a prod-backed UI preview.
+    # CloudFront: staging.config.myrecruiter.ai is fronted by distribution
+    # E27102WWDBF606 (acct 525, origin = this bucket's S3-website endpoint).
+    # We do NOT pass cloudfront_distribution_id here because the deploy role
+    # picasso-config-builder-deploy-staging currently has S3-only permissions
+    # (no cloudfront:CreateInvalidation). Until that grant lands, the domain
+    # serves cached content until CF TTL; invalidate manually after deploy.
     # SHA-pinned (picasso Phase-2 audit D8) — keep in sync with the pin in
     # deploy-production.yml; bump both deliberately to adopt reusable changes.
     uses: longhornrumble/picasso/.github/workflows/deploy-frontend.yml@aec1b46e8d242b3d123a8b7ff51c41fc44e635e6
     with:
       environment: staging
-      artifact_name: config-builder-build
+      artifact_name: config-builder-staging-build
       bucket: picasso-config-builder-staging
       website_url: http://picasso-config-builder-staging.s3-website-us-east-1.amazonaws.com
       comment_pr: true
@@ -139,8 +181,20 @@ jobs:
   prod-config-validation:
     name: Prod Config Schema Validation
     # CI-2 gate: validate all prod tenant configs against the live schema on
-    # any PR that touches src/lib/schemas/**. Catches forward-compat breakage
-    # before merge. Design + threat model: project_scheduling_subphase_a_ci2_phase0_design_2026-05-19.
+    # any PR that touches src/lib/schemas/**. Design + threat model:
+    # project_scheduling_subphase_a_ci2_phase0_design_2026-05-19.
+    #
+    # ADVISORY (2026-06-28): the validation step is `continue-on-error: true`, so
+    # live-prod drift is REPORTED but does NOT block PR merges. Rationale: this
+    # repo's flow is develop -> staging -> promote-to-prod; a PR is staging-bound,
+    # so it must not be blocked by pre-existing prod-config drift it didn't cause
+    # (the failure mode that blocked unrelated PRs when the schema got ahead of
+    # the live configs). The BLOCKING forward-compat guard is now the fixture
+    # suite tenant.schema.forwardcompat.test.ts (runs in Test Suite), which pins
+    # that the schema keeps reading the known live shapes. The job name is kept
+    # (it is a required status check in branch protection); only its blocking
+    # behavior changed. NB job stays green even on a validation failure — read
+    # the step log/annotation for drift.
     #
     # Trigger conditions (T-02 mitigation lives in workflow-trigger-guard job below):
     #   - pull_request event only (the PR-target event variant is blocked at PR time by the trigger-guard)
@@ -187,8 +241,12 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: ci-config-pr-${{ github.event.pull_request.number }}
 
-      - name: Validate prod tenant configs against schema
+      - name: Validate prod tenant configs against schema (advisory — does not block)
         if: steps.schema-changed.outputs.schemas == 'true'
+        # ADVISORY: a failure here surfaces live-prod drift but must NOT block a
+        # staging-bound PR. The blocking forward-compat guard is the fixture
+        # suite in Test Suite. See this job's header comment for rationale.
+        continue-on-error: true
         run: npx tsx scripts/validate-prod-configs.ts
         env:
           S3_BUCKET: myrecruiter-picasso
