@@ -162,10 +162,10 @@ jobs:
     # NOT a prod-backed UI preview.
     # CloudFront: staging.config.myrecruiter.ai is fronted by distribution
     # E27102WWDBF606 (acct 525, origin = this bucket's S3-website endpoint).
-    # We do NOT pass cloudfront_distribution_id here because the deploy role
-    # picasso-config-builder-deploy-staging currently has S3-only permissions
-    # (no cloudfront:CreateInvalidation). Until that grant lands, the domain
-    # serves cached content until CF TTL; invalidate manually after deploy.
+    # The deploy role picasso-config-builder-deploy-staging was granted scoped
+    # cloudfront:CreateInvalidation on that distribution (picasso#607), so the
+    # reusable auto-invalidates the CDN after each deploy — no more manual
+    # invalidation / browser-cache clears to see staging changes.
     # SHA-pinned (picasso Phase-2 audit D8) — keep in sync with the pin in
     # deploy-production.yml; bump both deliberately to adopt reusable changes.
     uses: longhornrumble/picasso/.github/workflows/deploy-frontend.yml@aec1b46e8d242b3d123a8b7ff51c41fc44e635e6
@@ -173,6 +173,7 @@ jobs:
       environment: staging
       artifact_name: config-builder-staging-build
       bucket: picasso-config-builder-staging
+      cloudfront_distribution_id: E27102WWDBF606
       website_url: http://picasso-config-builder-staging.s3-website-us-east-1.amazonaws.com
       comment_pr: true
     secrets:
