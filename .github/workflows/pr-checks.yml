@@ -178,78 +178,13 @@ jobs:
     secrets:
       deploy_role_arn: ${{ secrets.AWS_DEPLOY_ROLE_ARN_STAGING }}
 
-  prod-config-validation:
-    name: Prod Config Schema Validation
-    # CI-2 gate: validate all prod tenant configs against the live schema on
-    # any PR that touches src/lib/schemas/**. Design + threat model:
-    # project_scheduling_subphase_a_ci2_phase0_design_2026-05-19.
-    #
-    # ADVISORY (2026-06-28): the validation step is `continue-on-error: true`, so
-    # live-prod drift is REPORTED but does NOT block PR merges. Rationale: this
-    # repo's flow is develop -> staging -> promote-to-prod; a PR is staging-bound,
-    # so it must not be blocked by pre-existing prod-config drift it didn't cause
-    # (the failure mode that blocked unrelated PRs when the schema got ahead of
-    # the live configs). The BLOCKING forward-compat guard is now the fixture
-    # suite tenant.schema.forwardcompat.test.ts (runs in Test Suite), which pins
-    # that the schema keeps reading the known live shapes. The job name is kept
-    # (it is a required status check in branch protection); only its blocking
-    # behavior changed. NB job stays green even on a validation failure — read
-    # the step log/annotation for drift.
-    #
-    # Trigger conditions (T-02 mitigation lives in workflow-trigger-guard job below):
-    #   - pull_request event only (the PR-target event variant is blocked at PR time by the trigger-guard)
-    #   - skip fork PRs (head.repo.fork == false)
-    #   - skip dependabot/renovate bot PRs (cannot assume the OIDC role meaningfully)
-    if: |
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.fork == false &&
-      github.actor != 'dependabot[bot]' &&
-      github.actor != 'renovate[bot]'
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write     # required for OIDC token exchange
-      contents: read
-      pull-requests: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
-
-      - name: Detect schema changes
-        id: schema-changed
-        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590  # v3
-        with:
-          filters: |
-            schemas:
-              - 'src/lib/schemas/**'
-
-      - name: Setup Node.js
-        if: steps.schema-changed.outputs.schemas == 'true'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        if: steps.schema-changed.outputs.schemas == 'true'
-        run: npm ci
-
-      - name: Configure AWS credentials (prod-614 read-only)
-        if: steps.schema-changed.outputs.schemas == 'true'
-        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # v4
-        with:
-          role-to-assume: ${{ secrets.PROD_CONFIG_CI_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: ci-config-pr-${{ github.event.pull_request.number }}
-
-      - name: Validate prod tenant configs against schema (advisory — does not block)
-        if: steps.schema-changed.outputs.schemas == 'true'
-        # ADVISORY: a failure here surfaces live-prod drift but must NOT block a
-        # staging-bound PR. The blocking forward-compat guard is the fixture
-        # suite in Test Suite. See this job's header comment for rationale.
-        continue-on-error: true
-        run: npx tsx scripts/validate-prod-configs.ts
-        env:
-          S3_BUCKET: myrecruiter-picasso
+  # NOTE: prod-config schema validation moved to deploy-production.yml as a
+  # promote-step gate (2026-06-28). A PR is staging-bound and must not be blocked
+  # by pre-existing prod-config drift it didn't cause; prod validation now runs
+  # at the deliberate dispatch-only promote. Forward-compat is guarded on every
+  # PR by the fixture suite tenant.schema.forwardcompat.test.ts (Test Suite).
+  # 'Prod Config Schema Validation' was removed from branch-protection required
+  # contexts in the same change.
 
   workflow-trigger-guard:
     name: Workflow Trigger Safety (T-02 mitigation)
