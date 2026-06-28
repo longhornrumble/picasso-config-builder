@@ -111,13 +111,20 @@ export const appointmentTypeSchema = z.object({
   slot_granularity_minutes: z
     .union([z.literal(15), z.literal(30), z.literal(60)])
     .default(30),
-  location_mode: z.enum(['virtual_meet', 'virtual_zoom', 'phone', 'in_person']),
+  // Optional (transitional): the RUNTIME reads `conference_type`, not
+  // `location_mode`. Live configs (e.g. MYR384719) predate this field, so
+  // requiring it breaks forward-compatible reads of existing configs. Re-make
+  // required once the runtime adopts location_mode and the builder UI enforces it.
+  location_mode: z.enum(['virtual_meet', 'virtual_zoom', 'phone', 'in_person']).optional(),
   required_fields: z
     .array(z.enum(['name', 'email', 'phone']))
     .default(['name', 'email']),
+  // Optional (transitional): routing is not yet populated by the builder for
+  // live configs. The cross-ref invariant in tenant.schema.ts only fires when set.
   routing_policy_id: z
     .string()
-    .min(1, 'routing_policy_id reference is required'),
+    .min(1, 'routing_policy_id reference is required')
+    .optional(),
   cancellation_window_hours: z
     .number()
     .int()
@@ -139,9 +146,11 @@ const bcp47Pattern = /^[a-z]{2}(-[A-Z]{2})?$/;
 
 export const schedulingConfigSchema = z.object({
   // Workspace identity
+  // Optional (transitional): not yet populated by the builder for live configs.
   workspace_domains: z
     .array(z.string().min(1))
-    .min(1, 'At least one workspace domain is required'),
+    .min(1, 'At least one workspace domain is required')
+    .optional(),
 
   // Localization
   default_locale: z
@@ -160,7 +169,8 @@ export const schedulingConfigSchema = z.object({
 
   // Domain entities (records keyed by id)
   appointment_types: z.record(z.string(), appointmentTypeSchema),
-  routing_policies: z.record(z.string(), routingPolicySchema),
+  // Optional (transitional): not yet populated by the builder for live configs.
+  routing_policies: z.record(z.string(), routingPolicySchema).optional(),
 
   // Optional pre-call form (referenced by start_scheduling CTAs in walk-up case)
   pre_call_form_id: z
