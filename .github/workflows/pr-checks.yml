@@ -181,8 +181,20 @@ jobs:
   prod-config-validation:
     name: Prod Config Schema Validation
     # CI-2 gate: validate all prod tenant configs against the live schema on
-    # any PR that touches src/lib/schemas/**. Catches forward-compat breakage
-    # before merge. Design + threat model: project_scheduling_subphase_a_ci2_phase0_design_2026-05-19.
+    # any PR that touches src/lib/schemas/**. Design + threat model:
+    # project_scheduling_subphase_a_ci2_phase0_design_2026-05-19.
+    #
+    # ADVISORY (2026-06-28): the validation step is `continue-on-error: true`, so
+    # live-prod drift is REPORTED but does NOT block PR merges. Rationale: this
+    # repo's flow is develop -> staging -> promote-to-prod; a PR is staging-bound,
+    # so it must not be blocked by pre-existing prod-config drift it didn't cause
+    # (the failure mode that blocked unrelated PRs when the schema got ahead of
+    # the live configs). The BLOCKING forward-compat guard is now the fixture
+    # suite tenant.schema.forwardcompat.test.ts (runs in Test Suite), which pins
+    # that the schema keeps reading the known live shapes. The job name is kept
+    # (it is a required status check in branch protection); only its blocking
+    # behavior changed. NB job stays green even on a validation failure — read
+    # the step log/annotation for drift.
     #
     # Trigger conditions (T-02 mitigation lives in workflow-trigger-guard job below):
     #   - pull_request event only (the PR-target event variant is blocked at PR time by the trigger-guard)
@@ -229,8 +241,12 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: ci-config-pr-${{ github.event.pull_request.number }}
 
-      - name: Validate prod tenant configs against schema
+      - name: Validate prod tenant configs against schema (advisory — does not block)
         if: steps.schema-changed.outputs.schemas == 'true'
+        # ADVISORY: a failure here surfaces live-prod drift but must NOT block a
+        # staging-bound PR. The blocking forward-compat guard is the fixture
+        # suite in Test Suite. See this job's header comment for rationale.
+        continue-on-error: true
         run: npx tsx scripts/validate-prod-configs.ts
         env:
           S3_BUCKET: myrecruiter-picasso

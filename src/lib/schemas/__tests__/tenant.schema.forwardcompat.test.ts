@@ -196,6 +196,81 @@ describe('tenant.schema forward-compat: program ref-join handles unknown form.pr
   });
 });
 
+describe('scheduling forward-compat: old-shape MYR384719 scheduling config parses', () => {
+  // Real shape verified live against s3://myrecruiter-picasso(-staging)/tenants/
+  // MYR384719/MYR384719-config.json on 2026-06-28: the live scheduling block has
+  // NO location_mode / routing_policy_id / routing_policies / workspace_domains
+  // (the RUNTIME reads `conference_type`, not location_mode). Requiring those
+  // fields made the prod-config gate fail on every schema PR. These pin the
+  // loosened acceptance AND the regression direction.
+  const oldShapeScheduling = () => ({
+    ...baseTenant(),
+    feature_flags: { scheduling_enabled: true },
+    scheduling: {
+      appointment_types: {
+        'intro-call': {
+          id: 'intro-call',
+          name: 'Intro Call',
+          duration_minutes: 30,
+          conference_type: 'google_meet', // runtime field; not location_mode
+        },
+      },
+      // NOTE: no workspace_domains, no routing_policies (both now optional).
+    },
+  });
+
+  it('accepts a scheduling block with no location_mode / routing / workspace_domains', () => {
+    expect(tenantConfigSchema.safeParse(oldShapeScheduling()).success).toBe(true);
+  });
+
+  it('still fires Invariant 2 when routing_policy_id IS set but unknown (guard not disabled)', () => {
+    const cfg = {
+      ...baseTenant(),
+      feature_flags: { scheduling_enabled: true },
+      scheduling: {
+        appointment_types: {
+          'intro-call': {
+            id: 'intro-call',
+            name: 'Intro Call',
+            duration_minutes: 30,
+            routing_policy_id: 'missing_policy', // references a policy that doesn't exist
+          },
+        },
+        // routing_policies absent -> the referenced id can't resolve -> Invariant 2 fires
+      },
+    };
+    const r = tenantConfigSchema.safeParse(cfg);
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(
+        r.error.issues.some(
+          (i) => i.path.join('.') === 'scheduling.appointment_types.intro-call.routing_policy_id',
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it("accepts a schedule CTA with selection_metadata.role_axis 'act' (live MYR384719 value)", () => {
+    const r = ctaDefinitionSchema.safeParse({
+      label: 'Schedule an intro call',
+      action: 'start_scheduling',
+      type: 'scheduling_trigger',
+      selection_metadata: { topic_tags: ['scheduling'], depth_level: 'action', role_axis: 'act' },
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it('still REJECTS a bogus role_axis (enum widened to add "act", not to z.string())', () => {
+    const r = ctaDefinitionSchema.safeParse({
+      label: 'Schedule an intro call',
+      action: 'start_scheduling',
+      type: 'scheduling_trigger',
+      selection_metadata: { topic_tags: ['scheduling'], depth_level: 'action', role_axis: 'sideways' },
+    });
+    expect(r.success).toBe(false);
+  });
+});
+
 describe('cta.schema forward-compat: query allowed on non-send_query CTAs', () => {
   it('accepts an external_link CTA that also carries a human-readable query', () => {
     const r = ctaDefinitionSchema.safeParse({
