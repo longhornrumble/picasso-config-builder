@@ -133,6 +133,45 @@ jobs:
           path: dist/
           retention-days: 7
 
+  # Promote-step prod-config gate (2026-06-28). Validates that the schema in the
+  # build about to be promoted can read EVERY live prod tenant config, BEFORE we
+  # deploy to prod. Moved here from pr-checks.yml: a PR is staging-bound and must
+  # not be blocked by pre-existing prod-config drift it didn't cause; prod
+  # validation belongs at the deliberate dispatch-only promote step. (Forward-
+  # compat is also guarded on every PR by the fixture suite in Test Suite.)
+  # Dispatch-only — does not run on plain pushes to main.
+  prod-config-validation:
+    name: Prod Config Schema Validation (promote gate)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write     # OIDC into the prod-614 read-only config role
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure AWS credentials (prod-614 read-only)
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # v4
+        with:
+          role-to-assume: ${{ secrets.PROD_CONFIG_CI_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: ci-config-promote-${{ github.run_id }}
+
+      - name: Validate prod tenant configs against schema
+        run: npx tsx scripts/validate-prod-configs.ts
+        env:
+          S3_BUCKET: myrecruiter-picasso
+
   # The human gate. Reusable-caller jobs can't carry `environment:`, so the
   # required-reviewer pause lives in this tiny job in front (widget pattern).
   approve-production:
@@ -148,7 +187,9 @@ jobs:
 
   deploy-production:
     name: Deploy to Production
-    needs: approve-production
+    # Gated on BOTH the human approval AND the prod-config promote gate: if the
+    # about-to-deploy schema can't read a live prod config, do not promote.
+    needs: [approve-production, prod-config-validation]
     permissions:
       id-token: write
       contents: read
