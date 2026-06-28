@@ -121,6 +121,17 @@ export interface PostSubmissionConfig {
   next_steps?: string[];
   actions?: PostSubmissionAction[];
   fulfillment?: Fulfillment;
+  /**
+   * When true, after this form is submitted the visitor is offered to book an appointment
+   * (requires scheduling enabled for the tenant). The "next step" pivot from form -> scheduling.
+   */
+  book_appointment?: boolean;
+  /**
+   * Optional free-text question asked AFTER the booking confirms ("what would you like to talk
+   * about?"). The answer lands on the booking so the coordinator knows what the visitor wants
+   * to discuss. Streamed as ordinary chat text; the visitor types their answer. Empty -> not asked.
+   */
+  post_booking_question?: string;
 }
 
 export interface FormNotificationConfig {

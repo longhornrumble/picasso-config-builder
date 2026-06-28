@@ -9,7 +9,7 @@
 
 import React, { useState } from 'react';
 import { Input, Textarea, Button, Badge, Select } from '@/components/ui';
-import { Plus, X, Trash2, Webhook } from 'lucide-react';
+import { Plus, X, Trash2, Webhook, CalendarClock } from 'lucide-react';
 import type { PostSubmissionConfig as PostSubmissionConfigType, PostSubmissionAction, Fulfillment } from '@/types/config';
 
 export interface PostSubmissionConfigProps {
@@ -267,6 +267,65 @@ export const PostSubmissionConfig: React.FC<PostSubmissionConfigProps> = ({
         <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
           Buttons shown after form submission (max 3)
         </p>
+      </div>
+
+      {/* Book an Appointment (scheduling pivot) */}
+      <div className="w-full border-t pt-4">
+        <div className="flex items-center justify-between mb-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!!config.book_appointment}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  handleChange({ book_appointment: true });
+                } else {
+                  // Uncheck clears the coupled question so the runtime won't ask it.
+                  handleChange({ book_appointment: false, post_booking_question: undefined });
+                }
+              }}
+              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Book an appointment after this form
+            </span>
+          </label>
+        </div>
+
+        {config.book_appointment && (
+          <div className="space-y-4 pl-6 border-l-2 border-primary-200 dark:border-primary-800">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              After the form is submitted, the visitor is offered available times to book a call
+              (requires scheduling enabled for the tenant).
+            </p>
+            <div className="w-full">
+              <label
+                htmlFor="post-booking-question"
+                className="mb-1.5 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                <CalendarClock className="w-4 h-4" />
+                Question to ask after booking
+              </label>
+              <Textarea
+                id="post-booking-question"
+                value={config.post_booking_question || ''}
+                onChange={(e) => handleChange({ post_booking_question: e.target.value })}
+                onBlur={onBlur}
+                placeholder="One last thing to help us prepare — what would you like to talk about?"
+                rows={2}
+              />
+              {touched && errors?.post_booking_question && (
+                <p className="mt-1.5 text-sm text-red-600 dark:text-red-400" role="alert">
+                  {errors.post_booking_question}
+                </p>
+              )}
+              <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                Optional. Asked in chat right after the booking is confirmed; the visitor's answer
+                is attached to the booking so the coordinator knows what they want to discuss.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Fulfillment Settings */}

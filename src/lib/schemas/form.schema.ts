@@ -173,6 +173,13 @@ export const postSubmissionConfigSchema = z.object({
   next_steps: z.array(z.string().max(500, 'Each next step must be 500 characters or less')).optional(),
   actions: z.array(postSubmissionActionSchema).max(3, 'Maximum 3 post-submission actions allowed').optional(),
   fulfillment: fulfillmentSchema.optional(),
+  // Scheduling pivot: offer to book an appointment after this form, and optionally ask one
+  // free-text question after the booking confirms (lands on the booking for the coordinator).
+  book_appointment: z.boolean().optional(),
+  post_booking_question: z
+    .string()
+    .max(500, 'Question must be 500 characters or less')
+    .optional(),
 });
 
 // ============================================================================
