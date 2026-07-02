@@ -124,8 +124,8 @@ picasso-config-builder/
 │   ├── pages/                # Page components
 │   │   ├── DashboardPage.tsx # Visual flow diagram dashboard
 │   └── main.tsx              # Application entry point
-├── lambda/                   # AWS Lambda function (production)
-│   ├── index.mjs             # Lambda handler
+├── lambda/                   # STALE vendored Lambda copy — NOT deployed; canonical lives in Lambdas/lambda/Picasso_Config_Manager (lambda repo)
+│   ├── index.mjs             # Lambda handler (stale copy)
 │   └── README.md
 ├── mock-s3/                  # Local dev tenant configs
 │   ├── TEST001.json
@@ -401,7 +401,7 @@ The Dashboard page (`/dashboard`) provides a visual representation of the config
 - `src/lib/api/client.ts`: API client with retry logic
 - `src/lib/api/config-operations.ts`: Config CRUD operations
 - `src/lib/api/mergeStrategy.ts`: Config merge logic
-- `lambda/index.mjs`: Production Lambda handler
+- `lambda/index.mjs`: STALE vendored Lambda copy (not deployed) — the canonical handler is `Lambdas/lambda/Picasso_Config_Manager/index.mjs` in the lambda repo
 
 ## Testing Guidelines
 
@@ -533,7 +533,7 @@ aws s3 ls s3://myrecruiter-picasso/
 ## Related Systems
 
 - **Picasso Widget** (`/Picasso`): Consumes configs from S3
-- **deploy_tenant_stack Lambda**: Creates base tenant configs
+- **deploy_tenant_stack Lambda**: RETIRED (2026) — the config builder is now the sole tenant-creation path (canonical Lambda's `POST /config` skeleton)
 - **Bubble.io**: Handles notification/integration routing (separate from forms)
 
 ## Deployment
@@ -546,7 +546,7 @@ aws s3 ls s3://myrecruiter-picasso/
 - **Region:** us-east-1
 
 **Backend API:**
-- **Lambda Function:** `picasso-config-api`
+- **Lambda Function:** `Picasso_Config_Manager` (prod account 614, bare-named; the older `picasso-config-api` name matches no live function)
 - **API Endpoint:** https://56mwo4zatkiqzpancrkkzqr43e0nkrui.lambda-url.us-east-1.on.aws
 - **Region:** us-east-1
 
@@ -578,17 +578,11 @@ AWS_PROFILE=chris-admin aws s3 ls s3://picasso-config-builder-prod/
 
 ### Lambda Deployment
 
-Package and deploy the config API Lambda:
+The backend Lambda deploys via CI from the **lambda repo** (`Lambdas/lambda/Picasso_Config_Manager` — NOT the stale vendored `lambda/` copy in this repo, and NOT manual `update-function-code`):
 
-```bash
-cd lambda
-npm ci --production
-npm run package
-AWS_PROFILE=chris-admin aws lambda update-function-code \
-  --function-name picasso-config-api \
-  --zip-file fileb://deployment.zip \
-  --region us-east-1
-```
+- **Staging (525)**: auto-deploys on merge to the lambda repo's `main` when `Picasso_Config_Manager/**` is touched (`deploy-staging.yml` matrix).
+- **Production (614)**: gated dispatch of the lambda repo's `deploy-production.yml` (`$LATEST` + published version snapshot, `/health` smoke).
+- Function shape (role, env, URL, logs) is Terraform-owned in staging (`infra/modules/lambda-config-manager-staging`, picasso repo); hand-managed in prod.
 
 ### Deployment Checklist
 
