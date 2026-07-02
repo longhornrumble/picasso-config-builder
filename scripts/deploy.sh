@@ -21,7 +21,6 @@ AWS_REGION="us-east-1"
 # Production infrastructure
 PROD_S3_BUCKET="picasso-config-builder-prod"
 PROD_URL="http://picasso-config-builder-prod.s3-website-us-east-1.amazonaws.com"
-PROD_LAMBDA="picasso-config-api"
 PROD_API_URL="https://56mwo4zatkiqzpancrkkzqr43e0nkrui.lambda-url.us-east-1.on.aws"
 
 # Set environment-specific variables
@@ -29,7 +28,6 @@ case $ENVIRONMENT in
   production)
     S3_BUCKET=$PROD_S3_BUCKET
     DEPLOYMENT_URL=$PROD_URL
-    LAMBDA_FUNCTION=$PROD_LAMBDA
     API_ENDPOINT=$PROD_API_URL
     ;;
   *)
