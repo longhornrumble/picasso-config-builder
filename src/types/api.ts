@@ -111,37 +111,6 @@ export interface DeployConfigResponse {
 }
 
 // ============================================================================
-// BACKUP OPERATIONS
-// ============================================================================
-
-export interface BackupListItem {
-  key: string;
-  timestamp: number;
-  version: string;
-  size: number;
-}
-
-export interface ListBackupsRequest {
-  tenantId: string;
-  maxResults?: number;
-}
-
-export interface ListBackupsResponse {
-  backups: BackupListItem[];
-}
-
-export interface RestoreBackupRequest {
-  tenantId: string;
-  backupKey: string;
-}
-
-export interface RestoreBackupResponse {
-  success: boolean;
-  config: TenantConfig;
-  metadata: TenantMetadata;
-}
-
-// ============================================================================
 // ERROR RESPONSES
 // ============================================================================
 

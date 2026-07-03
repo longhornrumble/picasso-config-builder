@@ -10,7 +10,6 @@ import { Sidebar } from './Sidebar';
 import { MainContent } from './MainContent';
 import { ValidationPanel } from './ValidationPanel';
 import { ConflictBanner } from './ConflictBanner';
-import { DraftBanner } from './DraftBanner';
 
 /**
  * Application Layout
@@ -36,10 +35,6 @@ export const Layout: React.FC = () => {
       {/* Concurrency-conflict banner — renders only when a save was
           blocked by a 409 and we need to prompt the user to reload. */}
       <ConflictBanner />
-
-      {/* Draft banner — renders only when a draft exists for this tenant
-          and the user is viewing the live config. */}
-      <DraftBanner />
 
       {/* Main Content Area */}
       <div className="app-main-wrapper">
