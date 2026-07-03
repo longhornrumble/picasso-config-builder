@@ -6,7 +6,6 @@
 import type { TenantConfig, ConversationalForm, ConversationBranch } from '@/types/config';
 import type { SliceCreator, ConfigSlice } from '../types';
 import * as configAPI from '@/lib/api/config-operations';
-import { configApiClient } from '@/lib/api/client';
 import { ConfigAPIError } from '@/lib/api/errors';
 
 /**
@@ -42,11 +41,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
   lastSaved: null,
 
   conflictState: null,
-
-  // Draft state
-  isDraft: false,
-  hasDraft: false,
-  draftLastSaved: null,
 
   // History state (stubbed for MVP)
   canUndo: false,
@@ -94,18 +88,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         // Clear validation state
         state.validation.clearAll();
       });
-
-      // After loading live config, check whether a draft exists (don't load it yet)
-      try {
-        const draftCheck = await configApiClient.loadDraft(tenantId);
-        set((state) => {
-          state.config.hasDraft = draftCheck.hasDraft;
-          state.config.isDraft = false;
-          state.config.draftLastSaved = draftCheck.lastSaved ?? null;
-        });
-      } catch {
-        // Non-fatal: draft check failure should not block loading the live config
-      }
 
       get().ui.addToast({
         type: 'success',
@@ -351,9 +333,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       state.config.conflictState = null;
       state.config.isDirty = false;
       state.config.lastSaved = null;
-      state.config.isDraft = false;
-      state.config.hasDraft = false;
-      state.config.draftLastSaved = null;
       state.programs.programs = {};
       state.forms.forms = {};
       state.ctas.ctas = {};
@@ -378,207 +357,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
   markClean: () => {
     set((state) => {
       state.config.isDirty = false;
-    });
-  },
-
-  saveDraft: async () => {
-    const state = get();
-
-    if (!state.config.tenantId) {
-      state.ui.addToast({
-        type: 'error',
-        message: 'No tenant loaded',
-      });
-      return;
-    }
-
-    state.ui.setLoading('saveDraft', true);
-
-    try {
-      const mergedConfig = state.config.getMergedConfig();
-
-      if (!mergedConfig) {
-        throw new Error('Failed to merge configuration');
-      }
-
-      const { lastSaved } = await configApiClient.saveDraft(
-        state.config.tenantId,
-        mergedConfig
-      );
-
-      set((state) => {
-        state.config.isDraft = true;
-        state.config.hasDraft = true;
-        state.config.draftLastSaved = lastSaved;
-        state.config.isDirty = false;
-      });
-
-      state.ui.addToast({
-        type: 'success',
-        message: 'Draft saved successfully',
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save draft';
-      state.ui.addToast({
-        type: 'error',
-        message: errorMessage,
-      });
-      throw error;
-    } finally {
-      state.ui.setLoading('saveDraft', false);
-    }
-  },
-
-  loadDraft: async () => {
-    const state = get();
-
-    if (!state.config.tenantId) {
-      state.ui.addToast({
-        type: 'error',
-        message: 'No tenant loaded',
-      });
-      return;
-    }
-
-    state.ui.setLoading('loadDraft', true);
-
-    try {
-      const response = await configApiClient.loadDraft(state.config.tenantId);
-
-      if (!response.hasDraft || !response.config) {
-        state.ui.addToast({
-          type: 'info',
-          message: 'No draft found for this tenant',
-        });
-        return;
-      }
-
-      const draftConfig = response.config;
-      const draftLastSaved = response.lastSaved ?? null;
-
-      // Populate all domain slices from the draft config (same pattern as loadConfig)
-      set((state) => {
-        state.programs.programs = draftConfig.programs || {};
-
-        // Normalize forms: ensure form_id matches the dictionary key
-        const forms = draftConfig.conversational_forms || {};
-        state.forms.forms = Object.fromEntries(
-          Object.entries(forms).map(([key, form]: [string, ConversationalForm]) => [
-            key,
-            { ...form, form_id: key },
-          ])
-        );
-
-        state.ctas.ctas = draftConfig.cta_definitions || {};
-        state.branches.branches = normalizeBranches(draftConfig.conversation_branches);
-        state.contentShowcase.content_showcase = draftConfig.content_showcase || [];
-
-        // Clear active selections
-        state.programs.activeProgramId = null;
-        state.forms.activeFormId = null;
-        state.ctas.activeCtaId = null;
-        state.branches.activeBranchId = null;
-
-        // Mark as draft, clean (no unsaved changes on top of the draft)
-        state.config.isDraft = true;
-        state.config.hasDraft = true;
-        state.config.isDirty = false;
-        state.config.draftLastSaved = draftLastSaved;
-
-        // Clear validation state
-        state.validation.clearAll();
-      });
-
-      state.ui.addToast({
-        type: 'success',
-        message: 'Draft loaded successfully',
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load draft';
-      state.ui.addToast({
-        type: 'error',
-        message: errorMessage,
-      });
-      throw error;
-    } finally {
-      state.ui.setLoading('loadDraft', false);
-    }
-  },
-
-  discardDraft: async () => {
-    const state = get();
-
-    if (!state.config.tenantId) {
-      state.ui.addToast({
-        type: 'error',
-        message: 'No tenant loaded',
-      });
-      return;
-    }
-
-    state.ui.setLoading('discardDraft', true);
-
-    try {
-      await configApiClient.deleteDraft(state.config.tenantId);
-
-      set((state) => {
-        state.config.isDraft = false;
-        state.config.hasDraft = false;
-        state.config.draftLastSaved = null;
-      });
-
-      // Reload the live config to restore state
-      await get().config.loadConfig(state.config.tenantId!);
-
-      state.ui.addToast({
-        type: 'info',
-        message: 'Draft discarded. Live configuration restored.',
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to discard draft';
-      state.ui.addToast({
-        type: 'error',
-        message: errorMessage,
-      });
-      throw error;
-    } finally {
-      state.ui.setLoading('discardDraft', false);
-    }
-  },
-
-  promoteDraft: async () => {
-    const state = get();
-
-    if (!state.config.tenantId) {
-      state.ui.addToast({
-        type: 'error',
-        message: 'No tenant loaded',
-      });
-      return;
-    }
-
-    // Run the existing deployConfig flow (validates and writes to live S3)
-    await get().config.deployConfig();
-
-    // Clean up the draft file now that it is live
-    try {
-      await configApiClient.deleteDraft(state.config.tenantId!);
-    } catch {
-      // Non-fatal: draft cleanup failure should not surface as an error to the user
-    }
-
-    set((state) => {
-      state.config.isDraft = false;
-      state.config.hasDraft = false;
-      state.config.draftLastSaved = null;
-    });
-  },
-
-  clearDraftState: () => {
-    set((state) => {
-      state.config.isDraft = false;
-      state.config.hasDraft = false;
-      state.config.draftLastSaved = null;
     });
   },
 
