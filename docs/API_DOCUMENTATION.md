@@ -36,7 +36,7 @@ The API uses a **Lambda Proxy Pattern** where all S3 operations are performed se
 - **Config Operations** (`src/lib/api/config-operations.ts`) - High-level API functions
 - **API Client** (`src/lib/api/client.ts`) - HTTP client with retry logic
 - **Error Handling** (`src/lib/api/errors.ts`) - Type-safe error codes
-- **Merge Strategy** (`src/lib/api/mergeStrategy.ts`) - Section-based editing
+- **Merge Path** (`src/store/slices/config.ts` `getMergedConfig`) - Single merge implementation shared by save, deploy, and preview
 - **Validation Engine** (`src/lib/validation/`) - Comprehensive validation rules
 
 ---
@@ -1057,22 +1057,14 @@ The Config Builder uses **section-based editing** to preserve read-only sections
 
 **Merge Function**:
 ```typescript
-import { mergeConfigSections, prepareConfigForDeployment } from '@/lib/api/mergeStrategy';
-
-// Example: Merge edited sections into base config
-const baseConfig = await loadConfig('MYR384719');
-
-const editedSections = {
-  programs: { /* updated programs */ },
-  conversational_forms: { /* updated forms */ },
-  cta_definitions: { /* updated CTAs */ },
-  conversation_branches: { /* updated branches */ }
-};
-
-const merged = mergeConfigSections(baseConfig.config, editedSections);
-// merged.branding is preserved from baseConfig
-// merged.version is incremented
-// merged.generated_at is updated
+// The single merge path lives in the store: getMergedConfig rebuilds the
+// TenantConfig from the domain slices + baseConfig, shedding stale keys and
+// never emitting card_inventory (the server 400s on it). Save, deploy, and
+// preview all use it.
+const merged = useConfigStore.getState().config.getMergedConfig();
+// merged.branding is copied from baseConfig
+// version bumping happens in config-operations (saveConfig/deployConfig)
+// omitted sections are preserved server-side (the Lambda merges onto its S3 base)
 ```
 
 ---
@@ -1692,85 +1684,31 @@ config.conversation_branches['volunteer_discussion'] = createVolunteerBranch();
 ### Example 5: Full Deployment Workflow
 
 ```typescript
-import { loadConfig, deployConfig } from '@/lib/api/config-operations';
-import { validatePreDeployment, getValidationSummary } from '@/lib/validation';
-import { prepareConfigForDeployment } from '@/lib/api/mergeStrategy';
+import { useConfigStore } from '@/store';
 
 async function deployTenantConfiguration(tenantId: string) {
+  const store = useConfigStore.getState();
+
   try {
     console.log(`🚀 Starting deployment for ${tenantId}`);
 
-    // Step 1: Load current configuration
-    console.log('📥 Loading current configuration...');
-    const { config: baseConfig } = await loadConfig(tenantId);
+    // Step 1: Load current configuration (populates baseConfig + domain slices)
+    await store.config.loadConfig(tenantId);
 
-    // Step 2: Get current state from store (edited sections)
-    const currentState = {
-      programs: {
-        volunteer_program: {
-          program_id: 'volunteer_program',
-          program_name: 'Volunteer Program',
-          description: 'Join our volunteer team'
-        }
-      },
-      forms: {
-        volunteer_application: createVolunteerForm()
-      },
-      ctas: createVolunteerCTAs(),
-      branches: {
-        volunteer_discussion: createVolunteerBranch()
-      }
-    };
+    // Step 2: Edit via the domain slices (programs/forms/ctas/branches/...)
+    // ... store.programs.createProgram(...), store.forms.createForm(...), etc.
 
-    // Step 3: Validate configuration
-    console.log('✅ Validating configuration...');
-    const validation = validatePreDeployment(
-      currentState.programs,
-      currentState.forms,
-      currentState.ctas,
-      currentState.branches
-    );
-
-    console.log(getValidationSummary(validation));
-
-    if (!validation.valid) {
-      console.error('❌ Validation failed - cannot deploy');
-      validation.errors.forEach(error => {
-        console.error(`   ${error.entityType} ${error.entityId}: ${error.message}`);
-      });
-      return;
-    }
-
-    if (validation.warnings.length > 0) {
-      console.warn(`⚠️ Deploying with ${validation.warnings.length} warnings`);
-      validation.warnings.forEach(warning => {
-        console.warn(`   ${warning.message}`);
-      });
-    }
-
-    // Step 4: Merge edited sections into base config
-    console.log('🔄 Merging configuration sections...');
-    const { config: mergedConfig, metadata } = prepareConfigForDeployment(
-      baseConfig,
-      currentState
-    );
-
-    console.log(`   Sections updated: ${metadata.editable_sections_updated.join(', ')}`);
-    console.log(`   New version: ${metadata.version}`);
-
-    // Step 5: Deploy to S3
-    console.log('📤 Deploying to S3...');
-    await deployConfig(tenantId, mergedConfig as any);
+    // Step 3: Deploy. The store action validates, merges via getMergedConfig
+    // (the single merge path shared with save), bumps the version through
+    // config-operations, and sends If-Match so a concurrent edit surfaces
+    // as a 409 conflict instead of a silent overwrite.
+    await store.config.deployConfig();
 
     console.log('✅ Deployment successful!');
-    console.log(`   Tenant: ${tenantId}`);
-    console.log(`   Version: ${metadata.version}`);
-    console.log(`   Timestamp: ${metadata.merged_at}`);
-
   } catch (error) {
     console.error('❌ Deployment failed:', error.message);
     if (error instanceof ConfigAPIError) {
-      console.error(`   Error code: ${error.code}`);
+      console.error(`   Error code: ${error.code}`);   // VERSION_CONFLICT on a 409
       console.error(`   User message: ${error.getUserMessage()}`);
     }
     throw error;
