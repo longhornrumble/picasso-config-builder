@@ -207,7 +207,7 @@ describe('S3 Deployment Workflow Integration Tests', () => {
     expect(deployedConfig!.content_showcase).toHaveLength(1);
   });
 
-  it('should bump version on deployment', async () => {
+  it('should pass the merged config version through to the deploy API', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     // Load config with a known starting version
@@ -234,11 +234,12 @@ describe('S3 Deployment Workflow Integration Tests', () => {
       await result.current.config.deployConfig();
     });
 
-    // Verify version incremented. Note: `generated_at` is no longer part of
-    // the deploy payload — the Lambda stamps it server-side. Version bumping
-    // happens client-side in the deploy path (1.3 -> 1.4).
+    // The version bump lives in configAPI.deployConfig (mocked in this
+    // suite; the incrementVersion policy is pinned by
+    // src/lib/api/__tests__/config-operations.deploy.test.ts), so the payload
+    // at this boundary carries the un-bumped version from getMergedConfig.
     const deployedConfig = mockS3._getMockConfig('TEST_TENANT');
-    expect(parseFloat(deployedConfig!.version)).toBeGreaterThan(1.3);
+    expect(deployedConfig!.version).toBe('1.3.0');
   });
 
   it('should handle deployment of empty config sections', async () => {
@@ -360,14 +361,15 @@ describe('S3 Deployment Workflow Integration Tests', () => {
       await result.current.config.deployConfig();
     });
 
-    // Verify deployConfig was called with an editable-fields payload. Note:
-    // `tenant_id` is no longer part of the deploy payload — the Lambda derives
-    // the tenant from the URL path. `programs` and `version` are sent.
+    // The deploy payload is the full getMergedConfig output — one merge path
+    // shared with save. Metadata like tenant_id rides along (the server
+    // re-derives the tenant from the URL path regardless).
     expect(mockS3.deployConfig).toHaveBeenCalledWith(
       'TEST_TENANT',
       expect.objectContaining({
         version: expect.any(String),
         programs: expect.any(Object),
+        tenant_id: 'TEST_TENANT',
       })
     );
   });

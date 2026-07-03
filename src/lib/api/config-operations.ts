@@ -100,9 +100,14 @@ export async function saveConfig(
 
 /**
  * Deploy tenant configuration
- * Same as save, but enforces validation and always creates backup
+ * Same as save, but always creates a backup. Applies the same version bump
+ * as saveConfig so both write paths share one version policy.
  */
-export async function deployConfig(tenantId: string, config: TenantConfig): Promise<void> {
+export async function deployConfig(
+  tenantId: string,
+  config: TenantConfig,
+  options: { ifMatch?: string } = {}
+): Promise<{ etag?: string }> {
   try {
     if (!tenantId || tenantId.trim() === '') {
       throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID is required');
@@ -112,9 +117,16 @@ export async function deployConfig(tenantId: string, config: TenantConfig): Prom
       throw new ConfigAPIError('VALIDATION_ERROR', 'Config is required');
     }
 
-    // Don't spread config - it's already been filtered to editable sections only
-    // The Lambda will add tenant_id, generated_at, etc. from the base config during merge
-    await configApiClient.deployConfig(tenantId, config);
+    // Update metadata
+    const updatedConfig: TenantConfig = {
+      ...config,
+      tenant_id: tenantId,
+      generated_at: Date.now(),
+      version: incrementVersion(config.version),
+    };
+
+    const result = await configApiClient.deployConfig(tenantId, updatedConfig, options);
+    return { etag: result.etag };
   } catch (error) {
     throw handleAPIError(error);
   }

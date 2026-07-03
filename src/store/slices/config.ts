@@ -207,62 +207,25 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
     state.ui.setLoading('deploy', true);
 
     try {
+      // Single merge path shared with save and preview. The server merges
+      // this payload onto its own S3 base (omitted sections are preserved),
+      // so only the sections getMergedConfig emits are overwritten. Version
+      // bumping happens in configAPI.deployConfig, same as save.
       const mergedConfig = state.config.getMergedConfig();
 
       if (!mergedConfig) {
         throw new Error('Failed to merge configuration');
       }
 
-      // Filter to only editable fields - Lambda only accepts these fields
-      // See lambda/mergeStrategy.mjs EDITABLE_SECTIONS for the definitive list
-      // Increment version by parsing and adding 0.1
-      const currentVersion = parseFloat(mergedConfig.version) || 1.0;
-      const newVersion = (currentVersion + 0.1).toFixed(1);
-
-      const editableConfig = {
-        version: newVersion,
-        programs: mergedConfig.programs,
-        conversational_forms: mergedConfig.conversational_forms,
-        cta_definitions: mergedConfig.cta_definitions,
-        conversation_branches: mergedConfig.conversation_branches,
-        content_showcase: mergedConfig.content_showcase,
-        cta_settings: mergedConfig.cta_settings,
-        bedrock_instructions: mergedConfig.bedrock_instructions,
-        // Newly editable sections
-        branding: mergedConfig.branding,
-        features: mergedConfig.features,
-        quick_help: mergedConfig.quick_help,
-        action_chips: mergedConfig.action_chips,
-        widget_behavior: mergedConfig.widget_behavior,
-        aws: mergedConfig.aws,
-        // Preserve topic_definitions from baseConfig for V4.1 Lambda compat (read-only passthrough)
-        ...(mergedConfig.topic_definitions?.length && { topic_definitions: mergedConfig.topic_definitions }),
-        feature_flags: mergedConfig.feature_flags || {},
-        // form_settings is a legacy passthrough not in TenantConfig's typed surface
-        ...((mergedConfig as TenantConfig & { form_settings?: unknown }).form_settings
-          ? { form_settings: (mergedConfig as TenantConfig & { form_settings?: unknown }).form_settings }
-          : {}),
-        ...(mergedConfig.monitor ? { monitor: mergedConfig.monitor } : {}),
-        // Metadata fields
-        chat_title: mergedConfig.chat_title,
-        welcome_message: mergedConfig.welcome_message,
-        subscription_tier: mergedConfig.subscription_tier,
-        tone_prompt: mergedConfig.tone_prompt,
-        // Optional identity fields
-        ...(mergedConfig.organization_name && { organization_name: mergedConfig.organization_name }),
-        ...(mergedConfig.chat_subtitle && { chat_subtitle: mergedConfig.chat_subtitle }),
-        // Notification configuration
-        ...(mergedConfig.notification_settings && { notification_settings: mergedConfig.notification_settings }),
-      };
-
-      console.log('[DEPLOY] Filtered config keys:', Object.keys(editableConfig));
-      console.log('[DEPLOY] Sending to API:', editableConfig);
-
-      await configAPI.deployConfig(state.config.tenantId, editableConfig as TenantConfig);
+      const deployResult = await configAPI.deployConfig(state.config.tenantId, mergedConfig, {
+        ifMatch: state.config.etag ?? undefined,
+      });
 
       // Update base config and mark clean
       set((state) => {
         state.config.baseConfig = mergedConfig;
+        state.config.etag = deployResult?.etag ?? null;
+        state.config.conflictState = null;
         state.config.isDirty = false;
         state.config.lastSaved = Date.now();
       });
@@ -272,6 +235,21 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         message: 'Configuration deployed successfully',
       });
     } catch (error) {
+      // Mirror saveConfig: an ETag mismatch renders the reload banner
+      // instead of the generic error toast.
+      if (error instanceof ConfigAPIError && error.code === 'VERSION_CONFLICT') {
+        const details = (error.details ?? {}) as {
+          currentConfig?: TenantConfig;
+          currentETag?: string;
+        };
+        set((state) => {
+          state.config.conflictState = {
+            currentConfig: details.currentConfig ?? null,
+            currentETag: details.currentETag ?? null,
+          };
+        });
+        throw error;
+      }
       const errorMessage = error instanceof Error ? error.message : 'Failed to deploy configuration';
       state.ui.addToast({
         type: 'error',
