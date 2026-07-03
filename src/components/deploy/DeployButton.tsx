@@ -8,9 +8,6 @@ import { Upload } from 'lucide-react';
 import { Button, Badge, Tooltip } from '@/components/ui';
 import { DeployDialog } from './DeployDialog';
 import { useConfigStore } from '@/store';
-import { prepareConfigForDeployment } from '@/lib/api/mergeStrategy';
-import { deployConfig } from '@/lib/api/config-operations';
-import type { TenantConfig } from '@/types/config';
 
 export interface DeployButtonProps {
   className?: string;
@@ -37,7 +34,6 @@ export const DeployButton: React.FC<DeployButtonProps> = ({ className = '' }) =>
 
   // Get state from store
   const tenantId = useConfigStore((state) => state.config.tenantId);
-  const baseConfig = useConfigStore((state) => state.config.baseConfig);
   const isDirty = useConfigStore((state) => state.config.isDirty);
   const isValid = useConfigStore((state) => state.validation.isValid);
   const errors = useConfigStore((state) => state.validation.errors);
@@ -49,7 +45,7 @@ export const DeployButton: React.FC<DeployButtonProps> = ({ className = '' }) =>
   const branches = useConfigStore((state) => state.branches.branches);
   const contentShowcase = useConfigStore((state) => state.contentShowcase.content_showcase);
 
-  const markClean = useConfigStore((state) => state.config.markClean);
+  const deployConfig = useConfigStore((state) => state.config.deployConfig);
   const addToast = useConfigStore((state) => state.ui.addToast);
 
   // Calculate counts
@@ -91,33 +87,16 @@ export const DeployButton: React.FC<DeployButtonProps> = ({ className = '' }) =>
   };
 
   const handleDeploy = async () => {
-    if (!tenantId || !baseConfig) {
+    if (!tenantId) {
       throw new Error('No tenant selected');
     }
 
     setIsDeploying(true);
 
     try {
-      // Prepare merged configuration
-      const { config: mergedConfig } = prepareConfigForDeployment(baseConfig, {
-        programs,
-        forms,
-        ctas,
-        branches,
-        contentShowcase,
-      });
-
-      // Deploy to S3 (or local dev server) with merge=false for full replacement
-      await deployConfig(tenantId, mergedConfig as TenantConfig);
-
-      // Mark as not dirty
-      markClean();
-
-      // Show success toast
-      addToast({
-        type: 'success',
-        message: 'Configuration deployed successfully',
-      });
+      // Single deploy path: the store action validates, merges via
+      // getMergedConfig, sends If-Match, and handles state + toasts.
+      await deployConfig();
     } catch (error) {
       console.error('Deployment error:', error);
       throw error; // Re-throw for dialog to handle

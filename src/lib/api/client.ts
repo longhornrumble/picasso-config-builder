@@ -259,9 +259,15 @@ export class ConfigAPIClient {
   }
 
   /**
-   * Deploy configuration - sends full config with merge=false to bypass section validation
+   * Deploy configuration — same PUT /config/{id} as save, with merge=true and
+   * a forced backup. Sends If-Match when provided so a concurrent edit
+   * surfaces as a 409 instead of being silently overwritten.
    */
-  async deployConfig(tenantId: string, config: TenantConfig): Promise<SaveConfigResponse> {
+  async deployConfig(
+    tenantId: string,
+    config: TenantConfig,
+    options: { ifMatch?: string } = {}
+  ): Promise<SaveConfigResponse> {
     if (!tenantId || tenantId.trim() === '') {
       throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
     }
@@ -277,6 +283,7 @@ export class ConfigAPIClient {
           headers: {
             'Content-Type': 'application/json',
             ...(await this.getAuthHeaders()),
+            ...(options.ifMatch && { 'If-Match': options.ifMatch }),
           },
           body: JSON.stringify({
             config,
@@ -290,11 +297,30 @@ export class ConfigAPIClient {
           throw await parseHTTPError(response);
         }
 
+        // 409 Conflict — ETag mismatch; same contract as saveConfig so the
+        // UI can render the reload banner.
+        if (response.status === 409) {
+          let details: unknown = undefined;
+          try {
+            details = await response.json();
+          } catch {
+            // ignore JSON parse failures; details stays undefined
+          }
+          throw new ConfigAPIError(
+            'VERSION_CONFLICT',
+            'This config was updated elsewhere while you were editing. Reload to apply your changes on top of the latest version.',
+            details,
+            409
+          );
+        }
+
         if (!response.ok) {
           throw await parseHTTPError(response);
         }
 
-        return response.json();
+        const data = await response.json();
+        const etag = response.headers.get('ETag') || data.etag || undefined;
+        return { ...data, etag } as SaveConfigResponse;
       },
       {
         maxRetries: 2,
