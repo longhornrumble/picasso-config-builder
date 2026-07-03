@@ -1,5 +1,7 @@
 # Schema v1.4.1 Support Summary
 
+> **Historical (2026-07-02 note):** this document describes the retired vendored `lambda/` copy and/or the deploy_tenant_stack era. The folder was deleted; canonical Lambda = `Lambdas/lambda/Picasso_Config_Manager` (lambda repo). Kept as a dated record — commands and paths herein are stale.
+
 **Date**: 2025-10-30
 **PRD**: Action Chips Explicit Routing with Fallback Navigation Hub
 **Status**: ✅ Complete - Full Support Across All Components

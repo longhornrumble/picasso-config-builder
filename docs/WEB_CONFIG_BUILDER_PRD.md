@@ -561,7 +561,7 @@ User: "How can I help foster families?"
 - Must read/write configs from S3 bucket `myrecruiter-picasso`
 - Must validate against existing Picasso config schema
 - Must support Phase 1 forms implementation (post_submission config)
-- Must work with existing `deploy_tenant_stack` Lambda
+- ~~Must work with existing `deploy_tenant_stack` Lambda~~ (deploy_tenant_stack retired 2026 — the builder is the sole tenant-creation path via `Picasso_Config_Manager`)
 - Authentication simplified for MVP (single-user, no JWT required)
 - Programs are canonical source of truth in config file
 - Bubble routing rules reference programs by string matching (manual duplication)
