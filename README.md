@@ -60,9 +60,6 @@ picasso-config-builder/
 │   ├── WEB_CONFIG_BUILDER_PRD.md
 │   ├── WEB_CONFIG_BUILDER_PROJECT_PLAN.md
 │   └── wireframes/
-├── lambda/
-│   ├── config-api/
-│   └── deploy/
 └── tests/
 ```
 

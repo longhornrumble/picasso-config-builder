@@ -106,7 +106,6 @@ Two sample configs are available for testing:
 
 ```
 picasso-config-builder/
-├── lambda/                 # AWS Lambda function (production)
 ├── mock-s3/                # Local dev configs
 ├── src/
 │   ├── components/         # React components
@@ -186,7 +185,7 @@ Ensure both dev server and frontend are running on the expected ports.
 ## Documentation
 
 - **Phase 5 Guide:** `docs/PHASE_5_S3_INTEGRATION.md`
-- **Lambda README:** `lambda/README.md`
+- **Lambda README:** `Lambdas/lambda/Picasso_Config_Manager/README.md` (lambda repo)
 - **Completion Summary:** `PHASE_5_COMPLETION_SUMMARY.md`
 
 ## Support
