@@ -124,9 +124,6 @@ picasso-config-builder/
 │   ├── pages/                # Page components
 │   │   ├── DashboardPage.tsx # Visual flow diagram dashboard
 │   └── main.tsx              # Application entry point
-├── lambda/                   # STALE vendored Lambda copy — NOT deployed; canonical lives in Lambdas/lambda/Picasso_Config_Manager (lambda repo)
-│   ├── index.mjs             # Lambda handler (stale copy)
-│   └── README.md
 ├── mock-s3/                  # Local dev tenant configs
 │   ├── TEST001.json
 │   └── TEST002.json
@@ -401,7 +398,7 @@ The Dashboard page (`/dashboard`) provides a visual representation of the config
 - `src/lib/api/client.ts`: API client with retry logic
 - `src/lib/api/config-operations.ts`: Config CRUD operations
 - `src/lib/api/mergeStrategy.ts`: Config merge logic
-- `lambda/index.mjs`: STALE vendored Lambda copy (not deployed) — the canonical handler is `Lambdas/lambda/Picasso_Config_Manager/index.mjs` in the lambda repo
+- Backend Lambda handler: `Lambdas/lambda/Picasso_Config_Manager/index.mjs` (lambda repo — not vendored here)
 
 ## Testing Guidelines
 
@@ -464,7 +461,7 @@ The Dashboard uses a custom tree visualization:
 
 ### Modifying the API
 
-1. Update Lambda handler in `lambda/index.mjs`
+1. Update the Lambda handler in `Lambdas/lambda/Picasso_Config_Manager/index.mjs` (lambda repo)
 2. Update API client in `src/lib/api/client.ts`
 3. Update API types in `src/types/api.ts`
 4. Update local dev server if needed
@@ -578,7 +575,7 @@ AWS_PROFILE=chris-admin aws s3 ls s3://picasso-config-builder-prod/
 
 ### Lambda Deployment
 
-The backend Lambda deploys via CI from the **lambda repo** (`Lambdas/lambda/Picasso_Config_Manager` — NOT the stale vendored `lambda/` copy in this repo, and NOT manual `update-function-code`):
+The backend Lambda deploys via CI from the **lambda repo** (`Lambdas/lambda/Picasso_Config_Manager` — this repo carries no Lambda code; NOT manual `update-function-code`):
 
 - **Staging (525)**: auto-deploys on merge to the lambda repo's `main` when `Picasso_Config_Manager/**` is touched (`deploy-staging.yml` matrix).
 - **Production (614)**: gated dispatch of the lambda repo's `deploy-production.yml` (`$LATEST` + published version snapshot, `/health` smoke).

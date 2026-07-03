@@ -1,5 +1,7 @@
 # Phase 5: S3 Integration - Implementation Guide
 
+> **Historical (2026-07-02 note):** this document describes the retired vendored `lambda/` copy and/or the deploy_tenant_stack era. The folder was deleted; canonical Lambda = `Lambdas/lambda/Picasso_Config_Manager` (lambda repo). Kept as a dated record — commands and paths herein are stale.
+
 ## Overview
 
 This document describes the S3 integration implementation for the Picasso Config Builder, including both production-ready Lambda functions and local development server setup.

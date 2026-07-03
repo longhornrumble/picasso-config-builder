@@ -1,5 +1,7 @@
 # Web Config Builder Deployment Summary v1.4.1
 
+> **Historical (2026-07-02 note):** this document describes the retired vendored `lambda/` copy and/or the deploy_tenant_stack era. The folder was deleted; canonical Lambda = `Lambdas/lambda/Picasso_Config_Manager` (lambda repo). Kept as a dated record — commands and paths herein are stale.
+
 **Date**: 2025-10-30
 **Version**: 1.4.1
 **Status**: ✅ Deployed to Production
