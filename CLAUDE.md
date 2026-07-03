@@ -396,8 +396,8 @@ The Dashboard page (`/dashboard`) provides a visual representation of the config
 ### API Integration
 
 - `src/lib/api/client.ts`: API client with retry logic
-- `src/lib/api/config-operations.ts`: Config CRUD operations
-- `src/lib/api/mergeStrategy.ts`: Config merge logic
+- `src/lib/api/config-operations.ts`: Config CRUD operations (version bump for save + deploy)
+- `src/store/slices/config.ts` `getMergedConfig`: the single merge path shared by save, deploy, and preview
 - Backend Lambda handler: `Lambdas/lambda/Picasso_Config_Manager/index.mjs` (lambda repo — not vendored here)
 
 ## Testing Guidelines
