@@ -21,6 +21,12 @@ interface FlagDefinition {
 
 const FLAG_DEFINITIONS: FlagDefinition[] = [
   {
+    key: 'V5_SINGLE_PASS',
+    label: 'V5 Single-Pass Turn',
+    description:
+      'One streaming call writes the reply AND selects its CTAs (coherent by construction; same ai_available vocabulary). Takes precedence over V4.0 Action Selector when both are enabled.',
+  },
+  {
     key: 'V4_ACTION_SELECTOR',
     label: 'V4.0 Action Selector',
     description: 'LLM-based CTA selection — AI picks 0-4 relevant CTAs per turn from ai_available vocabulary',
@@ -116,7 +122,9 @@ export const FeatureFlagsSettings: React.FC = () => {
           <p className="text-xs text-blue-800 dark:text-blue-300">
             <span className="font-semibold">Note:</span> When V4_ACTION_SELECTOR is enabled, the AI
             selects CTAs marked ai_available after each response. This is the preferred pipeline
-            for all new tenants.
+            for all new tenants. V5_SINGLE_PASS folds that selection into the response call itself
+            and wins over V4 when both are enabled — currently in staged rollout (staging soak on
+            the test tenant first).
           </p>
         </div>
       </CardContent>

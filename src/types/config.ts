@@ -562,6 +562,8 @@ export interface TopicDefinition {
 // ============================================================================
 
 export interface FeatureFlags {
+  /** V5 single-pass turn — one streaming call writes the reply AND selects its CTAs (takes precedence over V4_ACTION_SELECTOR when both are set) */
+  V5_SINGLE_PASS?: boolean;
   /** V4.0 Action Selector — LLM-based CTA selection from ai_available vocabulary */
   V4_ACTION_SELECTOR?: boolean;
   /** Enables the v1 scheduling block — gates scheduling CTAs and the scheduling config section */
