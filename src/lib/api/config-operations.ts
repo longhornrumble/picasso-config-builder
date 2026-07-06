@@ -136,13 +136,24 @@ export interface PromoteConfigResponse {
   success: boolean;
   tenant_id: string;
   message: string;
-  runs_url: string;
+  /** Newest run id before dispatch — pass to getPromoteStatus to poll outcome. */
+  baseline: number;
+}
+
+export interface PromoteStatusResponse {
+  /** false until the run started by this promote appears. */
+  found: boolean;
+  /** queued | in_progress | completed */
+  status?: string;
+  /** success | failure | cancelled | null (null until completed) */
+  conclusion?: string | null;
+  run_url?: string;
 }
 
 /**
  * Promote a tenant's staging config to production.
  * Fires the gated promotion workflow via the backend (staging never writes prod
- * directly). Returns the dispatch result + a link to the workflow run.
+ * directly). Returns the dispatch result incl. the run baseline for polling.
  */
 export async function promoteConfig(tenantId: string): Promise<PromoteConfigResponse> {
   try {
@@ -151,6 +162,20 @@ export async function promoteConfig(tenantId: string): Promise<PromoteConfigResp
     }
 
     return await configApiClient.promoteConfig(tenantId);
+  } catch (error) {
+    throw handleAPIError(error);
+  }
+}
+
+/**
+ * Poll the outcome of a promote run (see promoteConfig's baseline).
+ */
+export async function getPromoteStatus(
+  tenantId: string,
+  after: number
+): Promise<PromoteStatusResponse> {
+  try {
+    return await configApiClient.getPromoteStatus(tenantId, after);
   } catch (error) {
     throw handleAPIError(error);
   }

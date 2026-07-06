@@ -34,13 +34,13 @@ describe('ConfigAPIClient.promoteConfig', () => {
     vi.clearAllMocks();
   });
 
-  it('POSTs to /config/{id}/promote and returns the dispatch result', async () => {
+  it('POSTs to /config/{id}/promote and returns the dispatch result with baseline', async () => {
     fetchMock.mockImplementation(() =>
       jsonResponse(202, {
         success: true,
         tenant_id: 'TEST001',
-        message: 'Promotion dispatched.',
-        runs_url: 'https://github.com/o/r/actions/workflows/promote-tenant-config.yml',
+        message: 'Promotion started.',
+        baseline: 4242,
       })
     );
 
@@ -52,7 +52,21 @@ describe('ConfigAPIClient.promoteConfig', () => {
     expect(init.method).toBe('POST');
     expect(result.success).toBe(true);
     expect(result.tenant_id).toBe('TEST001');
-    expect(result.runs_url).toContain('promote-tenant-config.yml');
+    expect(result.baseline).toBe(4242);
+  });
+
+  it('getPromoteStatus GETs /config/{id}/promote/status?after=N and returns the run outcome', async () => {
+    fetchMock.mockImplementation(() =>
+      jsonResponse(200, { found: true, status: 'completed', conclusion: 'success', run_url: 'u' })
+    );
+
+    const result = await client.getPromoteStatus('TEST001', 4242);
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${BASE_URL}/config/TEST001/promote/status?after=4242`);
+    expect(init.method).toBe('GET');
+    expect(result.found).toBe(true);
+    expect(result.conclusion).toBe('success');
   });
 
   it('rejects an empty tenant id without calling fetch', async () => {
