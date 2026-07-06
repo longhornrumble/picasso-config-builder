@@ -329,6 +329,36 @@ export class ConfigAPIClient {
   }
 
   /**
+   * Promote a tenant's staging config to production by dispatching the gated
+   * promote-tenant-config workflow. Server-side only — the browser never writes
+   * prod (staging can't write prod stores); the backend fires the workflow.
+   */
+  async promoteConfig(
+    tenantId: string
+  ): Promise<{ success: boolean; tenant_id: string; message: string; runs_url: string }> {
+    if (!tenantId || tenantId.trim() === '') {
+      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
+    }
+
+    const response = await fetch(`${this.baseUrl}/config/${tenantId}/promote`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(await this.getAuthHeaders()),
+      },
+    });
+
+    if (response.status === 401) {
+      this.handle401Response();
+      throw await parseHTTPError(response);
+    }
+    if (!response.ok) {
+      throw await parseHTTPError(response);
+    }
+    return await response.json();
+  }
+
+  /**
    * Delete tenant configuration (admin operation)
    * @param full - If true, permanently deletes config, all backups, and hash mapping
    */

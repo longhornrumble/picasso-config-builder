@@ -132,6 +132,30 @@ export async function deployConfig(
   }
 }
 
+export interface PromoteConfigResponse {
+  success: boolean;
+  tenant_id: string;
+  message: string;
+  runs_url: string;
+}
+
+/**
+ * Promote a tenant's staging config to production.
+ * Fires the gated promotion workflow via the backend (staging never writes prod
+ * directly). Returns the dispatch result + a link to the workflow run.
+ */
+export async function promoteConfig(tenantId: string): Promise<PromoteConfigResponse> {
+  try {
+    if (!tenantId || tenantId.trim() === '') {
+      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID is required');
+    }
+
+    return await configApiClient.promoteConfig(tenantId);
+  } catch (error) {
+    throw handleAPIError(error);
+  }
+}
+
 /**
  * Delete tenant configuration (admin operation)
  * @param full - If true, permanently deletes config, all backups, and hash mapping

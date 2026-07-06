@@ -11,7 +11,7 @@ import { TenantSelector } from '../TenantSelector';
 import { Button, Badge } from '../ui';
 import { PreviewConfigModal } from '../preview/PreviewConfigModal';
 import { ValidationSummary } from './ValidationSummary';
-import { DeployButton } from '../deploy';
+import { DeployButton, PromoteButton } from '../deploy';
 import { useConfigStore } from '@/store';
 import { useSaveShortcut } from '@/hooks/useKeyboardShortcuts';
 
@@ -132,6 +132,9 @@ export const Header: React.FC = () => {
 
             {/* Deploy Button - New Component */}
             <DeployButton />
+
+            {/* Promote to Production - fires the gated staging→prod workflow */}
+            <PromoteButton />
 
             {/* Clerk User Button */}
             <UserButton />
