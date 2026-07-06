@@ -12,6 +12,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   fetchAndValidate,
+  validateSingleConfig,
   parseTenantIdsFromCommonPrefixes,
   runProdConfigsValidation,
   S3FetchError,
@@ -140,6 +141,47 @@ describe('fetchAndValidate', () => {
     for (const issue of result.issues) {
       // Rec-4 invariant: issues must NEVER carry a `message` field. If any
       // does, operator strings could leak from superRefine into CI logs.
+      expect(Object.keys(issue).sort()).toEqual(['code', 'path']);
+      expect((issue as Record<string, unknown>).message).toBeUndefined();
+    }
+  });
+});
+
+describe('validateSingleConfig', () => {
+  it('returns ok=true for a valid config OBJECT', () => {
+    const result = validateSingleConfig(JSON.parse(validTenantBody));
+    expect(result).toEqual({ ok: true });
+  });
+
+  it('returns ok=true for a valid config JSON STRING', () => {
+    const result = validateSingleConfig(validTenantBody);
+    expect(result).toEqual({ ok: true });
+  });
+
+  it('returns invalid_json for an unparseable string', () => {
+    const result = validateSingleConfig('{not-json');
+    expect(result).toEqual({ ok: false, reason: 'invalid_json' });
+  });
+
+  it('returns schema_failed for a schema-invalid OBJECT (no S3/JSON path exercised)', () => {
+    const result = validateSingleConfig({ tone_prompt: 'x', welcome_message: 'y' });
+    expect(result.ok).toBe(false);
+    if (result.ok || result.reason !== 'schema_failed') {
+      throw new Error('expected schema_failed');
+    }
+    expect(result.issues.length).toBeGreaterThan(0);
+  });
+
+  it('schema_failed issues carry ONLY { path, code } — never a message (Rec-4)', () => {
+    // Missing required fields → superRefine messages embed operator strings.
+    // The single-config validator must strip them exactly like fetchAndValidate.
+    const result = validateSingleConfig(JSON.stringify({ welcome_message: 'y' }));
+    expect(result.ok).toBe(false);
+    if (result.ok || result.reason !== 'schema_failed') {
+      throw new Error('expected schema_failed');
+    }
+    expect(result.issues.length).toBeGreaterThan(0);
+    for (const issue of result.issues) {
       expect(Object.keys(issue).sort()).toEqual(['code', 'path']);
       expect((issue as Record<string, unknown>).message).toBeUndefined();
     }

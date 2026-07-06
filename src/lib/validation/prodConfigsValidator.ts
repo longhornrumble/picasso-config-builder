@@ -68,6 +68,56 @@ export function parseTenantIdsFromCommonPrefixes(stdout: string): string[] {
     .sort();
 }
 
+/**
+ * Result of validating a SINGLE candidate config (no tenantId, no S3 concerns).
+ */
+export type SingleConfigValidationResult =
+  | { ok: true }
+  | { ok: false; reason: 'invalid_json' }
+  | { ok: false; reason: 'schema_failed'; issues: Array<{ path: string; code: string }> };
+
+/**
+ * Validate ONE candidate tenant config against the live tenantConfigSchema.
+ *
+ * This is the single-config counterpart to runProdConfigsValidation, which
+ * validates *every currently-live prod config against new schema code* (a
+ * forward-compat regression check). The tenant-config promotion mechanism
+ * (docs/roadmap/TENANT_CONFIG_PROMOTION_MECHANISM.md §5.3 / §10.1) needs the
+ * other question — "does this one staging-fetched blob parse against the prod
+ * schema?" — reusing the schema *library*, not the all-configs job.
+ *
+ * Accepts a parsed object OR a raw JSON string (strings are parsed;
+ * unparseable → invalid_json). Same Rec-4 security constraint as
+ * fetchAndValidate below (which now delegates here): issues carry ONLY
+ * { path, code } — never issue.message (superRefine embeds program-ID strings)
+ * and never raw config bytes.
+ */
+export function validateSingleConfig(input: unknown): SingleConfigValidationResult {
+  let config: unknown = input;
+  if (typeof input === 'string') {
+    try {
+      config = JSON.parse(input);
+    } catch {
+      return { ok: false, reason: 'invalid_json' };
+    }
+  }
+
+  const result = tenantConfigSchema.safeParse(config);
+  if (result.success) {
+    return { ok: true };
+  }
+  return {
+    ok: false,
+    reason: 'schema_failed',
+    // Rec-4: ONLY path + code. Never include issue.message — superRefine
+    // embeds program-ID strings there.
+    issues: result.error.issues.map((i) => ({
+      path: i.path.join('.'),
+      code: i.code,
+    })),
+  };
+}
+
 export async function fetchAndValidate(
   s3: S3Reader,
   bucket: string,
@@ -83,28 +133,16 @@ export async function fetchAndValidate(
     return { tenantId, ok: false, reason: 'fetch_failed', awsCode };
   }
 
-  let config: unknown;
-  try {
-    config = JSON.parse(body);
-  } catch {
-    return { tenantId, ok: false, reason: 'invalid_json' };
-  }
-
-  const result = tenantConfigSchema.safeParse(config);
-  if (result.success) {
+  // Parse + schema validation (incl. the Rec-4 issue-mapping) lives once in
+  // validateSingleConfig; here we only thread the tenantId back onto it.
+  const r = validateSingleConfig(body);
+  if (r.ok) {
     return { tenantId, ok: true };
   }
-  return {
-    tenantId,
-    ok: false,
-    reason: 'schema_failed',
-    // Rec-4: ONLY path + code. Never include issue.message — superRefine
-    // embeds program-ID strings there.
-    issues: result.error.issues.map((i) => ({
-      path: i.path.join('.'),
-      code: i.code,
-    })),
-  };
+  if (r.reason === 'invalid_json') {
+    return { tenantId, ok: false, reason: 'invalid_json' };
+  }
+  return { tenantId, ok: false, reason: 'schema_failed', issues: r.issues };
 }
 
 export interface ValidationRunOptions {
