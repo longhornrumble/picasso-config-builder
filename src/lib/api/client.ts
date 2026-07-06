@@ -335,7 +335,7 @@ export class ConfigAPIClient {
    */
   async promoteConfig(
     tenantId: string
-  ): Promise<{ success: boolean; tenant_id: string; message: string; runs_url: string }> {
+  ): Promise<{ success: boolean; tenant_id: string; message: string; baseline: number }> {
     if (!tenantId || tenantId.trim() === '') {
       throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
     }
@@ -347,6 +347,36 @@ export class ConfigAPIClient {
         ...(await this.getAuthHeaders()),
       },
     });
+
+    if (response.status === 401) {
+      this.handle401Response();
+      throw await parseHTTPError(response);
+    }
+    if (!response.ok) {
+      throw await parseHTTPError(response);
+    }
+    return await response.json();
+  }
+
+  /**
+   * Poll the outcome of a promote run started after `after` (the dispatch
+   * baseline). found=false until the run appears; then status is
+   * queued|in_progress|completed and conclusion is success|failure|null.
+   */
+  async getPromoteStatus(
+    tenantId: string,
+    after: number
+  ): Promise<{ found: boolean; status?: string; conclusion?: string | null; run_url?: string }> {
+    const response = await fetch(
+      `${this.baseUrl}/config/${tenantId}/promote/status?after=${encodeURIComponent(String(after))}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(await this.getAuthHeaders()),
+        },
+      }
+    );
 
     if (response.status === 401) {
       this.handle401Response();
