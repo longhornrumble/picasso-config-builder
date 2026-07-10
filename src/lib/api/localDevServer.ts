@@ -10,7 +10,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 const app = express();
-const PORT = process.env.DEV_SERVER_PORT || 3001;
+const PORT = Number(process.env.DEV_SERVER_PORT) || 3001;
 
 // Mock S3 directory
 const MOCK_S3_DIR = path.join(process.cwd(), 'mock-s3');
@@ -28,16 +28,34 @@ async function ensureMockS3Dir() {
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 
-// CORS middleware
+// Only same-machine browser origins may call this dev server.
+const LOCAL_ORIGIN_RE = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+// CORS middleware — localhost origins only.
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (origin && LOCAL_ORIGIN_RE.test(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, If-Match');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).json({ message: 'OK' });
   }
 
+  next();
+});
+
+// Reject any tenant id that could escape mock-s3/ via path traversal. Express
+// decodes %2F inside a single path segment to a literal '/', so ../ sequences
+// can reach req.params.tenantId; path.join would then resolve outside the base
+// dir. A valid tenant id is a single path segment with no separators or dots.
+app.param('tenantId', (_req, res, next, value) => {
+  if (typeof value !== 'string' || value !== path.basename(value) || value.includes('..')) {
+    return res.status(400).json({ error: 'Invalid tenant ID' });
+  }
   next();
 });
 
@@ -460,7 +478,8 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 async function startServer() {
   await ensureMockS3Dir();
 
-  app.listen(PORT, () => {
+  // Bind to loopback only.
+  app.listen(PORT, '127.0.0.1', () => {
     console.log('');
     console.log('='.repeat(60));
     console.log('Picasso Config Builder - Local Development Server');

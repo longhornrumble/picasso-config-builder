@@ -140,6 +140,12 @@ jobs:
         env:
           VITE_API_URL: https://zlbf6onlzdj3hqzxhrrqdxte5m0wudxf.lambda-url.us-east-1.on.aws
           VITE_S3_BUCKET: myrecruiter-picasso-staging
+          # Meta_OAuth_Handler Function URL in the STAGING account (525). Without
+          # this, ChannelsSettings falls back to its hardcoded PROD default
+          # (Meta_OAuth_Handler in 614), so the staging Config Builder's channel
+          # connect would drive the prod OAuth handler. Public Function URL, not a
+          # secret — mirrors VITE_API_URL above.
+          VITE_CHANNELS_API_URL: https://zqzw7c4jol6tsvoabbvgxly6ya0cusst.lambda-url.us-east-1.on.aws
 
       - name: Upload staging build artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4

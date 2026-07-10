@@ -10,7 +10,6 @@ export { Breadcrumbs } from './Breadcrumbs';
 export { ConflictBanner } from './ConflictBanner';
 export { ValidationPanel } from './ValidationPanel';
 export { ValidationSummary } from './ValidationSummary';
-export { EntityValidationBadge } from './EntityValidationBadge';
 
 // Validation subcomponents
 export { ValidationItem } from './validation/ValidationItem';

@@ -82,10 +82,6 @@ export type { TooltipProps } from './Tooltip';
 export { Spinner, LoadingOverlay } from './Spinner';
 export type { SpinnerProps, LoadingOverlayProps } from './Spinner';
 
-// Skeleton
-export { Skeleton, CardSkeleton, FormSkeleton, TableSkeleton } from './Skeleton';
-export type { SkeletonProps } from './Skeleton';
-
 // FieldError & FormField
 export { FieldError, FormField } from './FieldError';
 export type { FieldErrorProps, FormFieldProps } from './FieldError';

@@ -137,6 +137,42 @@ describe('PendingChangesPage — deep-link handling (hash-based, per security po
     });
   });
 
+  it('renders a javascript: sourceUrl as inert text, never as a clickable link', async () => {
+    // sourceUrl comes from the scraper pipeline (attacker-influenceable). A
+    // javascript: URL must not become an <a href> in this authenticated origin.
+    mockListProposals.mockResolvedValueOnce([
+      {
+        ...proposalFixture,
+        items: [
+          {
+            id: 'evil',
+            type: 'new_content',
+            sourceUrl: 'javascript:alert(document.cookie)',
+            operations: [],
+          },
+          {
+            id: 'safe',
+            type: 'new_content',
+            sourceUrl: 'https://safe.example.com/page',
+            operations: [],
+          },
+        ],
+      },
+    ]);
+    const { container } = renderWithRouter('/pending-changes');
+    await waitFor(() =>
+      expect(container.textContent).toContain('javascript:alert(document.cookie)')
+    );
+
+    const hrefs = Array.from(container.querySelectorAll('a')).map((a) => a.getAttribute('href'));
+    // The javascript: URL is NOT a link...
+    expect(hrefs).not.toContain('javascript:alert(document.cookie)');
+    // ...but is still visible to the operator as text.
+    expect(container.textContent).toContain('javascript:alert(document.cookie)');
+    // The safe https URL stays a real link.
+    expect(hrefs).toContain('https://safe.example.com/page');
+  });
+
   it('?proposal=ID with no matching card → card absent, no error, no highlight', async () => {
     mockListProposals.mockResolvedValueOnce([proposalFixture]);
     const { container } = renderWithRouter('/pending-changes?proposal=NONEXISTENT-PROPOSAL-ID');

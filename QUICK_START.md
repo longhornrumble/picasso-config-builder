@@ -129,10 +129,8 @@ npm run build                # Build for production
 npm run build:dev            # Build for development
 
 # Validation
-npm run validate:phase2      # Validate Phase 2
-npm run validate:phase3      # Validate Phase 3
-npm run validate:phase5      # Validate Phase 5
-npm run validate             # Full validation
+npm run validate             # Full validation (typecheck + production build)
+npm run validate:quick       # Quick validation (typecheck + dev build)
 
 # Code Quality
 npm run typecheck            # TypeScript type checking
@@ -186,7 +184,6 @@ Ensure both dev server and frontend are running on the expected ports.
 
 - **Phase 5 Guide:** `docs/PHASE_5_S3_INTEGRATION.md`
 - **Lambda README:** `Lambdas/lambda/Picasso_Config_Manager/README.md` (lambda repo)
-- **Completion Summary:** `PHASE_5_COMPLETION_SUMMARY.md`
 
 ## Support
 
