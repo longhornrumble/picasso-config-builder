@@ -54,7 +54,7 @@ The Picasso Config Builder is a web-based internal operations tool for managing 
 - **Forms**: React Hook Form + Zod validation
 - **Styling**: Tailwind CSS (green theme matching analytics dashboard)
 - **Testing**: Vitest (unit/integration)
-- **Backend**: AWS Lambda (Node.js 20.x) + API Gateway
+- **Backend**: AWS Lambda (Picasso_Config_Manager) via a Lambda Function URL
 - **Storage**: S3 (`myrecruiter-picasso` bucket)
 
 ## Project Structure
@@ -149,12 +149,10 @@ npm install
 
 # Start development server
 npm run dev                    # Runs on http://localhost:3000
-# Start API dev server
+# Start API dev server (loopback only; defaults to the STAGING bucket)
 npm run server:dev             # S3-backed dev server on http://localhost:3001
 # Start mock API server
 npm run server:dev:mock        # Mock dev server (no S3 access)
-# Start production server
-npm run server:prod
 ```
 
 ### Building
@@ -189,9 +187,6 @@ npm run test:all                      # Run all tests
 npm run typecheck                     # TypeScript type checking only
 npm run validate                      # Full validation (TypeCheck + Production build)
 npm run validate:quick                # Quick validation (TypeCheck + Dev build)
-npm run validate:phase2               # Validate Phase 2 components
-npm run validate:phase3               # Validate Phase 3 components
-npm run validate:phase5               # Validate Phase 5 S3 integration
 ```
 
 ### Code Quality
@@ -203,19 +198,8 @@ npm run format                        # Format code with Prettier
 
 ### Deployment
 
-```bash
-npm run deploy                        # Deploy to production (same as deploy:production)
-npm run deploy:production             # Deploy to production S3 bucket
-```
-
-### Documentation Maintenance
-
-```bash
-npm run docs:update                   # Update CLAUDE.md automatically
-npm run docs:update:dry-run           # Preview CLAUDE.md changes
-npm run docs:validate                 # Validate CLAUDE.md accuracy
-npm run setup:hooks                   # Install pre-commit hooks for CLAUDE.md
-```
+Deployment is CI-driven — there is no local deploy script (see the Deployment
+section below). Staging deploys on every PR; production is a gated dispatch.
 
 ## Configuration Schema Versions
 
@@ -548,30 +532,19 @@ aws s3 ls s3://myrecruiter-picasso/
 - **Region:** us-east-1
 
 **Storage:**
-- **Config Bucket:** `myrecruiter-picasso`
-- **Config Path:** `tenant-configs/{tenant_hash}.json`
+- **Config Bucket:** `myrecruiter-picasso` (prod) / `myrecruiter-picasso-staging` (staging)
+- **Config Path:** `tenants/{tenant_id}/{tenant_id}-config.json` (backups: `tenants/{tenant_id}/{tenant_id}-{ISO-ts}.json`)
 
 ### Frontend Deployment
 
-Deploy to S3 for private internal access:
+Deployment is CI-driven (there is no local deploy script):
 
-```bash
-# Build for production
-npm run build:production
-
-# Deploy to production S3 bucket
-AWS_PROFILE=chris-admin aws s3 sync dist/ s3://picasso-config-builder-prod/ --delete --exclude "*.map"
-
-# Verify deployment
-AWS_PROFILE=chris-admin aws s3 ls s3://picasso-config-builder-prod/
-```
-
-**Automated Deployment Script:**
-
-```bash
-# Use the deployment script
-./scripts/deploy.sh production
-```
+- **Staging (525):** `pr-checks.yml` deploys a preview on every PR →
+  `picasso-config-builder-staging` / `staging.config.myrecruiter.ai`.
+- **Production (614):** `deploy-production.yml` is dispatch-only and double-gated
+  (human approval + blocking prod-config schema validation) →
+  `picasso-config-builder-prod` / `config.myrecruiter.ai`. Push to `main` runs
+  quality gates + build only.
 
 ### Lambda Deployment
 
@@ -583,17 +556,16 @@ The backend Lambda deploys via CI from the **lambda repo** (`Lambdas/lambda/Pica
 
 ### Deployment Checklist
 
-Before deploying to production:
+Before opening a PR (CI runs the same gates):
 
 1. ✅ Run all tests: `npm run test:all`
 2. ✅ Type check: `npm run typecheck`
-3. ✅ Build validation: `npm run validate`
-4. ✅ Review git changes: `git status`
-5. ✅ Commit and push to GitHub
-6. ✅ Build production bundle: `npm run build:production`
-7. ✅ Deploy to S3
-8. ✅ Test production URL
-9. ✅ Verify API connectivity
+3. ✅ Lint: `npm run lint`
+4. ✅ Build validation: `npm run validate`
+5. ✅ Review git changes: `git status`
+
+Staging deploys automatically on the PR; production is a separate gated dispatch
+of `deploy-production.yml`.
 
 ## Support
 
@@ -606,90 +578,13 @@ For questions or issues:
 
 ## CLAUDE.md Maintenance
 
-This CLAUDE.md file is automatically maintained using automation scripts.
-
-### Automatic Updates
-
-The following are automatically synced from source files:
-
-- **Commands section**: Synced from package.json scripts
-- **Version number**: Synced from package.json version
-- **Last Updated date**: Auto-updated on changes
-
-### Maintenance Commands
-
-```bash
-# Update CLAUDE.md with latest project info
-npm run docs:update
-
-# Preview changes without applying
-npm run docs:update:dry-run
-
-# Validate CLAUDE.md accuracy
-npm run docs:validate
-
-# Install git hooks for automatic reminders
-npm run setup:hooks
-```
-
-### Git Hooks
-
-After running `npm run setup:hooks`, a pre-commit hook will:
-
-1. Detect changes to package.json, esbuild.config.mjs, etc.
-2. Remind you to update CLAUDE.md if needed
-3. Validate CLAUDE.md if included in commit
-4. Allow you to proceed or abort
-
-**Bypass hook for a single commit:**
-
-```bash
-git commit --no-verify -m "message"
-```
-
-### Manual Updates
-
-Some sections require manual updates:
-
-- **Project Overview**: Update when project scope changes
-- **Key Features**: Add new features as implemented
-- **Key Concepts**: Document new architectural patterns
-- **Common Development Tasks**: Add new workflows
-- **Troubleshooting**: Add solutions to recurring issues
-- **Documentation**: Add new documentation files
-
-### When to Update
-
-**Always update:**
-
-- After adding/removing npm scripts → Run `npm run docs:update`
-- Before version releases → Run `npm run docs:update`
-- When adding new features → Manually update Key Features
-- When changing architecture → Manually update relevant sections
-
-**Best practice:** Update CLAUDE.md in the **same commit** as the change it documents.
-
-### Validation
-
-Before committing CLAUDE.md changes:
-
-```bash
-npm run docs:validate
-```
-
-This checks for:
-
-- Missing or undocumented npm scripts
-- Version mismatches
-- Broken documentation links
-- Missing required sections
-- Stale documentation (>90 days old)
-
-See `scripts/README.md` for detailed automation documentation.
+This file is hand-maintained. Update it in the same commit as the change it
+documents — especially when adding/removing npm scripts, changing the
+deployment model, or adding features.
 
 ## Status
 
-- **Version**: 0.1.0
+- **Version**: 1.2.0
 - **Status**: Active Development
-- **Last Updated**: 2025-11-25
+- **Last Updated**: 2026-07-10
 - **Schema Version**: v1.4.1

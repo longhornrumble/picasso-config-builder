@@ -129,10 +129,8 @@ npm run build                # Build for production
 npm run build:dev            # Build for development
 
 # Validation
-npm run validate:phase2      # Validate Phase 2
-npm run validate:phase3      # Validate Phase 3
-npm run validate:phase5      # Validate Phase 5
-npm run validate             # Full validation
+npm run validate             # Full validation (typecheck + production build)
+npm run validate:quick       # Quick validation (typecheck + dev build)
 
 # Code Quality
 npm run typecheck            # TypeScript type checking
