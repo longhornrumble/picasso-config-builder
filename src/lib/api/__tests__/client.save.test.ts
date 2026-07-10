@@ -1,9 +1,12 @@
 /**
- * ConfigAPIClient.deployConfig tests.
+ * ConfigAPIClient.saveConfig tests.
  *
- * Pins the deploy request contract: If-Match propagation, merge/create_backup
- * body flags, 409 -> VERSION_CONFLICT (conflict-banner contract shared with
- * saveConfig), and ETag attach from the response header.
+ * Pins the save request contract: explicit merge=true + create_backup body
+ * flags (so a server default change can't silently turn a save into a full
+ * replace), If-Match propagation, 409 -> VERSION_CONFLICT, ETag attach, and —
+ * the durability fix — NO auto-retry on a non-idempotent conditional write
+ * (a retry with a stale If-Match would surface a false conflict for the
+ * caller's own successful write).
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -29,7 +32,7 @@ const sampleConfig = {
   conversation_branches: {},
 } as unknown as TenantConfig;
 
-describe('ConfigAPIClient.deployConfig', () => {
+describe('ConfigAPIClient.saveConfig', () => {
   let client: ConfigAPIClient;
   let fetchMock: ReturnType<typeof vi.fn>;
 
@@ -44,10 +47,10 @@ describe('ConfigAPIClient.deployConfig', () => {
     vi.clearAllMocks();
   });
 
-  it('PUTs to /config/{id} with merge + create_backup and the If-Match header', async () => {
+  it('PUTs with explicit merge=true + create_backup and the If-Match header', async () => {
     fetchMock.mockImplementation(() => jsonResponse(200, { success: true }));
 
-    await client.deployConfig('TEST001', sampleConfig, { ifMatch: 'W/"abc"' });
+    await client.saveConfig('TEST001', sampleConfig, { ifMatch: 'W/"abc"' });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
@@ -55,27 +58,44 @@ describe('ConfigAPIClient.deployConfig', () => {
     expect(init.method).toBe('PUT');
     expect(init.headers['If-Match']).toBe('W/"abc"');
     const body = JSON.parse(init.body);
+    // The merge-contract pin: without this, a server whose merge default flips
+    // to false would treat a section-scoped save as a full-config replace.
     expect(body.merge).toBe(true);
+    // snake_case create_backup — the server ignores the old camelCase key.
     expect(body.create_backup).toBe(true);
-    expect(body.config.tenant_id).toBe('TEST001');
   });
 
-  it('omits the If-Match header when no etag is provided', async () => {
+  it('honors createBackup=false via the snake_case wire key', async () => {
     fetchMock.mockImplementation(() => jsonResponse(200, { success: true }));
 
-    await client.deployConfig('TEST001', sampleConfig);
+    await client.saveConfig('TEST001', sampleConfig, { createBackup: false });
 
     const [, init] = fetchMock.mock.calls[0];
-    expect(init.headers['If-Match']).toBeUndefined();
+    const body = JSON.parse(init.body);
+    expect(body.create_backup).toBe(false);
+    expect(body.merge).toBe(true);
   });
 
-  it('maps a 409 to a VERSION_CONFLICT ConfigAPIError carrying the server details', async () => {
+  it('does NOT auto-retry a conditional write (single attempt on a network error)', async () => {
+    // A network error after the request is sent is ambiguous — the write may
+    // have landed. Retrying with the same stale If-Match would produce a false
+    // 409 for the caller's own successful write, so save must fail fast.
+    fetchMock.mockRejectedValue(new TypeError('network down'));
+
+    await expect(
+      client.saveConfig('TEST001', sampleConfig, { ifMatch: 'W/"abc"' })
+    ).rejects.toThrow();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('maps a 409 to a VERSION_CONFLICT error carrying the server details', async () => {
     fetchMock.mockImplementation(() =>
       jsonResponse(409, { currentConfig: sampleConfig, currentETag: 'W/"server"' })
     );
 
     const err = await client
-      .deployConfig('TEST001', sampleConfig, { ifMatch: 'W/"stale"' })
+      .saveConfig('TEST001', sampleConfig, { ifMatch: 'W/"stale"' })
       .then(
         () => null,
         (e) => e
@@ -93,23 +113,12 @@ describe('ConfigAPIClient.deployConfig', () => {
       jsonResponse(200, { success: true }, { ETag: 'W/"fresh"' })
     );
 
-    const result = await client.deployConfig('TEST001', sampleConfig);
-
+    const result = await client.saveConfig('TEST001', sampleConfig);
     expect(result.etag).toBe('W/"fresh"');
   });
 
   it('rejects an empty tenant id without calling fetch', async () => {
-    await expect(client.deployConfig('', sampleConfig)).rejects.toThrow(ConfigAPIError);
+    await expect(client.saveConfig('', sampleConfig)).rejects.toThrow(ConfigAPIError);
     expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it('does NOT auto-retry a conditional write (single attempt on a network error)', async () => {
-    fetchMock.mockRejectedValue(new TypeError('network down'));
-
-    await expect(
-      client.deployConfig('TEST001', sampleConfig, { ifMatch: 'W/"abc"' })
-    ).rejects.toThrow();
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -14,7 +14,7 @@ import { useConfigStore } from '@/store';
 export const ConflictBanner: React.FC = () => {
   const conflictState = useConfigStore((state) => state.config.conflictState);
   const tenantId = useConfigStore((state) => state.config.tenantId);
-  const loadConfig = useConfigStore((state) => state.config.loadConfig);
+  const reloadBaseForConflict = useConfigStore((state) => state.config.reloadBaseForConflict);
   const clearConflict = useConfigStore((state) => state.config.clearConflict);
 
   const [reloading, setReloading] = useState(false);
@@ -24,7 +24,12 @@ export const ConflictBanner: React.FC = () => {
   const handleReload = async () => {
     setReloading(true);
     try {
-      await loadConfig(tenantId);
+      // Refresh the base + ETag but keep the operator's unsaved edits, as the
+      // banner promises — NOT loadConfig, which would discard them.
+      await reloadBaseForConflict();
+    } catch {
+      // Toast is surfaced by the store action; keep the banner up so the
+      // operator can retry.
     } finally {
       setReloading(false);
     }

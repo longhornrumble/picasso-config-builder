@@ -270,6 +270,12 @@ export interface ConfigSlice {
   deployConfig: () => Promise<void>;
   resetConfig: () => void;
   clearTenant: () => void;
+  /**
+   * Conflict recovery: refresh baseConfig + ETag from the server while
+   * preserving the operator's in-progress domain-slice edits, so a 409 reload
+   * does not discard unsaved work. Used by ConflictBanner's reload action.
+   */
+  reloadBaseForConflict: () => Promise<void>;
   clearConflict: () => void;
   markDirty: () => void;
   markClean: () => void;

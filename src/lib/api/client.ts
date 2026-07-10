@@ -204,7 +204,13 @@ export class ConfigAPIClient {
       async () => {
         const requestBody = {
           config,
-          createBackup: options.createBackup ?? true,
+          // Explicit merge=true: the server merges these editable sections onto
+          // its current S3 base (omitted sections preserved), same as deploy.
+          // Pinned so a change to the server's default can't silently turn a
+          // save into a full replace. create_backup is snake_case to match the
+          // server contract — the old camelCase createBackup was ignored.
+          merge: true,
+          create_backup: options.createBackup ?? true,
         };
         console.log('[API CLIENT] Request body config keys:', Object.keys(requestBody.config));
 
@@ -253,7 +259,12 @@ export class ConfigAPIClient {
         return { ...data, etag } as SaveConfigResponse;
       },
       {
-        maxRetries: 2, // Save operations get fewer retries
+        // No auto-retry: this is a non-idempotent conditional write (If-Match).
+        // A network error after the request is sent is ambiguous — the write
+        // may have succeeded — and a retry would reuse the now-stale If-Match
+        // and surface a false 409 for the caller's own successful write. Fail
+        // fast; the operator re-saves (reloading a fresh ETag) if needed.
+        maxRetries: 1,
       }
     );
   }
@@ -323,7 +334,9 @@ export class ConfigAPIClient {
         return { ...data, etag } as SaveConfigResponse;
       },
       {
-        maxRetries: 2,
+        // No auto-retry — same rationale as saveConfig: a non-idempotent
+        // conditional write must not be retried on an ambiguous failure.
+        maxRetries: 1,
       }
     );
   }

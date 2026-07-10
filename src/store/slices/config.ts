@@ -320,6 +320,47 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
     });
   },
 
+  reloadBaseForConflict: async () => {
+    const state = get();
+    const tenantId = state.config.tenantId;
+    if (!tenantId) return;
+
+    state.ui.setLoading('config', true);
+
+    try {
+      const response = await configAPI.loadConfig(tenantId);
+
+      set((state) => {
+        // Conflict recovery: adopt the server's latest as the new base + ETag
+        // so the next save carries a matching If-Match and picks up whatever
+        // changed elsewhere. The operator's in-progress domain-slice edits
+        // (programs/forms/ctas/branches/showcase) are deliberately PRESERVED —
+        // unlike loadConfig, which replaces them — so "your unsaved edits stay
+        // in the editor" (the banner's promise) holds. isDirty stays true.
+        // Note: edits made directly to base-config sections via the settings
+        // panels (branding, features, etc.) are not slice-backed and are
+        // superseded by the server's version here — the safe default when the
+        // stored config changed under you.
+        state.config.baseConfig = response.config;
+        state.config.etag = response.etag ?? null;
+        state.config.lastSaved = response.metadata.lastModified;
+        state.config.conflictState = null;
+      });
+
+      state.ui.addToast({
+        type: 'success',
+        message: 'Refreshed to the latest version — your edits are intact. Save again to apply them.',
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to refresh configuration';
+      state.ui.addToast({ type: 'error', message: errorMessage });
+      throw error;
+    } finally {
+      state.ui.setLoading('config', false);
+    }
+  },
+
   clearConflict: () => {
     set((state) => {
       state.config.conflictState = null;

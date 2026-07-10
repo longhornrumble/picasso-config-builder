@@ -72,6 +72,10 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
       const autoSaveData = {
         tenantId,
         timestamp: Date.now(),
+        // The base ETag these edits sit on top of. Used on restore to detect a
+        // stale snapshot (server changed since) and refuse to silently overlay
+        // it onto newer data.
+        baseEtag: useConfigStore.getState().config.etag,
         programs,
         forms,
         ctas,
@@ -113,6 +117,22 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
         return false;
       }
 
+      // Staleness guard: these edits were made on top of a specific base ETag.
+      // If the server's config has changed since (or we can't verify), silently
+      // reapplying the snapshot would overlay stale edits onto newer data — a
+      // data-loss path. Discard the stale draft and tell the operator, rather
+      // than restore it invisibly.
+      const currentEtag = useConfigStore.getState().config.etag;
+      if (!autoSaveData.baseEtag || !currentEtag || autoSaveData.baseEtag !== currentEtag) {
+        sessionStorage.removeItem(key);
+        useConfigStore.getState().ui.addToast({
+          type: 'info',
+          message: 'A recovered draft was discarded because this config changed since it was saved.',
+        });
+        console.warn('Autosave discarded: base ETag mismatch (stale draft)');
+        return false;
+      }
+
       // Restore state using Zustand's setState
       useConfigStore.setState((state) => {
         if (autoSaveData.programs) {
@@ -141,6 +161,10 @@ export function useAutoSave(options: AutoSaveOptions = {}) {
         state.config.isDirty = true;
       });
 
+      useConfigStore.getState().ui.addToast({
+        type: 'info',
+        message: 'Recovered unsaved changes from your previous session.',
+      });
       console.log('Recovered autosave from:', new Date(autoSaveData.timestamp));
       return true;
     } catch (error) {
