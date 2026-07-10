@@ -277,7 +277,20 @@ describe('ChannelsSettings', () => {
       });
     });
 
-    it('updates store state when META_OAUTH_SUCCESS postMessage is received', async () => {
+    // The handler only accepts messages from the Channels API origin (where the
+    // OAuth callback page is served). With VITE_CHANNELS_API_URL unset in tests,
+    // the component falls back to its hardcoded default — mirror that origin here.
+    const CHANNELS_ORIGIN = 'https://qwxscz5w6lkzjmhcpyhewijize0jpzzx.lambda-url.us-east-1.on.aws';
+
+    const payload = {
+      page_id: '222',
+      page_name: 'New Page',
+      enabled: true,
+      connected_at: '2024-07-01T00:00:00Z',
+      connected_by: 'user@example.com',
+    };
+
+    it('updates store state when META_OAUTH_SUCCESS arrives from the Channels origin', async () => {
       const user = userEvent.setup();
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -287,16 +300,11 @@ describe('ChannelsSettings', () => {
       render(<ChannelsSettings />);
       await user.click(screen.getByRole('button', { name: /connect a facebook page/i }));
 
-      // Simulate the OAuth callback postMessage
-      const payload = {
-        page_id: '222',
-        page_name: 'New Page',
-        enabled: true,
-        connected_at: '2024-07-01T00:00:00Z',
-        connected_by: 'user@example.com',
-      };
       window.dispatchEvent(
-        new MessageEvent('message', { data: { type: 'META_OAUTH_SUCCESS', payload } })
+        new MessageEvent('message', {
+          data: { type: 'META_OAUTH_SUCCESS', payload },
+          origin: CHANNELS_ORIGIN,
+        })
       );
 
       await waitFor(() => {
@@ -304,10 +312,25 @@ describe('ChannelsSettings', () => {
       });
     });
 
+    it('rejects a forged META_OAUTH_SUCCESS from a foreign origin', async () => {
+      render(<ChannelsSettings />);
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { type: 'META_OAUTH_SUCCESS', payload },
+          origin: 'https://evil.example.com',
+        })
+      );
+      // A message from any origin other than the Channels API must be ignored.
+      expect(mockSetState).not.toHaveBeenCalled();
+    });
+
     it('ignores postMessage events with wrong type', async () => {
       render(<ChannelsSettings />);
       window.dispatchEvent(
-        new MessageEvent('message', { data: { type: 'SOME_OTHER_EVENT', payload: {} } })
+        new MessageEvent('message', {
+          data: { type: 'SOME_OTHER_EVENT', payload: {} },
+          origin: CHANNELS_ORIGIN,
+        })
       );
       // setState should not be called for unrelated messages
       expect(mockSetState).not.toHaveBeenCalled();

@@ -255,7 +255,19 @@ export const ChannelsSettings: React.FC = () => {
   // -------------------------------------------------------------------------
 
   useEffect(() => {
+    // The OAuth callback page that posts this message is served by the Channels
+    // API (Meta_OAuth_Handler). Only accept messages from that exact origin —
+    // otherwise any window/tab could post a forged META_OAUTH_SUCCESS and inject
+    // an attacker-chosen messenger connection into the config.
+    let channelsOrigin: string | null = null;
+    try {
+      channelsOrigin = new URL(CHANNELS_API_URL).origin;
+    } catch {
+      channelsOrigin = null;
+    }
+
     const handler = (event: MessageEvent) => {
+      if (!channelsOrigin || event.origin !== channelsOrigin) return;
       if (event.data?.type !== 'META_OAUTH_SUCCESS') return;
       const payload = event.data?.payload as ChannelConnection | undefined;
       if (!payload) return;

@@ -10,10 +10,18 @@ import { fromIni } from '@aws-sdk/credential-providers';
 import { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 const app = express();
-const PORT = process.env.DEV_SERVER_PORT || 3001;
-const S3_BUCKET = process.env.S3_BUCKET || 'myrecruiter-picasso';
+const PORT = Number(process.env.DEV_SERVER_PORT) || 3001;
+// Default to the STAGING bucket (born-in-staging authoring model). A local dev
+// server has no business defaulting to the prod tenant-config bucket — set
+// S3_BUCKET explicitly to target anything else.
+const S3_BUCKET = process.env.S3_BUCKET || 'myrecruiter-picasso-staging';
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
 const AWS_PROFILE = process.env.AWS_PROFILE || 'ai-developer';
+
+// Only same-machine browser origins may call this dev server. This is the guard
+// that stops a malicious web page (incl. DNS-rebinding to 127.0.0.1) from
+// driving writes to the real S3 bucket — there is no auth on these routes.
+const LOCAL_ORIGIN_RE = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
 // Initialize S3 client with profile
 const s3Client = new S3Client({
@@ -24,11 +32,16 @@ const s3Client = new S3Client({
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 
-// CORS middleware
+// CORS middleware — localhost origins only (see LOCAL_ORIGIN_RE above).
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (origin && LOCAL_ORIGIN_RE.test(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, If-Match');
+  res.header('Access-Control-Expose-Headers', 'ETag');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).json({ message: 'OK' });
@@ -528,7 +541,9 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
  * Start server
  */
 async function startServer() {
-  app.listen(PORT, () => {
+  // Bind to loopback only — never expose this unauthenticated, real-S3 server
+  // to the LAN.
+  app.listen(PORT, '127.0.0.1', () => {
     console.log('');
     console.log('='.repeat(60));
     console.log('Picasso Config Builder - Local Development Server (S3)');

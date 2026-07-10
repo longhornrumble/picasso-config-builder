@@ -236,16 +236,22 @@ const ProposalItemRow: React.FC<{ item: ProposalItem }> = ({ item }) => {
             <TypeChip type={item.type} />
             {item.severity && <SeverityChip severity={item.severity} />}
           </div>
-          {item.sourceUrl && (
-            <a
-              href={item.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-teal-700 dark:text-teal-400 hover:underline break-all"
-            >
-              → {item.sourceUrl}
-            </a>
-          )}
+          {item.sourceUrl &&
+            (isSafeHttpUrl(item.sourceUrl) ? (
+              <a
+                href={item.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-teal-700 dark:text-teal-400 hover:underline break-all"
+              >
+                → {item.sourceUrl}
+              </a>
+            ) : (
+              // sourceUrl originates from scraped tenant sites (untrusted). Only
+              // render http(s) as a live link; anything else (javascript:, data:)
+              // shows as inert text so a crafted URL can't run in this origin.
+              <span className="text-xs text-gray-500 break-all">→ {item.sourceUrl}</span>
+            ))}
           {item.rationale && (
             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{item.rationale}</p>
           )}
@@ -362,6 +368,21 @@ const OperationBody: React.FC<{ op: ProposalOperation }> = ({ op }) => {
       );
   }
 };
+
+/**
+ * Only http(s) URLs are safe to render as a clickable link. sourceUrl comes
+ * from the scraper pipeline (attacker-influenceable tenant page content), so a
+ * javascript:/data: URL must never become a live href in this authenticated
+ * origin. Anything that doesn't parse, or isn't http(s), is treated as unsafe.
+ */
+function isSafeHttpUrl(url: string): boolean {
+  try {
+    const { protocol } = new URL(url);
+    return protocol === 'https:' || protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
 
 function titleForItem(item: ProposalItem): string {
   switch (item.type) {
