@@ -202,5 +202,4 @@ export type {
 } from './types';
 
 // Export selectors
-export * from './selectors/dependencies';
 export * from './selectors/validation';
