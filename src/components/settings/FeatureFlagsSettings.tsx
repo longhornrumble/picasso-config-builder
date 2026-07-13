@@ -36,6 +36,11 @@ const FLAG_DEFINITIONS: FlagDefinition[] = [
     label: 'Scheduling',
     description: 'Enables the v1 scheduling block — required for start_scheduling/resume_scheduling CTAs and the scheduling configuration section',
   },
+  {
+    key: 'MESSENGER_CHANNEL',
+    label: 'Messenger Channel',
+    description: 'Enables the Facebook Messenger / Instagram DM channel — V5-driven replies, human escalation, forms, and scheduling for connected Meta pages. Requires a connected page and messenger_behavior config to be useful.',
+  },
 ];
 
 // ============================================================================
