@@ -691,6 +691,8 @@ export interface MessengerWelcomeConfig {
 export interface MessengerBehaviorConfig {
   /** Replaces tone_prompt in the Messenger prompt when set (replace, not concatenate — C6) */
   tone_override?: string;
+  /** Staff email notified on human-escalation (M6a; C2 v1.1 additive). Business contact, not consumer PII — the email body is content-free by G-P2 invariant. */
+  escalation_email?: string;
   /** Messenger model override (C6 precedence: channel override → this → config.model_id → processor default) */
   model_id?: string;
   /** History window in turn pairs; default 5 */
