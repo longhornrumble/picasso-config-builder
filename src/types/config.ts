@@ -568,6 +568,8 @@ export interface FeatureFlags {
   V4_ACTION_SELECTOR?: boolean;
   /** Enables the v1 scheduling block — gates scheduling CTAs and the scheduling config section */
   scheduling_enabled?: boolean;
+  /** Messenger Channel Experience — gates the V5-driven FB Messenger / Instagram DM behavior (gate 2 of 3; see Lambdas/lambda/docs/messenger/CONTRACTS.md C2) */
+  MESSENGER_CHANNEL?: boolean;
   /** Allow additional flags from existing configs */
   [key: string]: boolean | undefined;
 }
@@ -640,6 +642,69 @@ export interface ChannelsConfig {
 }
 
 // ============================================================================
+// MESSENGER BEHAVIOR (Messenger Channel Experience — contract C2)
+// ============================================================================
+// Top-level section, deliberately NOT under `channels` — that key is
+// OAuth-connection state written by Meta_OAuth_Handler (two writers on one
+// key is clobber risk). Frozen shape: Lambdas/lambda/docs/messenger/CONTRACTS.md C2.
+// All fields optional; readers must tolerate a missing section (Schema Discipline).
+
+export interface MessengerStrings {
+  /** Bot-disclosure line sent on the first turn of each session */
+  disclosure_line?: string;
+  /** Reply to attachment/sticker/voice input we can't process (30-second rule) */
+  unsupported_input_fallback?: string;
+  /** "Connecting you with a person…" escalation acknowledgment */
+  escalation_confirmation?: string;
+  /** Polite throttle message when rate limits trip */
+  rate_limited?: string;
+  /** Generic form-flow summary intro (field prompts stay in conversational_forms) */
+  form_summary_intro?: string;
+  /** Additive strings without a type change */
+  [key: string]: string | undefined;
+}
+
+export interface MessengerChannelOverride {
+  tone_override?: string;
+  model_id?: string;
+  strings?: MessengerStrings;
+}
+
+export interface MessengerIceBreaker {
+  question: string;
+  /** C3 payload namespace (PIC1:…) */
+  payload: string;
+}
+
+export interface MessengerMenuItem {
+  title: string;
+  payload?: string;
+  url?: string;
+}
+
+export interface MessengerWelcomeConfig {
+  /** ≤4 per channel (capability map C5) */
+  ice_breakers?: MessengerIceBreaker[];
+  persistent_menu?: MessengerMenuItem[];
+}
+
+export interface MessengerBehaviorConfig {
+  /** Replaces tone_prompt in the Messenger prompt when set (replace, not concatenate — C6) */
+  tone_override?: string;
+  /** Messenger model override (C6 precedence: channel override → this → config.model_id → processor default) */
+  model_id?: string;
+  /** History window in turn pairs; default 5 */
+  max_history_turns?: number;
+  /** ALL user-facing strings (D10 — Spanish i18n localizes by config) */
+  strings?: MessengerStrings;
+  welcome?: MessengerWelcomeConfig;
+  channel_overrides?: {
+    messenger?: MessengerChannelOverride;
+    instagram?: MessengerChannelOverride;
+  };
+}
+
+// ============================================================================
 // FULL TENANT CONFIG
 // ============================================================================
 
@@ -696,6 +761,9 @@ export interface TenantConfig {
 
   // Channel integrations (Facebook Messenger, Instagram DMs)
   channels?: ChannelsConfig;
+
+  // Messenger Channel Experience behavior tuning (contract C2; gated by feature_flags.MESSENGER_CHANNEL)
+  messenger_behavior?: MessengerBehaviorConfig;
 }
 
 // ============================================================================

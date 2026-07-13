@@ -226,6 +226,45 @@ export const channelsConfigSchema = z
   .optional();
 
 // ============================================================================
+// MESSENGER BEHAVIOR SCHEMA (Messenger Channel Experience — contract C2)
+// ============================================================================
+// Frozen shape: Lambdas/lambda/docs/messenger/CONTRACTS.md C2. All fields
+// optional (missing section ⇒ runtime defaults). Strings is an open record so
+// additive strings never need a schema change (D10).
+
+export const messengerStringsSchema = z.record(z.string(), z.string());
+
+export const messengerChannelOverrideSchema = z.object({
+  tone_override: z.string().optional(),
+  model_id: z.string().optional(),
+  strings: messengerStringsSchema.optional(),
+});
+
+export const messengerBehaviorSchema = z.object({
+  tone_override: z.string().optional(),
+  model_id: z.string().optional(),
+  max_history_turns: z.number().int().positive().optional(),
+  strings: messengerStringsSchema.optional(),
+  welcome: z
+    .object({
+      ice_breakers: z
+        .array(z.object({ question: z.string().min(1), payload: z.string().min(1) }))
+        .max(4, 'Meta allows at most 4 ice breakers per channel (capability map C5)')
+        .optional(),
+      persistent_menu: z
+        .array(z.object({ title: z.string().min(1), payload: z.string().optional(), url: z.string().optional() }))
+        .optional(),
+    })
+    .optional(),
+  channel_overrides: z
+    .object({
+      messenger: messengerChannelOverrideSchema.optional(),
+      instagram: messengerChannelOverrideSchema.optional(),
+    })
+    .optional(),
+});
+
+// ============================================================================
 // FEATURE FLAGS SCHEMA
 // ============================================================================
 
@@ -279,6 +318,9 @@ export const tenantConfigSchema = z.object({
   // Scheduling (optional v1 block — schema spec §1)
   scheduling: schedulingConfigSchema.optional(),
   feature_flags: featureFlagsSchema.optional(),
+
+  // Messenger Channel Experience behavior tuning (contract C2)
+  messenger_behavior: messengerBehaviorSchema.optional(),
 
 }).superRefine((data, ctx) => {
   // Validate feature dependencies
