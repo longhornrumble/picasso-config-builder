@@ -242,6 +242,7 @@ export const messengerChannelOverrideSchema = z.object({
 
 export const messengerBehaviorSchema = z.object({
   tone_override: z.string().optional(),
+  escalation_email: z.string().email().optional(),
   model_id: z.string().optional(),
   max_history_turns: z.number().int().positive().optional(),
   strings: messengerStringsSchema.optional(),
