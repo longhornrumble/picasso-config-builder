@@ -1,15 +1,20 @@
 /**
  * Contract test: getMergedConfig is the single merge path for save, deploy,
- * and preview — every key it emits must be one the deployed Lambda accepts.
+ * and preview. Two directions, both load-bearing:
  *
- * The authoritative allowlist lives in the lambda repo at
- * Lambdas/lambda/Picasso_Config_Manager/mergeStrategy.mjs (EDITABLE_SECTIONS,
- * READ_ONLY_SECTIONS, METADATA_FIELDS). The repos are separate in CI, so the
- * lists are duplicated here deliberately — if the server allowlist changes,
- * update this copy in the same change.
+ *   1. SOUNDNESS — every key it emits must be one the deployed Lambda accepts
+ *      (cm_accepts + metadata). A stray key (e.g. card_inventory) 400s the PUT.
+ *   2. COMPLETENESS — for every section the Config Builder owns a UI for
+ *      (cb_must_emit), getMergedConfig must actually emit it when present.
+ *      A forgotten emit line means the section silently never persists
+ *      (Landmine 1). This is the direction that guards T2b's messenger_behavior
+ *      emit line, and every future editable section.
  *
- * The load-bearing assertion: `card_inventory` must NEVER be sent. The server
- * rejects the whole PUT with a 400 when it appears (validateEditedSections).
+ * The section lists are pinned in the shared contract file
+ * src/lib/contracts/config_sections_contract.json, duplicated verbatim in the
+ * lambda repo (Picasso_Config_Manager/config_sections_contract.json). The repos
+ * have separate CI, so each side self-validates its own copy — reconcile by
+ * manual diff when either changes. (Messenger Product Surface P0b.)
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
@@ -22,6 +27,7 @@ import {
 } from './testUtils';
 import * as configOps from '@/lib/api/config-operations';
 import type { TenantConfig } from '@/types/config';
+import contract from '@/lib/contracts/config_sections_contract.json';
 
 vi.mock('@/lib/api/config-operations', () => ({
   loadConfig: vi.fn(),
@@ -31,56 +37,27 @@ vi.mock('@/lib/api/config-operations', () => ({
   getTenantMetadata: vi.fn(),
 }));
 
-// mergeStrategy.mjs EDITABLE_SECTIONS
-const SERVER_EDITABLE_SECTIONS = [
-  'programs',
-  'conversational_forms',
-  'cta_definitions',
-  'conversation_branches',
-  'content_showcase',
-  'cta_settings',
-  'branding',
-  'features',
-  'quick_help',
-  'action_chips',
-  'widget_behavior',
-  'aws',
-  'bedrock_instructions',
-  'feature_flags',
-  'intent_definitions',
-  'topic_definitions',
-  'form_settings',
-  'monitor',
-  'notification_settings',
-];
-
-// mergeStrategy.mjs METADATA_FIELDS
-const SERVER_METADATA_FIELDS = [
-  'tenant_id',
-  'tenant_hash',
-  'active',
-  'version',
-  'chat_title',
-  'organization_name',
-  'company_name',
-  'last_updated',
-  'chat_subtitle',
-  'welcome_message',
-  'subscription_tier',
-  'tone_prompt',
-  'model_id',
-  'callout_text',
-  'generated_at',
-];
-
-describe('merge payload contract (getMergedConfig vs server allowlist)', () => {
+describe('merge payload contract (getMergedConfig vs shared section contract)', () => {
   beforeEach(() => {
     resetIdCounter();
     vi.clearAllMocks();
     resetConfigStore(useConfigStore);
   });
 
-  it('emits only server-accepted keys, sheds stale keys, never sends card_inventory', async () => {
+  it('the contract is internally consistent: cb_must_emit ⊆ cm_accepts, disjoint from cb_not_emitted', () => {
+    const accepts = new Set(contract.cm_accepts);
+    for (const s of contract.cb_must_emit) {
+      expect(accepts.has(s), `cb_must_emit "${s}" is not in cm_accepts`).toBe(true);
+    }
+    // cb_must_emit ∪ cb_not_emitted.sections === cm_accepts (no section unaccounted for).
+    const union = new Set([...contract.cb_must_emit, ...contract.cb_not_emitted.sections]);
+    expect(union.size).toBe(accepts.size);
+    for (const s of contract.cm_accepts) {
+      expect(union.has(s), `cm_accepts "${s}" is neither cb_must_emit nor cb_not_emitted`).toBe(true);
+    }
+  });
+
+  it('SOUNDNESS: emits only server-accepted keys, sheds stale keys, never sends card_inventory', async () => {
     const { result } = renderHook(() => useConfigStore());
 
     const mockS3 = createMockS3API();
@@ -102,7 +79,7 @@ describe('merge payload contract (getMergedConfig vs server allowlist)', () => {
     const merged = result.current.config.getMergedConfig();
     expect(merged).not.toBeNull();
 
-    const allowed = new Set([...SERVER_EDITABLE_SECTIONS, ...SERVER_METADATA_FIELDS]);
+    const allowed = new Set([...contract.cm_accepts, ...contract.metadata_fields]);
     for (const key of Object.keys(merged!)) {
       expect(allowed.has(key), `"${key}" is not accepted by the server merge`).toBe(true);
     }
@@ -111,16 +88,69 @@ describe('merge payload contract (getMergedConfig vs server allowlist)', () => {
     expect(merged).not.toHaveProperty('card_inventory');
     // Unknown stale keys must not ride along.
     expect(merged).not.toHaveProperty('some_retired_section');
+  });
 
-    // The five slice-backed sections are the editable payload — always present.
-    for (const key of [
-      'programs',
-      'conversational_forms',
-      'cta_definitions',
-      'conversation_branches',
-      'content_showcase',
-    ]) {
-      expect(merged, `missing slice-backed section "${key}"`).toHaveProperty(key);
+  it('COMPLETENESS: with every editable section populated, getMergedConfig emits all cb_must_emit sections (Landmine 1 guard)', async () => {
+    const { result } = renderHook(() => useConfigStore());
+    const mockS3 = createMockS3API();
+
+    // A fully-populated config: every optional cb_must_emit section present with
+    // a truthy value, so a missing emit line in getMergedConfig fails this test.
+    const overrides = {
+      branding: { primary_color: '#000' },
+      features: { some_feature: true },
+      aws: { region: 'us-east-1' },
+      cta_settings: { max_ctas_per_response: 3 },
+      feature_flags: { V5_SINGLE_PASS: true },
+      quick_help: { items: [] },
+      action_chips: { explicit_routes: {} },
+      widget_behavior: { greeting_delay_ms: 0 },
+      bedrock_instructions: {
+        _version: '1',
+        _updated: 'x',
+        formatting_preferences: {
+          emoji_usage: 'none',
+          max_emojis_per_response: 0,
+          response_style: 'professional_concise',
+          detail_level: 'concise',
+        },
+        custom_constraints: [],
+        fallback_message: 'x',
+      },
+      topic_definitions: [{ id: 't1', label: 'T1' }],
+      notification_settings: { enabled: true },
+    } as unknown as Partial<TenantConfig>;
+
+    const testConfig = createTestTenantConfig('FULL_TENANT', overrides) as TenantConfig &
+      Record<string, unknown>;
+    // form_settings is a legacy passthrough, not on the typed TenantConfig surface.
+    testConfig.form_settings = { collect_mode: 'conversational' };
+
+    mockS3._setMockConfig('FULL_TENANT', testConfig);
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
+      mockS3.loadConfig(tenantId)
+    );
+
+    await act(async () => {
+      await result.current.config.loadConfig('FULL_TENANT');
+    });
+
+    const merged = result.current.config.getMergedConfig() as Record<string, unknown>;
+    expect(merged).not.toBeNull();
+
+    for (const section of contract.cb_must_emit) {
+      expect(
+        Object.prototype.hasOwnProperty.call(merged, section),
+        `getMergedConfig dropped cb_must_emit section "${section}" — missing emit line?`
+      ).toBe(true);
+    }
+
+    // And it correctly does NOT emit the sections CB has no editor for.
+    for (const section of contract.cb_not_emitted.sections) {
+      expect(
+        Object.prototype.hasOwnProperty.call(merged, section),
+        `getMergedConfig emitted "${section}" but CB has no editor for it`
+      ).toBe(false);
     }
   });
 });
