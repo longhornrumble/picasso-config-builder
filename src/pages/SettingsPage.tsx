@@ -20,7 +20,6 @@ import {
   AWSSettings,
   FeatureFlagsSettings,
   NotificationSettings,
-  ChannelsSettings,
   MessengerSettings,
   MessengerWelcomeSettings,
 } from '@/components/settings';
@@ -175,7 +174,6 @@ export const SettingsPage: React.FC = () => {
               <TabsTrigger value="branding">Branding</TabsTrigger>
               <TabsTrigger value="features">Features</TabsTrigger>
               <TabsTrigger value="ai-aws">AI & AWS</TabsTrigger>
-              <TabsTrigger value="channels">Channels</TabsTrigger>
               <TabsTrigger value="messenger">Messenger</TabsTrigger>
             </TabsList>
 
@@ -204,11 +202,6 @@ export const SettingsPage: React.FC = () => {
               <BedrockInstructionsSettings />
               <AWSSettings />
               <FeatureFlagsSettings />
-            </TabsContent>
-
-            {/* Channels Tab */}
-            <TabsContent value="channels" className="space-y-6 mt-6">
-              <ChannelsSettings />
             </TabsContent>
 
             {/* Messenger Tab — first "product" grouping (flag + behavior + readiness) */}

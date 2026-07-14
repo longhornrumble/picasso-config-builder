@@ -106,15 +106,15 @@ describe('MessengerSettings', () => {
     render(<MessengerSettings />);
     expect(screen.getByText(/No page connected yet/)).toBeInTheDocument();
     // Connection is still managed elsewhere — this page never mutates it.
-    expect(screen.getByText(/Connection is managed in the Channels tab/)).toBeInTheDocument();
+    expect(screen.getByText(/Connection is managed in the admin portal/)).toBeInTheDocument();
   });
 
-  it('connection readiness reflects a connected page from channels.messenger (mirrors ChannelsSettings)', () => {
+  it('connection readiness reflects a connected page from the channels.messenger mirror', () => {
     mockBaseConfig = {
       feature_flags: { MESSENGER_CHANNEL: true },
       channels: { messenger: { page_id: '1', page_name: 'Acme Page', enabled: true, connected_at: '2026-07-13', connected_by: 'x' } },
     };
     render(<MessengerSettings />);
-    expect(screen.getByText(/Connected: Acme Page\. Manage in the Channels tab\./)).toBeInTheDocument();
+    expect(screen.getByText(/Connected: Acme Page\. Manage the connection in the admin portal\./)).toBeInTheDocument();
   });
 });
