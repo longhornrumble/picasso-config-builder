@@ -12,10 +12,10 @@
  *
  * Readiness authority (D1 rule): the checklist reports the flag and escalation
  * recipient (config-authoritative) plus a display-only connection row that reads
- * the S3 `channels.*` mirror exactly as the Channels tab does. D1 forbids runtime
+ * the S3 `channels.*` mirror (written by the portal OAuth connect). D1 forbids runtime
  * code from GATING on that mirror (DDB is the source of truth) — it does not
  * forbid CB from DISPLAYING last-known connection metadata. Connecting/
- * disconnecting stays in the Channels tab / portal; this page never mutates it.
+ * disconnecting stays in the admin portal; this page never mutates it.
  *
  * All edits mutate the whole messenger_behavior object in baseConfig; getMergedConfig
  * emits the complete section and Config Manager wholesale-replaces it — so the
@@ -79,10 +79,10 @@ export const MessengerSettings: React.FC = () => {
   const disclosureLine = strings.disclosure_line ?? '';
   const toneOverride = behavior.tone_override ?? '';
 
-  // Connection state: read the S3 channels mirror the same way the Channels tab
-  // does — display-only, never for gating (D1 authority rule: DDB is the runtime
-  // source of truth; the mirror is last-known display metadata). Connecting/
-  // disconnecting stays in the Channels tab / portal, not here.
+  // Connection state: read the S3 channels mirror the portal writes on connect —
+  // display-only, never for gating (D1 authority rule: DDB is the runtime source
+  // of truth; the mirror is last-known display metadata). Connect/disconnect
+  // stays in the admin portal, not here.
   const channels = baseConfig?.channels;
   const messengerPage = channels?.messenger?.page_name;
   const instagramConnected = Boolean(channels?.instagram);
@@ -233,13 +233,13 @@ export const MessengerSettings: React.FC = () => {
             done={anyConnected}
             detail={
               anyConnected
-                ? `Connected${messengerPage ? `: ${messengerPage}` : ''}${instagramConnected ? ' (Instagram linked)' : ''}. Manage in the Channels tab.`
-                : 'No page connected yet — connect one in the Channels tab (or, for tenants, the admin portal).'
+                ? `Connected${messengerPage ? `: ${messengerPage}` : ''}${instagramConnected ? ' (Instagram linked)' : ''}. Manage the connection in the admin portal.`
+                : 'No page connected yet — connect the page in the admin portal (Integrations → Meta).'
             }
           />
           <p className="mt-2 flex items-center gap-1 text-xs text-gray-400">
             <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-            Connection is managed in the Channels tab; this reflects last-known connection metadata.
+            Connection is managed in the admin portal; this reflects last-known connection metadata.
           </p>
         </CardContent>
       </Card>

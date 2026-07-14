@@ -13,6 +13,5 @@ export { WidgetBehaviorSettings } from './WidgetBehaviorSettings';
 export { AWSSettings } from './AWSSettings';
 export { FeatureFlagsSettings } from './FeatureFlagsSettings';
 export { NotificationSettings } from './NotificationSettings';
-export { ChannelsSettings } from './ChannelsSettings';
 export { MessengerSettings } from './MessengerSettings';
 export { MessengerWelcomeSettings } from './MessengerWelcomeSettings';
