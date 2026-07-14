@@ -119,6 +119,7 @@ describe('merge payload contract (getMergedConfig vs shared section contract)', 
       },
       topic_definitions: [{ id: 't1', label: 'T1' }],
       notification_settings: { enabled: true },
+      messenger_behavior: { escalation_email: 'notify@myrecruiter.ai' },
     } as unknown as Partial<TenantConfig>;
 
     const testConfig = createTestTenantConfig('FULL_TENANT', overrides) as TenantConfig &
@@ -152,5 +153,30 @@ describe('merge payload contract (getMergedConfig vs shared section contract)', 
         `getMergedConfig emitted "${section}" but CB has no editor for it`
       ).toBe(false);
     }
+  });
+
+  it('FORWARD-COMPAT: an old-shape config without messenger_behavior round-trips without emitting the key (Schema Discipline)', async () => {
+    const { result } = renderHook(() => useConfigStore());
+    const mockS3 = createMockS3API();
+
+    // Baseline test config has no messenger_behavior — the pre-Messenger shape.
+    const testConfig = createTestTenantConfig('OLD_TENANT') as TenantConfig &
+      Record<string, unknown>;
+    expect(testConfig).not.toHaveProperty('messenger_behavior');
+
+    mockS3._setMockConfig('OLD_TENANT', testConfig);
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
+      mockS3.loadConfig(tenantId)
+    );
+
+    await act(async () => {
+      await result.current.config.loadConfig('OLD_TENANT');
+    });
+
+    const merged = result.current.config.getMergedConfig();
+    // No crash, and the conditional emit omits the absent section entirely
+    // (rather than writing messenger_behavior: undefined).
+    expect(merged).not.toBeNull();
+    expect(merged).not.toHaveProperty('messenger_behavior');
   });
 });

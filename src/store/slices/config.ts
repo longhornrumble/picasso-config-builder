@@ -435,6 +435,9 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         ? { form_settings: (state.config.baseConfig as TenantConfig & { form_settings?: unknown }).form_settings }
         : {}),
       ...(state.config.baseConfig.notification_settings && { notification_settings: state.config.baseConfig.notification_settings }),
+      // Messenger channel behavior tuning (contract C2; server-editable per T2a).
+      // Conditional emit — old configs without the section round-trip unchanged.
+      ...(state.config.baseConfig.messenger_behavior && { messenger_behavior: state.config.baseConfig.messenger_behavior }),
     };
 
     // Post-process forms: map post_submission.fulfillment → root-level fulfillment
