@@ -22,6 +22,7 @@ import {
   NotificationSettings,
   ChannelsSettings,
   MessengerSettings,
+  MessengerWelcomeSettings,
 } from '@/components/settings';
 import { EmbedCodeSettings } from '@/components/settings/EmbedCodeSettings';
 
@@ -213,6 +214,7 @@ export const SettingsPage: React.FC = () => {
             {/* Messenger Tab — first "product" grouping (flag + behavior + readiness) */}
             <TabsContent value="messenger" className="space-y-6 mt-6">
               <MessengerSettings />
+              <MessengerWelcomeSettings />
             </TabsContent>
           </Tabs>
 
