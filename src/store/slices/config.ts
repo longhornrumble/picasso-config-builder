@@ -7,6 +7,7 @@ import type { TenantConfig, ConversationalForm, ConversationBranch } from '@/typ
 import type { SliceCreator, ConfigSlice } from '../types';
 import * as configAPI from '@/lib/api/config-operations';
 import { ConfigAPIError } from '@/lib/api/errors';
+import { shouldRepushWelcome, repushWelcomeSurfaces } from '@/lib/api/metaWelcome';
 
 /**
  * Schema discipline: stored configs may carry old-shape branches (no `secondary`
@@ -234,6 +235,26 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         type: 'success',
         message: 'Configuration deployed successfully',
       });
+
+      // Auto-push Messenger welcome surfaces (ice breakers + persistent menu) to
+      // the live Meta profile when they're configured and a page is connected —
+      // so an operator never has to run the M5 re-push script by hand. Best-effort:
+      // the deploy already succeeded, so a push failure only warns.
+      if (shouldRepushWelcome(mergedConfig)) {
+        const outcome = await repushWelcomeSurfaces(state.config.tenantId);
+        if (outcome.status === 'pushed') {
+          state.ui.addToast({
+            type: 'success',
+            message: `Welcome surfaces pushed to Facebook / Instagram (${outcome.detail}).`,
+          });
+        } else if (outcome.status === 'failed') {
+          state.ui.addToast({
+            type: 'warning',
+            message: `Deployed, but pushing welcome surfaces to Meta failed: ${outcome.detail}. Re-deploy to retry.`,
+          });
+        }
+        // 'skipped' (flag off / nothing to push) and 'not-configured' are silent.
+      }
     } catch (error) {
       // Mirror saveConfig: an ETag mismatch renders the reload banner
       // instead of the generic error toast.
