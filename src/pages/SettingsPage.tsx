@@ -21,6 +21,7 @@ import {
   FeatureFlagsSettings,
   NotificationSettings,
   ChannelsSettings,
+  MessengerSettings,
 } from '@/components/settings';
 import { EmbedCodeSettings } from '@/components/settings/EmbedCodeSettings';
 
@@ -174,6 +175,7 @@ export const SettingsPage: React.FC = () => {
               <TabsTrigger value="features">Features</TabsTrigger>
               <TabsTrigger value="ai-aws">AI & AWS</TabsTrigger>
               <TabsTrigger value="channels">Channels</TabsTrigger>
+              <TabsTrigger value="messenger">Messenger</TabsTrigger>
             </TabsList>
 
             {/* General Tab */}
@@ -206,6 +208,11 @@ export const SettingsPage: React.FC = () => {
             {/* Channels Tab */}
             <TabsContent value="channels" className="space-y-6 mt-6">
               <ChannelsSettings />
+            </TabsContent>
+
+            {/* Messenger Tab — first "product" grouping (flag + behavior + readiness) */}
+            <TabsContent value="messenger" className="space-y-6 mt-6">
+              <MessengerSettings />
             </TabsContent>
           </Tabs>
 
