@@ -280,7 +280,8 @@ describe('ChannelsSettings', () => {
     // The handler only accepts messages from the Channels API origin (where the
     // OAuth callback page is served). With VITE_CHANNELS_API_URL unset in tests,
     // the component falls back to its hardcoded default — mirror that origin here.
-    const CHANNELS_ORIGIN = 'https://qwxscz5w6lkzjmhcpyhewijize0jpzzx.lambda-url.us-east-1.on.aws';
+    // Must match the VITE_CHANNELS_API_URL the test env injects (src/test/setup.ts).
+    const CHANNELS_ORIGIN = 'https://channels.test.example';
 
     const payload = {
       page_id: '222',

@@ -125,6 +125,13 @@ jobs:
 
       - name: Build for production
         run: npm run build:production
+        env:
+          # Meta_OAuth_Handler Function URL in the PROD account (614). The
+          # component no longer hardcodes this — every build must declare its
+          # channels API explicitly (staging value is set in pr-checks.yml), so
+          # a build that forgets fails loud instead of silently using prod.
+          # Public Function URL, not a secret.
+          VITE_CHANNELS_API_URL: https://qwxscz5w6lkzjmhcpyhewijize0jpzzx.lambda-url.us-east-1.on.aws
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
