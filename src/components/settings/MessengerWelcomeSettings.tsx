@@ -9,15 +9,16 @@
  * section and Config Manager wholesale-replaces it, so no partial patch is ever
  * sent.
  *
- * Honesty note (load-bearing): saving here only updates the tenant config.
- * Config Builder does NOT push ice breakers / persistent menu to Meta — an
- * operator must run the M5 re-push script against the live Facebook/Instagram
- * profile after saving. This mirrors the "mocks are aspirational — keep
- * truthful state notices" discipline: never imply a live push happens here.
+ * Push behavior (truthful-state note): editing here only updates the tenant
+ * config. The live Facebook/Instagram profile is updated on DEPLOY — the deploy
+ * flow auto-calls Meta_OAuth_Handler's repush-welcome endpoint when welcome
+ * surfaces are configured and a page is connected (see store/slices/config.ts +
+ * lib/api/metaWelcome.ts). The in-card notice states this; the manual fallback
+ * is scripts/repush_welcome_surfaces.py. Never imply an edit alone pushes.
  */
 
 import React, { useState } from 'react';
-import { Plus, Trash2, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, AlertCircle, Info } from 'lucide-react';
 import {
   Card,
   CardHeader,
@@ -110,15 +111,16 @@ export const MessengerWelcomeSettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Honesty note — CB does not push to Meta */}
-      <Alert variant="warning">
-        <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-        <AlertTitle>Saving here does not update Facebook or Instagram</AlertTitle>
+      {/* How-it-works note — welcome surfaces auto-push to Meta on Deploy */}
+      <Alert variant="info">
+        <Info className="h-4 w-4" aria-hidden="true" />
+        <AlertTitle>These push to Facebook &amp; Instagram when you Deploy</AlertTitle>
         <AlertDescription>
-          Config Builder does not push these welcome surfaces to Meta. After saving, an operator
-          must run the M5 re-push script (
-          <code>Meta_OAuth_Handler/scripts/repush_welcome_surfaces.py</code>) to apply ice breakers
-          and the persistent menu to the live Facebook / Instagram profile.
+          When you <strong>Deploy</strong>, Config Builder pushes these ice breakers and the
+          persistent menu to the live Facebook / Instagram profile automatically — as long as the
+          page is connected (see the Channels tab). Editing here without deploying does not update
+          Meta, and nothing is pushed until a page is connected. (The manual fallback is still{' '}
+          <code>Meta_OAuth_Handler/scripts/repush_welcome_surfaces.py</code>.)
         </AlertDescription>
       </Alert>
 

@@ -46,11 +46,13 @@ describe('MessengerWelcomeSettings', () => {
     expect(screen.getByText('Persistent menu')).toBeInTheDocument();
   });
 
-  it('shows the M5 re-push honesty notice (CB does not push to Meta)', () => {
+  it('shows the truthful-state notice (surfaces push to Meta on Deploy; edits alone do not)', () => {
     render(<MessengerWelcomeSettings />);
-    expect(
-      screen.getByText(/Config Builder does not push these welcome surfaces to Meta/)
-    ).toBeInTheDocument();
+    // Title states the push happens on Deploy.
+    expect(screen.getByText(/push to Facebook & Instagram when you Deploy/)).toBeInTheDocument();
+    // Body is truthful that editing alone does not update Meta.
+    expect(screen.getByText(/Editing here without deploying does not update/)).toBeInTheDocument();
+    // Manual fallback still referenced.
     expect(screen.getByText(/repush_welcome_surfaces\.py/)).toBeInTheDocument();
   });
 
