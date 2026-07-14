@@ -26,22 +26,49 @@ import {
   CardDescription,
   CardContent,
   Input,
+  Select,
   Button,
   Alert,
   AlertTitle,
   AlertDescription,
 } from '@/components/ui';
+import type { SelectOption } from '@/components/ui';
 import { useConfigStore } from '@/store';
 import type { MessengerWelcomeConfig, MessengerIceBreaker, MessengerMenuItem } from '@/types/config';
 
 const MAX_ICE_BREAKERS = 4;
+// Sentinel for "no CTA" in the optional persistent-menu payload select
+// (Radix Select items can't use an empty-string value).
+const NO_CTA = '__none__';
 
 export const MessengerWelcomeSettings: React.FC = () => {
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
+  // CTAs are the payload vocabulary for welcome surfaces: a tap resolves
+  // PIC1:cta:{id} against cta_definitions. Read them live from the store so the
+  // dropdown reflects CTAs as they're added/removed elsewhere in the builder.
+  const ctas = useConfigStore((state) => state.ctas.ctas);
 
   const welcome: MessengerWelcomeConfig = baseConfig?.messenger_behavior?.welcome ?? {};
   const iceBreakers = welcome.ice_breakers ?? [];
   const menuItems = welcome.persistent_menu ?? [];
+
+  // Live CTA options, value = the exact payload the Messenger processor resolves.
+  const ctaOptions: SelectOption[] = Object.entries(ctas ?? {}).map(([id, cta]) => ({
+    value: `PIC1:cta:${id}`,
+    label: `${(cta.label ?? '').trim() || id} — ${id}`,
+  }));
+  const hasCtas = ctaOptions.length > 0;
+  // Keep a saved payload that no longer matches a CTA (e.g. the CTA was deleted,
+  // or a legacy raw payload) visible instead of silently blanking it.
+  const withCurrent = (current: string | undefined): SelectOption[] =>
+    current && !ctaOptions.some((o) => o.value === current)
+      ? [...ctaOptions, { value: current, label: `${current} — not a current CTA` }]
+      : ctaOptions;
+  // Optional payload (persistent menu): prepend a "no CTA" choice.
+  const menuPayloadOptions = (current: string | undefined): SelectOption[] => [
+    { value: NO_CTA, label: '— No CTA (use a URL) —' },
+    ...withCurrent(current),
+  ];
 
   const [newQuestion, setNewQuestion] = useState('');
   const [newPayload, setNewPayload] = useState('');
@@ -129,11 +156,18 @@ export const MessengerWelcomeSettings: React.FC = () => {
         <CardHeader>
           <CardTitle>Ice breakers</CardTitle>
           <CardDescription>
-            Suggested first questions shown to a visitor before they send a message. Up to{' '}
-            {MAX_ICE_BREAKERS}, per Meta&apos;s platform limit (capability map C5).
+            Suggested first questions shown to a visitor before they send a message. Each links to a
+            CTA, which fires when the visitor taps it. Up to {MAX_ICE_BREAKERS}, per Meta&apos;s
+            platform limit (capability map C5).
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {!hasCtas && (
+            <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 mb-3">
+              <AlertCircle className="w-4 h-4" />
+              No CTAs defined yet — create CTAs in the CTAs tab, then link them here.
+            </div>
+          )}
           {iceBreakers.length > 0 && (
             <div className="space-y-2 mb-3">
               {iceBreakers.map((item, index) => (
@@ -148,11 +182,12 @@ export const MessengerWelcomeSettings: React.FC = () => {
                       onChange={(e) => updateIceBreaker(index, { question: e.target.value })}
                       placeholder="Question shown to the visitor"
                     />
-                    <Input
-                      aria-label={`Ice breaker ${index + 1} payload`}
+                    <Select
+                      placeholder={hasCtas ? 'Link a CTA…' : 'No CTAs defined'}
+                      options={withCurrent(item.payload)}
                       value={item.payload}
-                      onChange={(e) => updateIceBreaker(index, { payload: e.target.value })}
-                      placeholder="C3 payload namespace, e.g. PIC1:…"
+                      onValueChange={(v) => updateIceBreaker(index, { payload: v })}
+                      disabled={!hasCtas && !item.payload}
                     />
                   </div>
                   <Button
@@ -178,13 +213,14 @@ export const MessengerWelcomeSettings: React.FC = () => {
                 placeholder="e.g., How do I volunteer?"
                 disabled={iceBreakersAtCap}
               />
-              <Input
-                label="Payload"
+              <Select
+                label="Linked CTA"
+                placeholder={hasCtas ? 'Choose a CTA…' : 'No CTAs defined'}
+                options={ctaOptions}
                 value={newPayload}
-                onChange={(e) => setNewPayload(e.target.value)}
-                placeholder="e.g., PIC1:VOLUNTEER_INFO"
-                helperText="C3 payload namespace, e.g. PIC1:…"
-                disabled={iceBreakersAtCap}
+                onValueChange={setNewPayload}
+                helperText="Tapping the ice breaker fires this CTA. Options come from your CTA definitions."
+                disabled={iceBreakersAtCap || !hasCtas}
               />
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
@@ -217,8 +253,8 @@ export const MessengerWelcomeSettings: React.FC = () => {
         <CardHeader>
           <CardTitle>Persistent menu</CardTitle>
           <CardDescription>
-            Always-visible menu options in the Messenger conversation. Each item needs either a
-            payload (handled by the bot) or a URL (opens externally).
+            Always-visible menu options in the Messenger conversation. Each item links to either a
+            CTA (handled by the bot) or a URL (opens externally).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -236,11 +272,13 @@ export const MessengerWelcomeSettings: React.FC = () => {
                       onChange={(e) => updateMenuItem(index, { title: e.target.value })}
                       placeholder="Menu label"
                     />
-                    <Input
-                      aria-label={`Menu item ${index + 1} payload`}
-                      value={item.payload ?? ''}
-                      onChange={(e) => updateMenuItem(index, { payload: e.target.value || undefined })}
-                      placeholder="Payload (bot-handled)"
+                    <Select
+                      placeholder="Link a CTA…"
+                      options={menuPayloadOptions(item.payload)}
+                      value={item.payload ?? NO_CTA}
+                      onValueChange={(v) =>
+                        updateMenuItem(index, { payload: v === NO_CTA ? undefined : v })
+                      }
                     />
                     <Input
                       aria-label={`Menu item ${index + 1} url`}
@@ -271,12 +309,13 @@ export const MessengerWelcomeSettings: React.FC = () => {
                 onChange={(e) => setNewMenuTitle(e.target.value)}
                 placeholder="e.g., Our programs"
               />
-              <Input
-                label="Payload (optional)"
-                value={newMenuPayload}
-                onChange={(e) => setNewMenuPayload(e.target.value)}
-                placeholder="e.g., PIC1:PROGRAMS"
-                helperText="Use payload OR url"
+              <Select
+                label="Linked CTA (optional)"
+                placeholder="Choose a CTA…"
+                options={menuPayloadOptions(newMenuPayload || undefined)}
+                value={newMenuPayload || NO_CTA}
+                onValueChange={(v) => setNewMenuPayload(v === NO_CTA ? '' : v)}
+                helperText="Use a CTA OR a URL"
               />
               <Input
                 label="URL (optional)"
