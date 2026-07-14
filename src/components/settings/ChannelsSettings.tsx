@@ -50,8 +50,13 @@ function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
 
 // `import.meta.env` can be undefined under ESBuild's dev pipeline (unlike Vite's
 // auto-injection), which crashed module load and blocked the whole app from
-// rendering. Guard against it so the fallback URL is always reachable.
-const CHANNELS_API_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CHANNELS_API_URL) || 'https://qwxscz5w6lkzjmhcpyhewijize0jpzzx.lambda-url.us-east-1.on.aws';
+// rendering. Guard against that. There is deliberately NO hardcoded prod URL
+// fallback: every build must declare VITE_CHANNELS_API_URL explicitly (staging
+// in pr-checks.yml, prod in deploy-production.yml). When it is unset the connect
+// actions fail loud (below) rather than silently driving the PROD OAuth handler
+// from a staging/dev build — the G6 bug this replaces.
+const CHANNELS_API_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CHANNELS_API_URL) || '';
+const CHANNELS_API_CONFIGURED = CHANNELS_API_URL.length > 0;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -287,6 +292,12 @@ export const ChannelsSettings: React.FC = () => {
 
   const handleConnect = useCallback(async () => {
     if (!tenantId) return;
+    if (!CHANNELS_API_CONFIGURED) {
+      setError(
+        'Channel connect is not configured for this build (VITE_CHANNELS_API_URL is unset). No request was sent.'
+      );
+      return;
+    }
     setError(null);
     setConnectLoading(true);
 
@@ -332,6 +343,12 @@ export const ChannelsSettings: React.FC = () => {
   const handleToggle = useCallback(
     async (enabled: boolean) => {
       if (!tenantId) return;
+      if (!CHANNELS_API_CONFIGURED) {
+        setError(
+          'Channel management is not configured for this build (VITE_CHANNELS_API_URL is unset). No request was sent.'
+        );
+        return;
+      }
       setError(null);
       setToggleLoading(true);
 
@@ -375,6 +392,12 @@ export const ChannelsSettings: React.FC = () => {
 
   const handleDisconnect = useCallback(async () => {
     if (!tenantId) return;
+    if (!CHANNELS_API_CONFIGURED) {
+      setError(
+        'Channel management is not configured for this build (VITE_CHANNELS_API_URL is unset). No request was sent.'
+      );
+      return;
+    }
     const confirmed = window.confirm(
       'Are you sure you want to disconnect this Facebook Page? Messages from Messenger will no longer be routed to Picasso.'
     );
@@ -427,6 +450,21 @@ export const ChannelsSettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Not-configured notice — connect/manage are disabled and fail loud
+          rather than silently reaching the prod OAuth handler (G6). */}
+      {!CHANNELS_API_CONFIGURED && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300"
+        >
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>
+            Channel connect is not configured for this build (<code>VITE_CHANNELS_API_URL</code> is
+            unset). Connecting and managing channels are disabled here.
+          </span>
+        </div>
+      )}
+
       {/* Global error banner */}
       {error && (
         <div
