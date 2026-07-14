@@ -83,6 +83,22 @@ describe('repushWelcomeSurfaces', () => {
     );
   });
 
+  it('sends the operator Authorization header when provided', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ result: { skipped: 'x' } }) });
+    await repushWelcomeSurfaces('TENANT_1', 'Bearer op-token');
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/meta/channels/TENANT_1/repush-welcome'),
+      expect.objectContaining({ method: 'POST', headers: { Authorization: 'Bearer op-token' } })
+    );
+  });
+
+  it('omits the Authorization header when no token is passed', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ result: { skipped: 'x' } }) });
+    await repushWelcomeSurfaces('TENANT_1');
+    const init = mockFetch.mock.calls[0][1];
+    expect(init.headers).toEqual({});
+  });
+
   it('passes through a best-effort skip (flag off / nothing to push)', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
