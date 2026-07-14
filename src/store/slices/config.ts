@@ -6,6 +6,7 @@
 import type { TenantConfig, ConversationalForm, ConversationBranch } from '@/types/config';
 import type { SliceCreator, ConfigSlice } from '../types';
 import * as configAPI from '@/lib/api/config-operations';
+import { configApiClient } from '@/lib/api/client';
 import { ConfigAPIError } from '@/lib/api/errors';
 import { shouldRepushWelcome, repushWelcomeSurfaces } from '@/lib/api/metaWelcome';
 
@@ -241,7 +242,10 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       // so an operator never has to run the M5 re-push script by hand. Best-effort:
       // the deploy already succeeded, so a push failure only warns.
       if (shouldRepushWelcome(mergedConfig)) {
-        const outcome = await repushWelcomeSurfaces(state.config.tenantId);
+        // Same operator Clerk token the config API client sends; the /meta/
+        // channels/* routes now require it (lambda#463).
+        const authHeaders = await configApiClient.getAuthHeaders();
+        const outcome = await repushWelcomeSurfaces(state.config.tenantId, authHeaders.Authorization);
         if (outcome.status === 'pushed') {
           state.ui.addToast({
             type: 'success',

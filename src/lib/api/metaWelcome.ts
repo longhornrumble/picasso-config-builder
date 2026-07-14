@@ -11,8 +11,11 @@
  * Best-effort: the deploy itself is the primary action and has already
  * succeeded by the time this runs — a push failure only warns, never throws.
  *
- * The endpoint is unauthenticated today (CORS *, no Clerk), so no token is
- * sent. If it is ever put behind auth, thread the Clerk token through here.
+ * The /meta/channels/* routes now authorize the caller (lambda#463): they
+ * accept the operator's Clerk 'picasso-config' JWT (the same token the config
+ * API client sends). Callers pass that Authorization header in. The server-side
+ * backstop (Config Manager) covers the push independently, so a missing token
+ * here degrades to a warning, not a broken push.
  */
 import type { TenantConfig } from '@/types/config';
 
@@ -40,12 +43,15 @@ export type RepushOutcome =
  * - `failed`  — the call errored (network, 4xx/5xx); the caller should warn, not block
  * - `not-configured` — VITE_CHANNELS_API_URL is unset for this build (no auto-push wired)
  */
-export async function repushWelcomeSurfaces(tenantId: string): Promise<RepushOutcome> {
+export async function repushWelcomeSurfaces(
+  tenantId: string,
+  authorization?: string,
+): Promise<RepushOutcome> {
   if (!CHANNELS_API_URL) return { status: 'not-configured' };
   try {
     const res = await fetch(
       `${CHANNELS_API_URL}/meta/channels/${encodeURIComponent(tenantId)}/repush-welcome`,
-      { method: 'POST' }
+      { method: 'POST', headers: authorization ? { Authorization: authorization } : {} }
     );
     const body = (await res.json().catch(() => ({}))) as {
       error?: string;
