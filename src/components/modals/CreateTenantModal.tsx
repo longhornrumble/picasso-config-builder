@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Copy, Check, Loader2, Plus } from 'lucide-react';
+import { Copy, Check, Loader2, Plus, Sparkles } from 'lucide-react';
 import {
   Modal,
   ModalContent,
@@ -27,6 +27,22 @@ interface CreateTenantModalProps {
 }
 
 type ViewState = 'form' | 'loading' | 'success';
+
+/**
+ * Generate a tenant ID matching the platform convention: a 3-letter uppercase
+ * prefix derived from the organization name + 6 random digits
+ * (e.g. MyRecruiter → MYR384719, Austin Angels → AUS123957).
+ * Missing prefix letters (short/empty org name) are padded with random A-Z.
+ */
+function generateTenantId(orgName: string): string {
+  const letters = (orgName.match(/[a-zA-Z]/g) || []).join('').toUpperCase();
+  let prefix = letters.slice(0, 3);
+  while (prefix.length < 3) {
+    prefix += String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  }
+  const digits = String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
+  return `${prefix}${digits}`;
+}
 
 interface CreateTenantResponse {
   success: boolean;
@@ -67,6 +83,14 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
 
   const primaryColor = useWatch({ control, name: 'primary_color' });
   const subscriptionTier = useWatch({ control, name: 'subscription_tier' });
+  const orgName = useWatch({ control, name: 'org_name' });
+
+  const handleGenerateTenantId = () => {
+    setValue('tenant_id', generateTenantId(orgName), {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
 
   const handleClose = () => {
     reset();
@@ -154,14 +178,33 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
               {...register('org_name')}
             />
 
-            <Input
-              label="Tenant ID"
-              placeholder="my-company"
-              required
-              helperText="Unique identifier (alphanumeric, hyphens, underscores)"
-              error={errors.tenant_id?.message}
-              {...register('tenant_id')}
-            />
+            <div>
+              <label
+                htmlFor="tenant_id"
+                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Tenant ID <span className="text-red-500">*</span>
+              </label>
+              <div className="flex items-start gap-2">
+                <Input
+                  id="tenant_id"
+                  placeholder="MYR384719"
+                  className="flex-1"
+                  helperText="3-letter org prefix + 6 digits (alphanumeric, hyphens, underscores)"
+                  error={errors.tenant_id?.message}
+                  {...register('tenant_id')}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGenerateTenantId}
+                  className="shrink-0"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Generate
+                </Button>
+              </div>
+            </div>
 
             <Input
               label="Chat Title"
