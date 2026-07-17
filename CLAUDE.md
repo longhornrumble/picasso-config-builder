@@ -537,9 +537,13 @@ aws s3 ls s3://myrecruiter-picasso/
 
 ### Frontend Deployment
 
-Deployment is CI-driven (there is no local deploy script):
+Deployment is CI-driven (there is no local deploy script). Branching mirrors
+the picasso repo: `staging` is a protected long-lived integration branch
+(force-push + deletion disabled) and `main` is prod. Code PRs route to
+`staging` first (soak), then promote `staging → main`.
 
-- **Staging (525):** `pr-checks.yml` deploys a preview on every PR →
+- **Staging (525):** `pr-checks.yml` runs the quality gates + deploys a preview
+  on every PR to **`main` or `staging`** →
   `picasso-config-builder-staging` / `staging.config.myrecruiter.ai`.
 - **Production (614):** `deploy-production.yml` is dispatch-only and double-gated
   (human approval + blocking prod-config schema validation) →
