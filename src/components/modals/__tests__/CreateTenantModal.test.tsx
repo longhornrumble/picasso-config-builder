@@ -22,6 +22,28 @@ describe('CreateTenantModal', () => {
     expect(screen.getByLabelText(/knowledge base id/i)).toBeInTheDocument();
   });
 
+  it('generates a tenant_id from the org name (3-letter prefix + 6 digits)', async () => {
+    const user = userEvent.setup();
+    render(<CreateTenantModal open={true} onClose={vi.fn()} />);
+
+    await user.type(screen.getByLabelText(/organization name/i), 'MyRecruiter');
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+
+    const tenantIdInput = screen.getByLabelText(/tenant id/i) as HTMLInputElement;
+    expect(tenantIdInput.value).toMatch(/^MYR\d{6}$/);
+  });
+
+  it('generates a valid tenant_id even when the org name is empty', async () => {
+    const user = userEvent.setup();
+    render(<CreateTenantModal open={true} onClose={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+
+    const tenantIdInput = screen.getByLabelText(/tenant id/i) as HTMLInputElement;
+    // Falls back to random uppercase letters; still 3 letters + 6 digits.
+    expect(tenantIdInput.value).toMatch(/^[A-Z]{3}\d{6}$/);
+  });
+
   it('validates tenant_id format', async () => {
     const user = userEvent.setup();
     render(<CreateTenantModal open={true} onClose={vi.fn()} />);
