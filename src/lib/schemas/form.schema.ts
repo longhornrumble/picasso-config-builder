@@ -3,6 +3,7 @@
  */
 
 import { z } from 'zod';
+import { FORM_FIELD_TYPES } from '@/types/config';
 
 // ============================================================================
 // FORM FIELD SCHEMAS
@@ -30,7 +31,7 @@ export const formFieldSchema = z.object({
     .string()
     .min(1, 'Field ID is required')
     .regex(/^[a-z][a-z0-9_]*$/, 'Field ID must start with a letter and contain only lowercase letters, numbers, and underscores'),
-  type: z.enum(['text', 'email', 'phone', 'select', 'textarea', 'number', 'date', 'name', 'address'], {
+  type: z.enum(FORM_FIELD_TYPES, {
     errorMap: () => ({ message: 'Invalid field type' }),
   }),
   label: z.string().min(1, 'Field label is required').max(100, 'Field label must be 100 characters or less'),

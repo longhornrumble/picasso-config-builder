@@ -3,7 +3,8 @@
  * Validates conversational form definitions
  */
 
-import type { ConversationalForm, Program, FormField } from '@/types/config';
+import type { ConversationalForm, Program, FormField, FormFieldType } from '@/types/config';
+import { FORM_FIELD_TYPES } from '@/types/config';
 import type { ValidationResult, ValidationError, ValidationWarning } from './types';
 import { messages, createError, createWarning } from './validationMessages';
 
@@ -204,6 +205,23 @@ function validateField(
   formId: string,
   errors: ValidationError[]
 ): void {
+  // Field type must be one the builder and widget support. Externally-authored
+  // configs (e.g. seeders) have shipped types like 'boolean' that the widget
+  // cannot render — surface that as an error, not a silent pass.
+  if (!FORM_FIELD_TYPES.includes(field.type as FormFieldType)) {
+    errors.push(
+      createError(
+        `Field "${field.id}" has unsupported type "${field.type}"`,
+        'form',
+        {
+          field: `fields[${index}].type`,
+          entityId: formId,
+          suggestedFix: `Change the field type to one of: ${FORM_FIELD_TYPES.join(', ')}. Unsupported types cannot render in the chat widget.`,
+        }
+      )
+    );
+  }
+
   // Select fields must have options
   if (field.type === 'select' && (!field.options || field.options.length === 0)) {
     errors.push(

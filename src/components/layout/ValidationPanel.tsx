@@ -51,6 +51,13 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
   const lastValidated = useConfigStore((state) => state.validation.lastValidated);
   const validateAll = useConfigStore((state) => state.validation.validateAll);
 
+  // Entity dictionaries — used to group issues under the entity type they
+  // actually belong to (Programs/Forms/CTAs/Branches) instead of "Global"
+  const programEntities = useConfigStore((state) => state.programs.programs);
+  const formEntities = useConfigStore((state) => state.forms.forms);
+  const ctaEntities = useConfigStore((state) => state.ctas.ctas);
+  const branchEntities = useConfigStore((state) => state.branches.branches);
+
   // State for re-validate button
   const [isValidating, setIsValidating] = useState(false);
 
@@ -118,13 +125,20 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
 
     // Helper to determine group from entityId
     const getGroupFromEntityId = (entityId: string): string => {
-      // For now, use simple heuristics based on ID patterns
-      // In production, you'd look up the actual entity in the store
       if (entityId === 'global') return 'global';
 
-      // Check if entity exists in each slice
-      // This is a simplified version - ideally we'd access the store here
-      return 'global'; // default
+      // Relationship-validation ids carry a type prefix (e.g. "form-donation_inquiry")
+      if (entityId.startsWith('program-')) return 'programs';
+      if (entityId.startsWith('form-')) return 'forms';
+      if (entityId.startsWith('cta-')) return 'ctas';
+      if (entityId.startsWith('branch-')) return 'branches';
+
+      // Entity-validation ids are the bare dictionary keys — look them up
+      if (entityId in programEntities) return 'programs';
+      if (entityId in formEntities) return 'forms';
+      if (entityId in ctaEntities) return 'ctas';
+      if (entityId in branchEntities) return 'branches';
+      return 'global';
     };
 
     // Process errors
@@ -166,7 +180,7 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
     });
 
     return groups;
-  }, [errors, warnings]);
+  }, [errors, warnings, programEntities, formEntities, ctaEntities, branchEntities]);
 
   // Calculate total counts
   const totalErrors = useMemo(() => {
