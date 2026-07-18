@@ -215,13 +215,22 @@ export async function checkAPIHealth(): Promise<boolean> {
 /**
  * Increment semantic version number
  * Examples: "1.0" -> "1.1", "1.9" -> "1.10", "2.5.3" -> "2.5.4"
+ *
+ * Schema discipline: stored configs may carry a numeric or missing version
+ * (externally-authored configs — BRI071351 shipped `version: 1`, and calling
+ * .split on a number crashed every save/deploy with "e.split is not a
+ * function"). Coerce to string and fall back to "1.0" when unparseable.
  */
-function incrementVersion(version: string): string {
-  const parts = version.split('.');
+function incrementVersion(version: unknown): string {
+  const parts = String(version ?? '1.0').split('.');
 
   // Increment the last part
   const lastIndex = parts.length - 1;
-  parts[lastIndex] = String(parseInt(parts[lastIndex], 10) + 1);
+  const last = parseInt(parts[lastIndex], 10);
+  if (Number.isNaN(last)) {
+    return '1.0';
+  }
+  parts[lastIndex] = String(last + 1);
 
   return parts.join('.');
 }
