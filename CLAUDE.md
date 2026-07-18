@@ -550,6 +550,32 @@ the picasso repo: `staging` is a protected long-lived integration branch
   `picasso-config-builder-prod` / `config.myrecruiter.ai`. Push to `main` runs
   quality gates + build only.
 
+### Branch Routing & Drift Discipline
+
+Mirrors the picasso repo's conventions (full rationale in the root `CLAUDE.md`):
+
+- **Routing:** code/CI PRs base on `staging` (soak), then a promote-PR
+  `staging → main` for prod. Self-contained docs may go straight to `main` —
+  routing pure docs through `staging` just accumulates drift with no prod gate
+  to trigger promotion.
+- **Drift hard-cap:** `origin/staging` ↔ `origin/main` divergence must not
+  exceed **5 merge commits in either direction**. Verify:
+
+  ```bash
+  echo "staging → main: $(git rev-list --count --merges origin/main..origin/staging)"
+  echo "main → staging: $(git rev-list --count --merges origin/staging..origin/main)"
+  ```
+
+  If either exceeds 5, open a promote-PR (`base=main head=staging`) and, if
+  reverse drift also exceeds 5, a back-sync PR (`base=staging head=main`).
+- **Merge strategy:** promote-PRs and back-sync PRs (`staging ↔ main`) MUST use
+  **"Create a merge commit"** — never squash or rebase. Squash collapses the
+  two-parent link and breaks the `--merges` drift metric. Feature → `staging`
+  PRs may squash as usual.
+- **Promote scope:** scoped promote-PRs per decision gate, not multi-milestone
+  bundles; cherry-pick the relevant commits onto a branch from `main` rather
+  than merging `staging` wholesale.
+
 ### Lambda Deployment
 
 The backend Lambda deploys via CI from the **lambda repo** (`Lambdas/lambda/Picasso_Config_Manager` — this repo carries no Lambda code; NOT manual `update-function-code`):
