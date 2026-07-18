@@ -151,6 +151,13 @@ jobs:
     name: Prod Config Schema Validation (promote gate)
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # Scopes the OIDC token subject to `repo:...:environment:config-promotion`
+    # (not a bare branch ref), which is what the prod-614 picasso-config-ci-
+    # readonly role trusts. Without this the dispatch token is
+    # `...:ref:refs/heads/main` and AssumeRoleWithWebIdentity is denied. The
+    # environment carries NO required reviewers (the human gate lives on the
+    # separate approve-production job), so this does not pause the run.
+    environment: config-promotion
     permissions:
       id-token: write     # OIDC into the prod-614 read-only config role
       contents: read
