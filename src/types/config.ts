@@ -25,16 +25,25 @@ export interface Program {
 // FORMS
 // ============================================================================
 
-export type FormFieldType =
-  | 'text'
-  | 'email'
-  | 'phone'
-  | 'select'
-  | 'textarea'
-  | 'number'
-  | 'date'
-  | 'name'      // Composite: first/middle/last name fields
-  | 'address';  // Composite: street/city/state/zip fields
+/**
+ * Single source of truth for supported form field types.
+ * Used by the Zod save-schema AND the validation engine so the editor and the
+ * validation panel can never disagree about what a valid field is.
+ * Widget renderers (Picasso FormFieldPrompt.jsx) support exactly this set.
+ */
+export const FORM_FIELD_TYPES = [
+  'text',
+  'email',
+  'phone',
+  'select',
+  'textarea',
+  'number',
+  'date',
+  'name',      // Composite: first/middle/last name fields
+  'address',   // Composite: street/city/state/zip fields
+] as const;
+
+export type FormFieldType = (typeof FORM_FIELD_TYPES)[number];
 
 export interface FormFieldOption {
   value: string;
