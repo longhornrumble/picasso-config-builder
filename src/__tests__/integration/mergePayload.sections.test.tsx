@@ -157,6 +157,47 @@ describe('merge payload contract (getMergedConfig vs shared section contract)', 
     }
   });
 
+  it('NEVER-CLEAR fix: a cleared model_id ("") is still emitted so the server persists the clear', async () => {
+    const { result } = renderHook(() => useConfigStore());
+    const mockS3 = createMockS3API();
+
+    const testConfig = createTestTenantConfig('CLEAR_TENANT') as TenantConfig &
+      Record<string, unknown>;
+    testConfig.model_id = 'claude-x'; // stored override the user is about to clear
+
+    mockS3._setMockConfig('CLEAR_TENANT', testConfig);
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
+      mockS3.loadConfig(tenantId)
+    );
+
+    await act(async () => {
+      await result.current.config.loadConfig('CLEAR_TENANT');
+    });
+
+    // User clears the model override in AI & AWS settings.
+    act(() => {
+      useConfigStore.setState((state) => {
+        if (state.config.baseConfig) {
+          (state.config.baseConfig as Record<string, unknown>).model_id = '';
+        }
+      });
+    });
+
+    const merged = result.current.config.getMergedConfig() as Record<string, unknown>;
+    // Truthy-emit dropped the key here, making clears silently no-op server-side.
+    expect(Object.prototype.hasOwnProperty.call(merged, 'model_id')).toBe(true);
+    expect(merged.model_id).toBe('');
+
+    // And a tenant that never had model_id still omits the key (absence = preserve).
+    const bare = createTestTenantConfig('NO_MODEL_TENANT') as TenantConfig & Record<string, unknown>;
+    mockS3._setMockConfig('NO_MODEL_TENANT', bare);
+    await act(async () => {
+      await result.current.config.loadConfig('NO_MODEL_TENANT');
+    });
+    const merged2 = result.current.config.getMergedConfig() as Record<string, unknown>;
+    expect(Object.prototype.hasOwnProperty.call(merged2, 'model_id')).toBe(false);
+  });
+
   it('FORWARD-COMPAT: an old-shape config without messenger_behavior round-trips without emitting the key (Schema Discipline)', async () => {
     const { result } = renderHook(() => useConfigStore());
     const mockS3 = createMockS3API();

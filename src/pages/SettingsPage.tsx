@@ -315,7 +315,7 @@ export const SettingsPage: React.FC = () => {
             open={showDeleteModal}
             onClose={() => setShowDeleteModal(false)}
             tenantId={tenantId || ''}
-            tenantName={baseConfig?.org_name || baseConfig?.chat_title}
+            tenantName={baseConfig?.chat_title}
             onDeleted={handleTenantDeleted}
           />
         </>

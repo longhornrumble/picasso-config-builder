@@ -446,9 +446,9 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       welcome_message: state.config.baseConfig.welcome_message,
       version: state.config.baseConfig.version,
       generated_at: Date.now(),
-      // Optional core identity fields
-      ...(state.config.baseConfig.organization_name && { organization_name: state.config.baseConfig.organization_name }),
-      ...(state.config.baseConfig.chat_subtitle && { chat_subtitle: state.config.baseConfig.chat_subtitle }),
+      // organization_name / chat_subtitle retired 2026-07-19 — no consumer anywhere
+      // (widget wordmark, bot sender label, and email/SMS org templates all
+      // resolve from chat_title). Stored values persist server-side untouched.
 
       // Domain slices from their respective stores
       programs: state.programs.programs,
@@ -464,7 +464,11 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
 
       // Optional fields - only include if they exist
       ...(state.config.baseConfig.callout_text && { callout_text: state.config.baseConfig.callout_text }),
-      ...(state.config.baseConfig.model_id && { model_id: state.config.baseConfig.model_id }),
+      // Presence-based (not truthy) emit so CLEARING the model override persists:
+      // '' reaches the server, and every runtime reader treats '' as unset
+      // (model_id || aws.model_id || default). Truthy-emit made clears silently
+      // no-op — the never-clear defect from the 2026-07-19 settings wire-trace.
+      ...(state.config.baseConfig.model_id !== undefined && { model_id: state.config.baseConfig.model_id }),
       ...(state.config.baseConfig.quick_help && { quick_help: state.config.baseConfig.quick_help }),
       ...(state.config.baseConfig.action_chips && { action_chips: state.config.baseConfig.action_chips }),
       ...(state.config.baseConfig.widget_behavior && { widget_behavior: state.config.baseConfig.widget_behavior }),
