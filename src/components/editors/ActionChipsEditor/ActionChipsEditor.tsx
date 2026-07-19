@@ -85,6 +85,11 @@ export const ActionChipsEditor: React.FC = () => {
           default_chips: {},
         };
       }
+      // Sparse externally-authored shape: action_chips present but no
+      // default_chips (Schema Discipline — readers tolerate missing fields).
+      if (!state.config.baseConfig.action_chips.default_chips) {
+        state.config.baseConfig.action_chips.default_chips = {};
+      }
 
       // Migrate legacy array format to dictionary in the store before adding new chip
       const currentChips = state.config.baseConfig.action_chips.default_chips;
