@@ -18,7 +18,6 @@ import {
   BranchesPage,
   ActionChipsPage,
   CardsPage,
-  PendingChangesPage,
   SettingsPage,
   NotFoundPage,
 } from './pages';
@@ -67,7 +66,7 @@ const App: React.FC = () => {
   const { state: tokenState } = useSignInToken();
 
   // Preserve the intended destination across Clerk sign-in so deep links like
-  // /pending-changes?h=HASH&proposal=... survive the auth round-trip.
+  // /settings?h=HASH survive the auth round-trip.
   //
   // Clerk defaults post-sign-in navigation to `/` (or ClerkProvider's afterSignInUrl)
   // unless the SignIn component is given an explicit `forceRedirectUrl`. Reading from
@@ -168,7 +167,6 @@ function renderApp() {
             <Route path="cards" element={<CardsPage />} />
 
             {/* KB-freshness review (read-only in Phase 2) */}
-            <Route path="pending-changes" element={<PendingChangesPage />} />
 
             {/* Settings section */}
             <Route path="settings" element={<SettingsPage />} />

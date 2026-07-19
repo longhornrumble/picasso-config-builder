@@ -81,23 +81,6 @@ export type {
   OperationState,
 } from './api';
 
-// Proposal types (KB-freshness review)
-export type {
-  Proposal,
-  ProposalItem,
-  ProposalItemType,
-  ProposalSeverity,
-  ProposalStatus,
-  ProposalSummary,
-  ProposalOperation,
-  KbAppendOp,
-  KbReplaceOp,
-  KbRemoveOp,
-  ConfigAddOp,
-  ConfigDeleteOp,
-  ConfigAppendToArrayOp,
-  DubUpsertOp,
-} from './proposals';
 
 // UI types
 export type {
