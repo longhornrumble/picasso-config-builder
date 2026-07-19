@@ -418,18 +418,15 @@ export interface FeaturesConfig {
   uploads: boolean;
   photo_uploads: boolean;
   voice_input: boolean;
-  streaming: boolean;
-  conversational_forms: boolean;
-  smart_cards: boolean;
+  /**
+   * Paid per-tenant add-on entitlement (Telnyx registration carries a monthly
+   * cost). Operator-set; product-side subscribe/upsell wiring is planned.
+   */
   sms?: boolean;
-  webchat?: boolean;
-  qr?: boolean;
-  bedrock_kb?: boolean;
-  ats?: boolean;
-  interview_scheduling?: boolean;
   dashboard_conversations?: boolean;
   dashboard_forms?: boolean;
   dashboard_attribution?: boolean;
+  dashboard_notifications?: boolean;
   callout: CalloutConfig;
 }
 
