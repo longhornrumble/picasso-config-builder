@@ -73,7 +73,6 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
       org_name: '',
       tenant_id: '',
       chat_title: '',
-      chat_subtitle: '',
       subscription_tier: 'Standard',
       primary_color: '#10B981',
       welcome_message: '',
@@ -112,7 +111,6 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
         org_name: data.org_name,
         tenant_id: data.tenant_id,
         chat_title: data.chat_title || undefined,
-        chat_subtitle: data.chat_subtitle || undefined,
         subscription_tier: data.subscription_tier,
         primary_color: data.primary_color,
         welcome_message: data.welcome_message || undefined,
@@ -212,14 +210,6 @@ export const CreateTenantModal: React.FC<CreateTenantModalProps> = ({ open, onCl
               helperText="Display name for the chat widget"
               error={errors.chat_title?.message}
               {...register('chat_title')}
-            />
-
-            <Input
-              label="Chat Subtitle"
-              placeholder="How can we help you today?"
-              helperText="Subtitle shown below the title in the chat header"
-              error={errors.chat_subtitle?.message}
-              {...register('chat_subtitle')}
             />
 
             <Select

@@ -671,10 +671,7 @@ export interface TenantConfig {
   active?: boolean;
   subscription_tier: SubscriptionTier;
   tenant_type?: string;
-  org_name?: string;
-  organization_name?: string;
   chat_title: string;
-  chat_subtitle?: string;
   tone_prompt: string;
   welcome_message: string;
   callout_text?: string;

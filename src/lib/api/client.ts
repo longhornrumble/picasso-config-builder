@@ -415,7 +415,6 @@ export class ConfigAPIClient {
     org_name: string;
     tenant_id: string;
     chat_title?: string;
-    chat_subtitle?: string;
     subscription_tier?: string;
     primary_color?: string;
     welcome_message?: string;
