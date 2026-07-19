@@ -105,10 +105,6 @@ export const awsConfigSchema = z.object({
     .min(10, 'Knowledge base ID must be at least 10 characters')
     .max(20, 'Knowledge base ID must be at most 20 characters')
     .regex(/^[A-Z0-9]+$/, 'Knowledge base ID must contain only uppercase letters and numbers'),
-  aws_region: z
-    .string()
-    .min(1, 'AWS region is required')
-    .regex(/^[a-z]{2}-[a-z]+-\d$/, 'Must be a valid AWS region (e.g., us-east-1)'),
 });
 
 // ============================================================================

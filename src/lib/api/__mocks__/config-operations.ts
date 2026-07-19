@@ -31,7 +31,6 @@ export const mockTenantConfig: TenantConfig = {
   },
   aws: {
     knowledge_base_id: 'ABCD123456',
-    aws_region: 'us-east-1',
   },
   conversational_forms: {},
   cta_definitions: {},
