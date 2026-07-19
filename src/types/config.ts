@@ -552,7 +552,6 @@ export interface BedrockInstructions {
 
 export interface AWSConfig {
   knowledge_base_id: string;
-  aws_region: string;
 }
 
 // ============================================================================
