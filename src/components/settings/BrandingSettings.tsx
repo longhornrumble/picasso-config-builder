@@ -1,31 +1,43 @@
 /**
  * BrandingSettings Component
- * Visual branding and styling configuration
+ * Hairline brand configuration — the tenant-variable inputs, nothing else.
+ *
+ * Hairline (the widget's baked design) takes exactly two brand inputs per
+ * tenant: primary_color and font_family. Everything else colored is either a
+ * fixed design constant (surface, the ink text scale) or DERIVED from
+ * primary_color at runtime by the widget's tenantTheme() engine — accent
+ * (saturation-capped), accent-deep (auto-darkened to WCAG AA), tints (bubble
+ * fills), and the hairline border ramp. Per-field color pickers would sit
+ * outside that ramp and could break the contrast guarantee the math provides,
+ * so this tab deliberately does not offer them (Chris ruling, 2026-07-19).
+ * Legacy branding fields on existing tenants live in the config file directly.
+ *
+ * secondary_color is accepted by the engine but dormant (decision D10) — it
+ * gets a UI here if/when the derivation consumes it.
  */
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Input } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Select } from '@/components/ui';
 import { useConfigStore } from '@/store';
 import type { BrandingConfig } from '@/types/config';
 
 /**
- * Branding Settings Component
- *
- * Manages visual branding configuration:
- * - Color scheme (primary, secondary, accent, etc.)
- * - Typography (font family, base size)
- * - Layout (border radius, chat position)
- * - Asset URLs (logo, avatar, company logo)
- *
- * @example
- * ```tsx
- * <BrandingSettings />
- * ```
+ * The widget's self-hosted font menu. Source of truth: Picasso/src/theme/
+ * tenantTheme.js FONT_STACKS + Picasso/src/styles/fonts.css (which documents
+ * the add-a-font recipe: drop woff2 files in public/fonts/<name>/, add
+ * @font-face blocks, add a FONT_STACKS entry). Grow this list in lockstep
+ * when a client font is added to the widget.
  */
+const FONT_OPTIONS = [
+  { value: 'plus-jakarta-sans', label: 'Plus Jakarta Sans (default)' },
+  { value: 'inter', label: 'Inter' },
+  { value: 'lato', label: 'Lato' },
+  { value: 'arial', label: 'Arial (system)' },
+];
+
 export const BrandingSettings: React.FC = () => {
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
 
-  // Update branding field
   const updateBranding = (field: string, value: unknown) => {
     useConfigStore.setState((state) => {
       if (state.config.baseConfig) {
@@ -40,159 +52,64 @@ export const BrandingSettings: React.FC = () => {
 
   const branding: Partial<BrandingConfig> = baseConfig?.branding || {};
 
+  // A stored legacy free-text value ("Inter, sans-serif") matches no font key
+  // and renders as the default in the Hairline widget. Show it unselected so
+  // re-saving picks a real key.
+  const fontValue = FONT_OPTIONS.some((o) => o.value === branding.font_family)
+    ? (branding.font_family as string)
+    : '';
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Branding & Styling</CardTitle>
+        <CardTitle>Brand</CardTitle>
         <CardDescription>
-          Customize colors, typography, and visual assets
+          The two tenant-variable inputs of the Hairline design. Every other
+          color — bubbles, borders, labels — is derived from the brand color
+          automatically, with text contrast guaranteed by the widget.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Primary Colors */}
+        {/* Brand Color */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Primary Colors</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Primary Color
-              </label>
-              <input
-                type="color"
-                value={branding.primary_color || '#10b981'}
-                onChange={(e) => updateBranding('primary_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Background Color
-              </label>
-              <input
-                type="color"
-                value={branding.background_color || '#ffffff'}
-                onChange={(e) => updateBranding('background_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Header Colors */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Header</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Header Text Color
-              </label>
-              <input
-                type="color"
-                value={branding.header_text_color || '#ffffff'}
-                onChange={(e) => updateBranding('header_text_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Header Subtitle Color
-              </label>
-              <input
-                type="color"
-                value={branding.header_subtitle_color || '#d1fae5'}
-                onChange={(e) => updateBranding('header_subtitle_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Chat Bubble Colors */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Chat Bubbles</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                User Bubble Color
-              </label>
-              <input
-                type="color"
-                value={branding.user_bubble_color || '#10b981'}
-                onChange={(e) => updateBranding('user_bubble_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Bot Bubble Color
-              </label>
-              <input
-                type="color"
-                value={branding.bot_bubble_color || '#f3f4f6'}
-                onChange={(e) => updateBranding('bot_bubble_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Typography */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Typography</h3>
-          <Input
-            label="Font Family"
-            value={branding.font_family || 'system-ui, -apple-system, sans-serif'}
-            onChange={(e) => updateBranding('font_family', e.target.value)}
-            placeholder="e.g., Inter, sans-serif"
-            helperText="CSS font-family value"
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Brand Color
+          </label>
+          <input
+            type="color"
+            value={branding.primary_color || '#a08a4a'}
+            onChange={(e) => updateBranding('primary_color', e.target.value)}
+            className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
           />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            The client&apos;s primary brand color. The widget derives its full
+            palette from this one value: accent tones, bubble tints, and the
+            hairline borders. Dark accents are auto-adjusted to meet WCAG AA
+            contrast.
+          </p>
         </div>
+
+        {/* Font Family */}
+        <Select
+          label="Font Family"
+          value={fontValue}
+          onValueChange={(value) => updateBranding('font_family', value)}
+          options={FONT_OPTIONS}
+          placeholder="Select a font"
+          helperText="Fonts are self-hosted by the widget. A client font not listed here is a small widget change (see fonts.css) — add it there first. Legacy free-text values render as Plus Jakarta Sans until re-saved."
+        />
 
         {/* Layout */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Layout</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Chat Position
-              </label>
-              <select
-                value={branding.chat_position || 'bottom-right'}
-                onChange={(e) => updateBranding('chat_position', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                <option value="bottom-right">Bottom Right</option>
-                <option value="bottom-left">Bottom Left</option>
-              </select>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Widget position on the page
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Asset URLs */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Asset URLs</h3>
-          <div className="space-y-4">
-            <Input
-              label="Logo URL"
-              type="url"
-              value={branding.logo_url || ''}
-              onChange={(e) => updateBranding('logo_url', e.target.value)}
-              placeholder="https://example.com/logo.png"
-              helperText="URL to logo image shown in header"
-            />
-            <Input
-              label="Avatar URL"
-              type="url"
-              value={branding.avatar_url || ''}
-              onChange={(e) => updateBranding('avatar_url', e.target.value)}
-              placeholder="https://example.com/avatar.png"
-              helperText="URL to bot avatar image"
-            />
-          </div>
-        </div>
+        <Select
+          label="Chat Position"
+          value={branding.chat_position || 'bottom-right'}
+          onValueChange={(value) => updateBranding('chat_position', value)}
+          options={[
+            { value: 'bottom-right', label: 'Bottom Right' },
+            { value: 'bottom-left', label: 'Bottom Left' },
+          ]}
+          helperText="Widget placement on the page. Note: the current Hairline shell pins the panel bottom-right (W6.1); honoring this field again is a pending widget-host change."
+        />
       </CardContent>
     </Card>
   );

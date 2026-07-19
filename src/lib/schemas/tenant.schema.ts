@@ -19,11 +19,9 @@ const hexColorSchema = z
 
 export const brandingConfigSchema = z.object({
   primary_color: hexColorSchema,
-  header_text_color: hexColorSchema.optional(),
-  widget_icon_color: hexColorSchema.optional(),
+  secondary_color: hexColorSchema.optional(),
   font_family: z.string().min(1, 'Font family is required'),
-  logo_url: z.string().url('Must be a valid URL').optional(),
-  avatar_url: z.string().url('Must be a valid URL').optional(),
+  chat_position: z.enum(['bottom-right', 'bottom-left']).optional(),
 });
 
 // ============================================================================
