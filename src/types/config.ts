@@ -381,25 +381,25 @@ export interface ContentShowcase {
 // BRANDING
 // ============================================================================
 
+/**
+ * Hairline brand inputs. The widget derives its entire palette from
+ * primary_color (tenantTheme() ramp); font_family is a kebab-case key into
+ * the widget's self-hosted font menu. Legacy per-field colors (bubbles,
+ * header, logo/avatar, chat_position, …) are no longer typed here — stored
+ * values round-trip untouched (the whole branding object is loaded raw and
+ * saved back), and are edited directly in the config file when needed.
+ */
 export interface BrandingConfig {
-  // Primary colors
   primary_color: string;
-  background_color?: string;
-  // Header
-  header_text_color?: string;
-  header_subtitle_color?: string;
-  // Chat bubbles
-  user_bubble_color?: string;
-  bot_bubble_color?: string;
-  // Widget
-  widget_icon_color?: string;
-  // Typography
+  /** Accepted by the Hairline engine but dormant (decision D10) — no UI yet. */
+  secondary_color?: string;
   font_family: string;
-  // Layout
+  /**
+   * Widget placement (per-client knob, kept per Chris 2026-07-19). The
+   * Hairline shell currently pins bottom-right (W6.1); honoring this again
+   * is a pending widget-host change.
+   */
   chat_position?: 'bottom-right' | 'bottom-left';
-  // Asset URLs
-  logo_url?: string;
-  avatar_url?: string;
 }
 
 // ============================================================================
