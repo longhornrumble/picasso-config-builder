@@ -41,11 +41,10 @@ function applyLastUpdater(initial: Record<string, unknown>) {
 }
 
 describe('MessengerSettings', () => {
-  it('renders the enable toggle, escalation field, and readiness section', () => {
+  it('renders the enable toggle and escalation field', () => {
     render(<MessengerSettings />);
     expect(screen.getByRole('checkbox', { name: /Enable the Messenger channel/ })).toBeInTheDocument();
     expect(screen.getByLabelText(/Escalation recipient email/)).toBeInTheDocument();
-    expect(screen.getByText('Readiness')).toBeInTheDocument();
   });
 
   it('toggling enable writes the exact key feature_flags.MESSENGER_CHANNEL', async () => {
@@ -82,39 +81,12 @@ describe('MessengerSettings', () => {
     expect(mb?.strings?.disclosure_line).toBe('a');
   });
 
-  it('readiness reflects config-authoritative state (flag off + no recipient = both incomplete)', () => {
-    mockBaseConfig = {};
-    render(<MessengerSettings />);
-    // Neither the enable checkbox nor a recipient is set → the two config-owned
-    // readiness rows read "not done".
-    expect(screen.getByText(/Turn on the Messenger channel above/)).toBeInTheDocument();
-    expect(screen.getByText(/Set an escalation recipient above/)).toBeInTheDocument();
-  });
-
-  it('readiness reflects a fully-configured tenant (flag on + recipient set = both done)', () => {
+  it('retired Readiness section stays gone (display-only checklist removed 2026-07-19)', () => {
     mockBaseConfig = {
       feature_flags: { MESSENGER_CHANNEL: true },
       messenger_behavior: { escalation_email: 'staff@example.org' },
     };
     render(<MessengerSettings />);
-    expect(screen.getByText(/MESSENGER_CHANNEL is on\./)).toBeInTheDocument();
-    expect(screen.getByText(/Notifications go to staff@example\.org/)).toBeInTheDocument();
-  });
-
-  it('connection readiness reads the S3 channels mirror (display-only, D1-compliant) — not connected when absent', () => {
-    mockBaseConfig = { feature_flags: { MESSENGER_CHANNEL: true } };
-    render(<MessengerSettings />);
-    expect(screen.getByText(/No page connected yet/)).toBeInTheDocument();
-    // Connection is still managed elsewhere — this page never mutates it.
-    expect(screen.getByText(/Connection is managed in the admin portal/)).toBeInTheDocument();
-  });
-
-  it('connection readiness reflects a connected page from the channels.messenger mirror', () => {
-    mockBaseConfig = {
-      feature_flags: { MESSENGER_CHANNEL: true },
-      channels: { messenger: { page_id: '1', page_name: 'Acme Page', enabled: true, connected_at: '2026-07-13', connected_by: 'x' } },
-    };
-    render(<MessengerSettings />);
-    expect(screen.getByText(/Connected: Acme Page\. Manage the connection in the admin portal\./)).toBeInTheDocument();
+    expect(screen.queryByText('Readiness')).not.toBeInTheDocument();
   });
 });
