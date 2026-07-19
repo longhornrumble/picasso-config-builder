@@ -24,9 +24,6 @@ export const mockTenantConfig: TenantConfig = {
     uploads: false,
     photo_uploads: false,
     voice_input: false,
-    streaming: true,
-    conversational_forms: true,
-    smart_cards: true,
     callout: {
       enabled: true,
       auto_dismiss: false,

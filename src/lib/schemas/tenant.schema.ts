@@ -38,9 +38,7 @@ export const featuresConfigSchema = z.object({
   uploads: z.boolean(),
   photo_uploads: z.boolean(),
   voice_input: z.boolean(),
-  streaming: z.boolean(),
-  conversational_forms: z.boolean().optional(),
-  smart_cards: z.boolean().optional(),
+  sms: z.boolean().optional(),
   callout: calloutConfigSchema,
 });
 
@@ -254,32 +252,6 @@ export const tenantConfigSchema = z.object({
   messenger_behavior: messengerBehaviorSchema.optional(),
 
 }).superRefine((data, ctx) => {
-  // Validate feature dependencies
-  if (data.features.conversational_forms && Object.keys(data.conversational_forms).length === 0) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['features', 'conversational_forms'],
-      message: 'Conversational forms feature is enabled but no forms are defined',
-    });
-  }
-
-  if (data.features.smart_cards) {
-    if (Object.keys(data.cta_definitions).length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['features', 'smart_cards'],
-        message: 'Smart cards feature is enabled but no CTAs are defined',
-      });
-    }
-    if (Object.keys(data.conversation_branches).length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['features', 'smart_cards'],
-        message: 'Smart cards feature is enabled but no conversation branches are defined',
-      });
-    }
-  }
-
   // Validate that all form programs reference existing programs (if programs are defined).
   // A form.program is valid if it matches EITHER the programs object key OR a
   // program's .program_id field. This matches FormCardContent.tsx:18 (the canonical
