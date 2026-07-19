@@ -31,7 +31,11 @@ export const brandingConfigSchema = z.object({
 export const calloutConfigSchema = z.object({
   enabled: z.boolean(),
   text: z.string().max(200, 'Callout text must be 200 characters or less').optional(),
+  /** Delay before showing the callout, ms. Widget defaults to 1000 when unset. */
+  delay: z.number().int('Must be a whole number of milliseconds').min(0, 'Delay cannot be negative').optional(),
   auto_dismiss: z.boolean(),
+  /** Auto-dismiss timeout, ms. Widget defaults to 30000 when unset. */
+  dismiss_timeout: z.number().int('Must be a whole number of milliseconds').min(0, 'Timeout cannot be negative').optional(),
 });
 
 export const featuresConfigSchema = z.object({
