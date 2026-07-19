@@ -11,7 +11,6 @@ import type {
   TenantListItem,
   LoadConfigResponse,
   SaveConfigResponse,
-  TenantMetadata,
 } from '@/types/api';
 import type { Proposal } from '@/types/proposals';
 
@@ -93,35 +92,6 @@ export class ConfigAPIClient {
     });
   }
 
-  /**
-   * Get metadata for a specific tenant
-   */
-  async getTenantMetadata(tenantId: string): Promise<TenantMetadata> {
-    if (!tenantId || tenantId.trim() === '') {
-      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
-    }
-
-    return fetchWithRetry(async () => {
-      const response = await fetch(`${this.baseUrl}/config/${tenantId}/metadata`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(await this.getAuthHeaders()),
-        },
-      });
-
-      if (response.status === 401) {
-        this.handle401Response();
-        throw await parseHTTPError(response);
-      }
-
-      if (!response.ok) {
-        throw await parseHTTPError(response);
-      }
-
-      return response.json();
-    });
-  }
 
   /**
    * Load configuration for a specific tenant
@@ -521,19 +491,6 @@ export class ConfigAPIClient {
     });
   }
 
-  /**
-   * Health check endpoint
-   */
-  async healthCheck(): Promise<boolean> {
-    try {
-      const response = await fetch(`${this.baseUrl}/health`, {
-        method: 'GET',
-      });
-      return response.ok;
-    } catch {
-      return false;
-    }
-  }
 }
 
 // Export singleton instance

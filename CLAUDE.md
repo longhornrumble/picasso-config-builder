@@ -40,7 +40,7 @@ The Picasso Config Builder is a web-based internal operations tool for managing 
 - **Branch Editor**: Configure guided conversation paths with primary/secondary CTAs
 - **Program Management**: Manage programs and their relationships
 - **Content Showcase**: Create responsive content cards with rich media and CTAs
-- **Action Chips**: Define explicit routing for action chips with 3-tier hierarchy
+- **Action Chips**: Define welcome-screen quick-action chips (`action_chips.default_chips`)
 - **Visual Flow Diagram**: Interactive dashboard showing hierarchical relationships between all config entities with validation status indicators
 - **Validation**: Real-time validation with dependency checking and pre-deployment validation
 - **S3 Integration**: Direct deployment to tenant configuration storage with backup/rollback
@@ -79,7 +79,7 @@ picasso-config-builder/
 │   │   ├── layout/           # Layout components (Header, Sidebar, etc.)
 │   │   ├── modals/           # Modal dialogs
 │   │   ├── ui/               # shadcn/ui components
-│   │   └── settings/         # Settings (FeaturesSettings includes V3.5 feature flags)
+│   │   └── settings/         # Settings tabs (branding, flags, quick help, messenger, …)
 │   ├── hooks/
 │   │   ├── useConfig.ts      # Main config hook
 │   │   ├── useAutoSave.ts    # Auto-save functionality
@@ -216,10 +216,9 @@ The Config Builder supports Picasso tenant config schema v1.4.1 (latest):
 - `conversation_branches`: Guided paths with primary/secondary CTAs, activated by `show_info` CTAs with `target_branch`
 - `conversational_forms`: Form definitions with fields and validation
 - `form_settings`: Global form behavior configuration
-- `feature_flags`: V3.5 AI behavior toggles (`DYNAMIC_ACTIONS`, `DYNAMIC_CHIPS`, `GUIDANCE_MODULES`) — managed in Features & Capabilities settings tab
-- `action_chips`: Explicit routing configuration with 3-tier hierarchy
+- `feature_flags`: Pipeline toggles (`V5_SINGLE_PASS`, `V4_ACTION_SELECTOR`, `scheduling_enabled`) — managed in the Feature Flags settings tab
+- `action_chips`: Welcome-screen quick-action chips (`default_chips` dictionary)
 - `content_showcase`: Content cards with rich media and CTAs
-- `card_inventory`: Extracted actions, requirements, programs (legacy)
 
 **Note:** `available_actions` is **deprecated** and no longer managed by the config builder. The AI vocabulary is now derived entirely from `cta_definitions` with `ai_available: true`. The Lambda streaming handler has a legacy fallback for tenants not yet migrated.
 
@@ -300,11 +299,10 @@ Forms support composite field types that group related fields:
 
 ### Action Chips Routing
 
-3-tier hierarchy for routing:
-
-1. **action_chips.explicit_routes**: Highest priority (exact match)
-2. **action_chips.smart_routing**: Medium priority (keyword/pattern match)
-3. **conversation_branches**: Lowest priority (fallback)
+A chip either routes to an explicit `target_branch` or sends its query through
+the normal conversation flow. (The former "3-tier hierarchy" —
+`explicit_routes` / `smart_routing` — was never implemented and was removed in
+the 2026-07 dead-field cleanup.)
 
 ### Content Showcase
 
@@ -515,7 +513,6 @@ aws s3 ls s3://myrecruiter-picasso/
 
 - **Picasso Widget** (`/Picasso`): Consumes configs from S3
 - **deploy_tenant_stack Lambda**: RETIRED (2026) — the config builder is now the sole tenant-creation path (canonical Lambda's `POST /config` skeleton)
-- **Bubble.io**: Handles notification/integration routing (separate from forms)
 
 ## Deployment
 

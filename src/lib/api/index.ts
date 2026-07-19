@@ -9,14 +9,10 @@ export { ConfigAPIClient, configApiClient } from './client';
 // Operations
 export {
   listTenants,
-  getTenantMetadata,
   loadConfig,
   saveConfig,
   deployConfig,
   deleteConfig,
-  checkAPIHealth,
-  isValidTenantId,
-  sanitizeTenantId,
 } from './config-operations';
 
 // Errors

@@ -69,10 +69,6 @@ export const messages = {
   runtime: {
     formNeedsProgram:
       'Form should have a program assigned for proper filtering after completion\n→ Fix: Assign this form to a program to enable program-specific filtering',
-    cardInventoryMismatch: (formProgram: string) =>
-      `Form references program "${formProgram}" which doesn't exist in card_inventory.program_cards\n→ Fix: Create a program card for this program or change the form's program reference`,
-    qualificationFirstNoRequirements:
-      'Card inventory uses qualification_first strategy but has no requirements defined\n→ Fix: Add requirements to the card inventory or change strategy to "programs_first"',
   },
 
   // General Messages

@@ -34,7 +34,6 @@ vi.mock('@/lib/api/config-operations', () => ({
   saveConfig: vi.fn(),
   deployConfig: vi.fn(),
   listTenants: vi.fn(),
-  getTenantMetadata: vi.fn(),
 }));
 
 describe('merge payload contract (getMergedConfig vs shared section contract)', () => {
@@ -103,7 +102,7 @@ describe('merge payload contract (getMergedConfig vs shared section contract)', 
       cta_settings: { max_ctas_per_response: 3 },
       feature_flags: { V5_SINGLE_PASS: true },
       quick_help: { items: [] },
-      action_chips: { explicit_routes: {} },
+      action_chips: { default_chips: [] },
       widget_behavior: { greeting_delay_ms: 0 },
       bedrock_instructions: {
         _version: '1',
@@ -117,6 +116,9 @@ describe('merge payload contract (getMergedConfig vs shared section contract)', 
         custom_constraints: [],
         fallback_message: 'x',
       },
+      // topic_definitions is cb_not_emitted (passthrough dropped in the dead-field
+      // cleanup) — present here to prove the merge path sheds it while the server
+      // preserves the stored value.
       topic_definitions: [{ id: 't1', label: 'T1' }],
       notification_settings: { enabled: true },
       messenger_behavior: { escalation_email: 'notify@myrecruiter.ai' },

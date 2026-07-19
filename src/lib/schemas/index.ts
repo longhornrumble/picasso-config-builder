@@ -52,11 +52,6 @@ export {
   widgetBehaviorConfigSchema,
   ctaSettingsSchema,
   awsConfigSchema,
-  primaryCTASchema,
-  requirementSchema,
-  programCardSchema,
-  readinessThresholdsSchema,
-  cardInventorySchema,
   messengerStringsSchema,
   messengerChannelOverrideSchema,
   messengerBehaviorSchema,
@@ -70,11 +65,6 @@ export {
   type WidgetBehaviorConfig,
   type CTASettings,
   type AWSConfig,
-  type PrimaryCTA,
-  type Requirement,
-  type ProgramCard,
-  type ReadinessThresholds,
-  type CardInventory,
   type TenantConfig,
 } from './tenant.schema';
 

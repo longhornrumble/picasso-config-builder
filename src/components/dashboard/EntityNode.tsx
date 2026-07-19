@@ -268,12 +268,9 @@ export const EntityNode = React.memo<EntityNodeProps>(
           const chipMeta = node.richMetadata as ActionChipMetadata;
           return (
             <div className="mt-2 space-y-1">
-              <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                {chipMeta.routingType === 'explicit_route' ? 'Explicit Route' : 'Smart Routing'}
-              </div>
               {chipMeta.routingTarget && (
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  → {chipMeta.routingTarget}
+                  Routes to → {chipMeta.routingTarget}
                 </div>
               )}
             </div>
