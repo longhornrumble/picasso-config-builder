@@ -44,8 +44,20 @@ export const BedrockInstructionsSettings: React.FC = () => {
   const baseConfig = useConfigStore((state) => state.config.baseConfig);
   const markDirty = useConfigStore((state) => state.config.markDirty);
 
-  // Get current Bedrock instructions with defaults
-  const bedrockInstructions: BedrockInstructions = baseConfig?.bedrock_instructions || DEFAULT_BEDROCK_INSTRUCTIONS;
+  // Get current Bedrock instructions with defaults. Merge per-field, not
+  // object-level: externally-authored configs (e.g. the BRI071351 persona
+  // pack) carry a sparse shape — formatting_preferences without
+  // max_emojis_per_response crashed this component on .toString().
+  // Readers must tolerate missing fields (Schema Discipline).
+  const stored = baseConfig?.bedrock_instructions;
+  const bedrockInstructions: BedrockInstructions = {
+    ...DEFAULT_BEDROCK_INSTRUCTIONS,
+    ...stored,
+    formatting_preferences: {
+      ...DEFAULT_BEDROCK_INSTRUCTIONS.formatting_preferences,
+      ...stored?.formatting_preferences,
+    },
+  };
 
   // Local state for custom constraints
   const [newConstraint, setNewConstraint] = useState('');
