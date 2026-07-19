@@ -165,7 +165,6 @@ export interface DeploymentSummary {
   forms: number;
   ctas: number;
   branches: number;
-  hasCardInventory: boolean;
   version: string;
   timestamp: number;
   validation: {

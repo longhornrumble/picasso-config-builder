@@ -84,17 +84,6 @@ export const BrandingSettings: React.FC = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Header Background
-              </label>
-              <input
-                type="color"
-                value={branding.header_background || '#10b981'}
-                onChange={(e) => updateBranding('header_background', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Header Text Color
               </label>
               <input
@@ -135,63 +124,12 @@ export const BrandingSettings: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                User Text Color
-              </label>
-              <input
-                type="color"
-                value={branding.user_text_color || '#ffffff'}
-                onChange={(e) => updateBranding('user_text_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Bot Bubble Color
               </label>
               <input
                 type="color"
                 value={branding.bot_bubble_color || '#f3f4f6'}
                 onChange={(e) => updateBranding('bot_bubble_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Bot Text Color
-              </label>
-              <input
-                type="color"
-                value={branding.bot_text_color || '#1f2937'}
-                onChange={(e) => updateBranding('bot_text_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Widget Colors */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Widget</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Widget Color
-              </label>
-              <input
-                type="color"
-                value={branding.widget_color || '#10b981'}
-                onChange={(e) => updateBranding('widget_color', e.target.value)}
-                className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Widget Text Color
-              </label>
-              <input
-                type="color"
-                value={branding.widget_text_color || '#ffffff'}
-                onChange={(e) => updateBranding('widget_text_color', e.target.value)}
                 className="w-full h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
               />
             </div>

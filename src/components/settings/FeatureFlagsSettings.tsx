@@ -16,7 +16,6 @@ interface FlagDefinition {
   key: keyof FeatureFlags;
   label: string;
   description: string;
-  legacy?: boolean;
 }
 
 const FLAG_DEFINITIONS: FlagDefinition[] = [
@@ -79,31 +78,24 @@ export const FeatureFlagsSettings: React.FC = () => {
         <CardTitle>Pipeline Feature Flags</CardTitle>
         <CardDescription>
           Control which pipeline behaviors are active for this tenant. V4.0 Action Selector
-          enables LLM-based CTA selection from the ai_available vocabulary. V3.5 legacy flags
-          control the older dynamic action and chip selection behaviors.
+          enables LLM-based CTA selection from the ai_available vocabulary; V5 Single-Pass
+          folds that selection into the response call itself.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-1">
-          {FLAG_DEFINITIONS.map(({ key, label, description, legacy }) => (
+          {FLAG_DEFINITIONS.map(({ key, label, description }) => (
             <div
               key={key}
               className="flex items-start justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0"
             >
               <div className="flex-1 pr-4">
-                <div className="flex items-center gap-2">
-                  <label
-                    htmlFor={`flag-${key}`}
-                    className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
-                  >
-                    {label}
-                  </label>
-                  {legacy && (
-                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                      V3.5 Legacy
-                    </span>
-                  )}
-                </div>
+                <label
+                  htmlFor={`flag-${key}`}
+                  className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
+                >
+                  {label}
+                </label>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   {description}
                 </p>

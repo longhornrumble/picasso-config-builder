@@ -79,9 +79,13 @@ describe('ctaDefinitionSchema — scheduling actions (A4)', () => {
   });
 });
 
-describe('ctaDefinitionSchema — selection_metadata (CF1)', () => {
-  it('round-trips a CTA with selection_metadata.topic_tags and role_axis populated', () => {
-    const input = {
+describe('ctaDefinitionSchema — legacy selection_metadata tolerated (dead-field cleanup)', () => {
+  // selection_metadata (V4.1 pool selection) is no longer part of the builder's
+  // schema. Stored CTAs still carrying it must validate cleanly — the unknown
+  // key is ignored by the non-strict object schema, and the store round-trips
+  // the raw object untouched (edits spread over the loaded CTA).
+  it('accepts a stored CTA that still carries legacy selection_metadata', () => {
+    const r = ctaDefinitionSchema.safeParse({
       label: 'Learn about volunteering',
       action: 'show_info',
       type: 'info_request',
@@ -89,28 +93,13 @@ describe('ctaDefinitionSchema — selection_metadata (CF1)', () => {
       ai_available: true,
       selection_metadata: {
         topic_tags: ['volunteer', 'get_involved'],
-        depth_level: 'info' as const,
-        role_axis: 'give' as const,
+        depth_level: 'info',
+        role_axis: 'give',
         core_learning: true,
         priority: 30,
       },
-    };
-    const parsed = ctaDefinitionSchema.parse(input);
-    expect(parsed.selection_metadata?.topic_tags).toEqual(['volunteer', 'get_involved']);
-    expect(parsed.selection_metadata?.role_axis).toBe('give');
-    expect(parsed.selection_metadata?.depth_level).toBe('info');
-    expect(parsed.selection_metadata?.core_learning).toBe(true);
-    expect(parsed.selection_metadata?.priority).toBe(30);
-  });
-
-  it('accepts a CTA without selection_metadata (field is optional)', () => {
-    const parsed = ctaDefinitionSchema.parse({
-      label: 'Apply Now',
-      action: 'start_form',
-      type: 'form_trigger',
-      formId: 'volunteer_apply',
     });
-    expect(parsed.selection_metadata).toBeUndefined();
+    expect(r.success).toBe(true);
   });
 });
 

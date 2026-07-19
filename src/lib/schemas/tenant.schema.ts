@@ -52,9 +52,6 @@ export const featuresConfigSchema = z.object({
 
 export const quickHelpConfigSchema = z.object({
   enabled: z.boolean(),
-  title: z.string().min(1, 'Title is required').max(50, 'Title must be 50 characters or less'),
-  toggle_text: z.string().min(1, 'Toggle text is required').max(50, 'Toggle text must be 50 characters or less'),
-  close_after_selection: z.boolean(),
   prompts: z
     .array(z.string().min(1, 'Prompt cannot be empty').max(100, 'Prompt must be 100 characters or less'))
     .min(1, 'At least one prompt is required')
@@ -132,70 +129,6 @@ export const ctaSettingsSchema = z.object({
     .max(10, 'Cannot display more than 10 CTAs')
     .optional()
     .describe('Maximum number of CTAs to display per response (default: 4)'),
-});
-
-// ============================================================================
-// CARD INVENTORY SCHEMA
-// ============================================================================
-
-export const primaryCTASchema = z.object({
-  type: z.string().min(1, 'Type is required'),
-  title: z.string().min(1, 'Title is required').max(100, 'Title must be 100 characters or less'),
-  url: z.string().url('Must be a valid URL').optional(),
-  trigger_phrases: z.array(z.string().min(1, 'Trigger phrase cannot be empty')),
-});
-
-export const requirementSchema = z.object({
-  type: z.enum(['age', 'commitment', 'background_check', 'location', 'custom']),
-  value: z.string().min(1, 'Value is required').max(100, 'Value must be 100 characters or less'),
-  critical: z.boolean(),
-  emphasis: z.enum(['low', 'medium', 'high']),
-  display_text: z.string().min(1, 'Display text is required').max(200, 'Display text must be 200 characters or less'),
-});
-
-export const programCardSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name must be 100 characters or less'),
-  description: z.string().min(1, 'Description is required').max(500, 'Description must be 500 characters or less'),
-  commitment: z.string().min(1, 'Commitment is required').max(100, 'Commitment must be 100 characters or less'),
-  url: z.string().url('Must be a valid URL'),
-});
-
-export const readinessThresholdsSchema = z.object({
-  show_requirements: z.number().min(0).max(1),
-  show_programs: z.number().min(0).max(1),
-  show_cta: z.number().min(0).max(1),
-  show_forms: z.number().min(0).max(1),
-}).superRefine((data, ctx) => {
-  // Validate threshold progression (each should be >= previous)
-  if (data.show_programs < data.show_requirements) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['show_programs'],
-      message: 'show_programs should be >= show_requirements',
-    });
-  }
-  if (data.show_cta < data.show_programs) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['show_cta'],
-      message: 'show_cta should be >= show_programs',
-    });
-  }
-  if (data.show_forms < data.show_cta) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['show_forms'],
-      message: 'show_forms should be >= show_cta',
-    });
-  }
-});
-
-export const cardInventorySchema = z.object({
-  strategy: z.enum(['qualification_first', 'exploration_first', 'custom']),
-  primary_cta: primaryCTASchema,
-  requirements: z.array(requirementSchema),
-  program_cards: z.array(programCardSchema),
-  readiness_thresholds: readinessThresholdsSchema,
 });
 
 // ============================================================================
@@ -302,7 +235,6 @@ export const tenantConfigSchema = z.object({
   conversational_forms: z.record(z.string(), conversationalFormSchema),
   cta_definitions: z.record(z.string(), ctaDefinitionSchema),
   conversation_branches: z.record(z.string(), conversationBranchSchema),
-  card_inventory: cardInventorySchema.optional(),
 
   // Configuration sections
   branding: brandingConfigSchema,
@@ -520,11 +452,6 @@ export type ActionChipsConfig = z.infer<typeof actionChipsConfigSchema>;
 export type WidgetBehaviorConfig = z.infer<typeof widgetBehaviorConfigSchema>;
 export type CTASettings = z.infer<typeof ctaSettingsSchema>;
 export type AWSConfig = z.infer<typeof awsConfigSchema>;
-export type PrimaryCTA = z.infer<typeof primaryCTASchema>;
-export type Requirement = z.infer<typeof requirementSchema>;
-export type ProgramCard = z.infer<typeof programCardSchema>;
-export type ReadinessThresholds = z.infer<typeof readinessThresholdsSchema>;
-export type CardInventory = z.infer<typeof cardInventorySchema>;
 export type TenantConfig = z.infer<typeof tenantConfigSchema>;
 export type ChannelConnection = z.infer<typeof channelConnectionSchema>;
 export type InstagramChannelConnection = z.infer<typeof instagramChannelConnectionSchema>;

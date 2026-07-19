@@ -72,13 +72,6 @@ export const mockListTenants = async (): Promise<TenantListItem[]> => {
   return mockTenantList;
 };
 
-export const mockGetTenantMetadata = async (tenantId: string): Promise<TenantMetadata> => {
-  return {
-    ...mockMetadata,
-    tenantId,
-  };
-};
-
 export const mockLoadConfig = async (tenantId: string): Promise<LoadConfigResponse> => {
   return {
     config: {
@@ -107,17 +100,11 @@ export const mockDeleteConfig = async (): Promise<void> => {
   // Mock successful delete
 };
 
-export const mockCheckAPIHealth = async (): Promise<boolean> => {
-  return true;
-};
-
 // Export all as default for easier importing
 export default {
   listTenants: mockListTenants,
-  getTenantMetadata: mockGetTenantMetadata,
   loadConfig: mockLoadConfig,
   saveConfig: mockSaveConfig,
   deployConfig: mockDeployConfig,
   deleteConfig: mockDeleteConfig,
-  checkAPIHealth: mockCheckAPIHealth,
 };

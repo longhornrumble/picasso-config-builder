@@ -240,17 +240,10 @@ export interface CTADefinition {
   program_id?: string;
 
   /**
-   * When true, this CTA is included in the AI vocabulary for dynamic selection.
-   * V4.1: Pool selection filters by selection_metadata tags.
-   * V3.5: AI picks CTA IDs from vocabulary via cta_selector.
+   * When true, this CTA is included in the AI vocabulary for dynamic selection
+   * (V5 single-pass / V4.0 Action Selector).
    */
   ai_available?: boolean;
-
-  /**
-   * V4.1 Pool Selection metadata. Controls how this CTA is filtered and ranked
-   * by selectCTAsFromPool(). Only used when ai_available is true.
-   */
-  selection_metadata?: SelectionMetadata;
 }
 
 // ============================================================================
@@ -393,17 +386,12 @@ export interface BrandingConfig {
   primary_color: string;
   background_color?: string;
   // Header
-  header_background?: string;
   header_text_color?: string;
   header_subtitle_color?: string;
   // Chat bubbles
   user_bubble_color?: string;
-  user_text_color?: string;
   bot_bubble_color?: string;
-  bot_text_color?: string;
   // Widget
-  widget_color?: string;
-  widget_text_color?: string;
   widget_icon_color?: string;
   // Typography
   font_family: string;
@@ -451,9 +439,6 @@ export interface FeaturesConfig {
 
 export interface QuickHelpConfig {
   enabled: boolean;
-  title: string;
-  toggle_text: string;
-  close_after_selection: boolean;
   prompts: string[];
 }
 
@@ -522,48 +507,6 @@ export interface WidgetBehaviorConfig {
   remember_state: boolean;
   auto_open_delay?: number;
   mobile?: WidgetBehaviorMobileConfig;
-}
-
-// ============================================================================
-// TOPIC DEFINITIONS (V4.1 Dynamic CTA Pool Selection)
-// ============================================================================
-
-export type TopicRole = 'give' | 'receive' | 'learn' | 'connect';
-export type DepthLevel = 'info' | 'action' | 'lateral';
-
-/**
- * V4.1 Pool Selection metadata on each CTA.
- * Controls how selectCTAsFromPool() filters and ranks CTAs.
- */
-export interface SelectionMetadata {
-  /** Tags linking this CTA to topics. Pool selection matches these against the classified topic's tags. */
-  topic_tags: string[];
-  /** Controls when this CTA surfaces: info = learning phase, action = ready to act, lateral = cross-cutting. */
-  depth_level: DepthLevel;
-  /** Disambiguates populations. 'learn' always passes the role filter. */
-  role_axis?: TopicRole;
-  /** If true, filtered out when AI just answered about the same primary topic. */
-  core_learning?: boolean;
-  /** Lower = higher priority. Default 50. Used for deterministic intra-depth sorting. */
-  priority?: number;
-}
-
-/**
- * A single topic definition for V4.1 classification.
- * The classifier reads the description and compares it to the user's messages.
- * Tags drive CTA pool selection — no branch routing needed.
- */
-export interface TopicDefinition {
-  /** Unique identifier. Used in logs and analytics. */
-  name: string;
-  /** Natural language description read by the classifier. Quality determines CTA accuracy. */
-  description: string;
-  /** Tags that map to CTA selection_metadata.topic_tags. Omit for informational topics (no CTAs). */
-  tags?: string[];
-  /** Filters CTAs by selection_metadata.role_axis. */
-  role?: TopicRole;
-  /** Set to 'action' to bypass depth gate for "I'm ready NOW" topics. */
-  depth_override?: 'action';
 }
 
 // ============================================================================
@@ -758,10 +701,7 @@ export interface TenantConfig {
   bedrock_instructions?: BedrockInstructions;
   aws: AWSConfig;
 
-  // V4.1 topic-based classification and pool selection
-  topic_definitions?: TopicDefinition[];
-
-  // V4.1 pipeline feature flags
+  // Pipeline feature flags
   feature_flags?: FeatureFlags;
 
   // KB freshness monitoring

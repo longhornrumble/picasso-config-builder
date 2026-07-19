@@ -123,83 +123,6 @@ app.get('/config/tenants', async (_req, res) => {
   }
 });
 
-/**
- * Get tenant metadata
- * GET /config/{tenantId}/metadata
- */
-app.get('/config/:tenantId/metadata', async (req, res) => {
-  try {
-    const { tenantId } = req.params;
-    const configPath = path.join(MOCK_S3_DIR, `${tenantId}-config.json`);
-
-    const configData = await fs.readFile(configPath, 'utf-8');
-    const config = JSON.parse(configData);
-
-    const metadata = {
-      tenant_id: config.tenant_id,
-      version: config.version,
-      chat_title: config.chat_title,
-      company_name: config.company_name || config.chat_title,
-      last_updated: config.last_updated || null,
-      program_count: Object.keys(config.programs || {}).length,
-      form_count: Object.keys(config.conversational_forms || {}).length,
-      cta_count: Object.keys(config.cta_definitions || {}).length,
-      branch_count: Object.keys(config.conversation_branches || {}).length,
-    };
-
-    res.json({ metadata });
-  } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return res.status(404).json({
-        error: 'Not Found',
-        message: `Config not found for tenant: ${req.params.tenantId}`,
-      });
-    }
-
-    console.error('Error getting metadata:', error);
-    res.status(500).json({
-      error: 'Failed to get metadata',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-  }
-});
-
-/**
- * List backups for a tenant
- * GET /config/{tenantId}/backups
- */
-app.get('/config/:tenantId/backups', async (req, res) => {
-  try {
-    const { tenantId } = req.params;
-    const backupsDir = path.join(MOCK_S3_DIR, 'backups');
-
-    const files = await fs.readdir(backupsDir);
-    const backups = await Promise.all(
-      files
-        .filter(f => f.startsWith(`${tenantId}-`))
-        .map(async (file) => {
-          const filePath = path.join(backupsDir, file);
-          const stats = await fs.stat(filePath);
-
-          return {
-            key: `backups/${file}`,
-            lastModified: stats.mtime,
-            size: stats.size,
-          };
-        })
-    );
-
-    backups.sort((a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime());
-
-    res.json({ backups });
-  } catch (error: unknown) {
-    console.error('Error listing backups:', error);
-    res.status(500).json({
-      error: 'Failed to list backups',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-  }
-});
 
 /**
  * Load tenant config
@@ -392,39 +315,6 @@ app.delete('/config/:tenantId', async (req, res) => {
 });
 
 /**
- * Get section information
- * GET /sections
- */
-app.get('/sections', (_req, res) => {
-  res.json({
-    sections: {
-      editable: [
-        'programs',
-        'conversational_forms',
-        'cta_definitions',
-        'conversation_branches',
-      ],
-      readOnly: [
-        'branding',
-        'features',
-        'quick_help',
-        'action_chips',
-        'widget_behavior',
-        'aws',
-        'card_inventory',
-      ],
-      metadata: [
-        'tenant_id',
-        'version',
-        'chat_title',
-        'company_name',
-        'last_updated',
-      ],
-    },
-  });
-});
-
-/**
  * Root endpoint - API documentation
  * GET /
  */
@@ -438,13 +328,10 @@ app.get('/', (_req, res) => {
       health: 'GET /health',
       tenants: {
         list: 'GET /config/tenants',
-        metadata: 'GET /config/:tenantId/metadata',
         load: 'GET /config/:tenantId?editable_only=true',
         save: 'PUT /config/:tenantId',
         delete: 'DELETE /config/:tenantId',
-        backups: 'GET /config/:tenantId/backups',
       },
-      sections: 'GET /sections',
     },
     documentation: 'See docs/PHASE_5_S3_INTEGRATION.md for full API documentation',
     mockS3Directory: MOCK_S3_DIR,
@@ -491,11 +378,8 @@ async function startServer() {
     console.log(`  GET    http://localhost:${PORT}/health`);
     console.log(`  GET    http://localhost:${PORT}/config/tenants`);
     console.log(`  GET    http://localhost:${PORT}/config/:tenantId`);
-    console.log(`  GET    http://localhost:${PORT}/config/:tenantId/metadata`);
-    console.log(`  GET    http://localhost:${PORT}/config/:tenantId/backups`);
     console.log(`  PUT    http://localhost:${PORT}/config/:tenantId`);
     console.log(`  DELETE http://localhost:${PORT}/config/:tenantId`);
-    console.log(`  GET    http://localhost:${PORT}/sections`);
     console.log('='.repeat(60));
     console.log('');
   });

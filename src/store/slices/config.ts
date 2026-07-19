@@ -472,8 +472,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       cta_settings: state.config.baseConfig.cta_settings || {},
       ...(state.config.baseConfig.bedrock_instructions && { bedrock_instructions: state.config.baseConfig.bedrock_instructions }),
 
-      // Preserve topic_definitions from baseConfig for V4.1 Lambda compat (read-only passthrough)
-      ...(state.config.baseConfig.topic_definitions?.length && { topic_definitions: state.config.baseConfig.topic_definitions }),
       // Feature flags — always include so V4 flags can be set from scratch
       feature_flags: state.config.baseConfig.feature_flags || {},
       // form_settings is a legacy passthrough not in TenantConfig's typed surface

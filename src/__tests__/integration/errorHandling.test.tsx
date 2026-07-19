@@ -31,7 +31,6 @@ vi.mock('@/lib/api/config-operations', () => ({
   saveConfig: vi.fn(),
   deployConfig: vi.fn(),
   listTenants: vi.fn(),
-  getTenantMetadata: vi.fn(),
 }));
 
 describe('Error Handling Integration Tests', () => {
