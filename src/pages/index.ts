@@ -10,6 +10,5 @@ export { CTAsPage } from './CTAsPage';
 export { BranchesPage } from './BranchesPage';
 export { ActionChipsPage } from './ActionChipsPage';
 export { CardsPage } from './CardsPage';
-export { PendingChangesPage } from './PendingChangesPage';
 export { SettingsPage } from './SettingsPage';
 export { NotFoundPage } from './NotFoundPage';
