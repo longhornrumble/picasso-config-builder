@@ -14,7 +14,6 @@ import {
   GitBranch,
   Zap,
   Sparkles,
-  ClipboardList,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -94,11 +93,6 @@ export const Sidebar: React.FC = () => {
       to: '/cards',
       label: 'Showcase Items',
       icon: <Sparkles className="w-5 h-5" />,
-    },
-    {
-      to: '/pending-changes',
-      label: 'Pending Changes',
-      icon: <ClipboardList className="w-5 h-5" />,
     },
     {
       to: '/settings',

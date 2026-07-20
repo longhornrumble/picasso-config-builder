@@ -130,7 +130,6 @@ export interface ValidationContext {
   forms: Record<string, unknown>;
   ctas: Record<string, unknown>;
   branches: Record<string, unknown>;
-  cardInventory?: unknown;
 }
 
 // ============================================================================

@@ -9,6 +9,7 @@ import * as configAPI from '@/lib/api/config-operations';
 import { configApiClient } from '@/lib/api/client';
 import { ConfigAPIError } from '@/lib/api/errors';
 import { shouldRepushWelcome, repushWelcomeSurfaces } from '@/lib/api/metaWelcome';
+import { normalizeForms } from '@/lib/formNormalization';
 
 /**
  * Schema discipline: stored configs may carry old-shape branches (no `secondary`
@@ -55,6 +56,12 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
     try {
       const response = await configAPI.loadConfig(tenantId);
 
+      // Normalize forms authored outside the builder (seeders, M2M API) to
+      // canonical shapes — boolean → Yes/No select, composites get subfields.
+      const { forms: normalizedForms, repairs } = normalizeForms(
+        response.config.conversational_forms
+      );
+
       // Populate all domain slices from loaded config
       set((state) => {
         // Update config slice
@@ -62,16 +69,17 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         state.config.baseConfig = response.config;
         state.config.etag = response.etag ?? null;
         state.config.conflictState = null;
-        state.config.isDirty = false;
+        // Repairs differ from what's stored in S3 — mark dirty so Save is
+        // offered; nothing is persisted until the user saves or deploys.
+        state.config.isDirty = repairs.length > 0;
         state.config.lastSaved = response.metadata.lastModified;
 
         // Populate domain slices
         state.programs.programs = response.config.programs || {};
 
-        // Normalize forms: ensure form_id matches the dictionary key
-        const forms = response.config.conversational_forms || {};
+        // Ensure form_id matches the dictionary key
         state.forms.forms = Object.fromEntries(
-          Object.entries(forms).map(([key, form]) => [
+          Object.entries(normalizedForms).map(([key, form]) => [
             key,
             { ...form, form_id: key } // Override form_id to match the key
           ])
@@ -87,14 +95,27 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         state.ctas.activeCtaId = null;
         state.branches.activeBranchId = null;
 
-        // Clear validation state
+        // Clear validation state (re-validated below against the fresh load)
         state.validation.clearAll();
       });
+
+      // Validate immediately so every surface (validation panel, deploy
+      // button/dialog, dashboard) reflects the loaded config from the start —
+      // previously validation only ran after the first edit, so the deploy
+      // dialog could claim "valid" on a config the panel would flag.
+      await get().validation.validateAll();
 
       get().ui.addToast({
         type: 'success',
         message: `Configuration for ${tenantId} loaded successfully`,
       });
+
+      if (repairs.length > 0) {
+        get().ui.addToast({
+          type: 'info',
+          message: `${repairs.length} field${repairs.length === 1 ? '' : 's'} auto-repaired to canonical shape (unsupported types, missing subfields). Review and Save to persist.`,
+        });
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load configuration';
       get().ui.addToast({
@@ -425,9 +446,9 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       welcome_message: state.config.baseConfig.welcome_message,
       version: state.config.baseConfig.version,
       generated_at: Date.now(),
-      // Optional core identity fields
-      ...(state.config.baseConfig.organization_name && { organization_name: state.config.baseConfig.organization_name }),
-      ...(state.config.baseConfig.chat_subtitle && { chat_subtitle: state.config.baseConfig.chat_subtitle }),
+      // organization_name / chat_subtitle retired 2026-07-19 — no consumer anywhere
+      // (widget wordmark, bot sender label, and email/SMS org templates all
+      // resolve from chat_title). Stored values persist server-side untouched.
 
       // Domain slices from their respective stores
       programs: state.programs.programs,
@@ -443,7 +464,11 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
 
       // Optional fields - only include if they exist
       ...(state.config.baseConfig.callout_text && { callout_text: state.config.baseConfig.callout_text }),
-      ...(state.config.baseConfig.model_id && { model_id: state.config.baseConfig.model_id }),
+      // Presence-based (not truthy) emit so CLEARING the model override persists:
+      // '' reaches the server, and every runtime reader treats '' as unset
+      // (model_id || aws.model_id || default). Truthy-emit made clears silently
+      // no-op — the never-clear defect from the 2026-07-19 settings wire-trace.
+      ...(state.config.baseConfig.model_id !== undefined && { model_id: state.config.baseConfig.model_id }),
       ...(state.config.baseConfig.quick_help && { quick_help: state.config.baseConfig.quick_help }),
       ...(state.config.baseConfig.action_chips && { action_chips: state.config.baseConfig.action_chips }),
       ...(state.config.baseConfig.widget_behavior && { widget_behavior: state.config.baseConfig.widget_behavior }),
@@ -451,8 +476,6 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       cta_settings: state.config.baseConfig.cta_settings || {},
       ...(state.config.baseConfig.bedrock_instructions && { bedrock_instructions: state.config.baseConfig.bedrock_instructions }),
 
-      // Preserve topic_definitions from baseConfig for V4.1 Lambda compat (read-only passthrough)
-      ...(state.config.baseConfig.topic_definitions?.length && { topic_definitions: state.config.baseConfig.topic_definitions }),
       // Feature flags — always include so V4 flags can be set from scratch
       feature_flags: state.config.baseConfig.feature_flags || {},
       // form_settings is a legacy passthrough not in TenantConfig's typed surface

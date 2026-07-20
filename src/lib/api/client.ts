@@ -11,9 +11,7 @@ import type {
   TenantListItem,
   LoadConfigResponse,
   SaveConfigResponse,
-  TenantMetadata,
 } from '@/types/api';
-import type { Proposal } from '@/types/proposals';
 
 // Get API URL from environment
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.yourapi.com/api';
@@ -93,35 +91,6 @@ export class ConfigAPIClient {
     });
   }
 
-  /**
-   * Get metadata for a specific tenant
-   */
-  async getTenantMetadata(tenantId: string): Promise<TenantMetadata> {
-    if (!tenantId || tenantId.trim() === '') {
-      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
-    }
-
-    return fetchWithRetry(async () => {
-      const response = await fetch(`${this.baseUrl}/config/${tenantId}/metadata`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(await this.getAuthHeaders()),
-        },
-      });
-
-      if (response.status === 401) {
-        this.handle401Response();
-        throw await parseHTTPError(response);
-      }
-
-      if (!response.ok) {
-        throw await parseHTTPError(response);
-      }
-
-      return response.json();
-    });
-  }
 
   /**
    * Load configuration for a specific tenant
@@ -446,7 +415,6 @@ export class ConfigAPIClient {
     org_name: string;
     tenant_id: string;
     chat_title?: string;
-    chat_subtitle?: string;
     subscription_tier?: string;
     primary_color?: string;
     welcome_message?: string;
@@ -486,54 +454,6 @@ export class ConfigAPIClient {
     );
   }
 
-  /**
-   * List pending KB-freshness proposals for a tenant.
-   * Returns the proposals newest-first; empty array if none.
-   */
-  async listProposals(tenantId: string): Promise<Proposal[]> {
-    if (!tenantId || tenantId.trim() === '') {
-      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID cannot be empty');
-    }
-
-    return fetchWithRetry(async () => {
-      const response = await fetch(
-        `${this.baseUrl}/proposals?tenantId=${encodeURIComponent(tenantId)}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(await this.getAuthHeaders()),
-          },
-        }
-      );
-
-      if (response.status === 401) {
-        this.handle401Response();
-        throw await parseHTTPError(response);
-      }
-
-      if (!response.ok) {
-        throw await parseHTTPError(response);
-      }
-
-      const data = await response.json();
-      return (data.proposals || []) as Proposal[];
-    });
-  }
-
-  /**
-   * Health check endpoint
-   */
-  async healthCheck(): Promise<boolean> {
-    try {
-      const response = await fetch(`${this.baseUrl}/health`, {
-        method: 'GET',
-      });
-      return response.ok;
-    } catch {
-      return false;
-    }
-  }
 }
 
 // Export singleton instance

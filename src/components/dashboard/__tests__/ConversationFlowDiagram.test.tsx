@@ -331,7 +331,7 @@ describe('ConversationFlowDiagram', () => {
       expect(descriptions.length).toBeGreaterThan(0);
     });
 
-    it('should show action chip routing type and target', () => {
+    it('should show action chip routing target', () => {
       render(
         <TestWrapper>
           <ConversationFlowDiagram />
@@ -343,9 +343,6 @@ describe('ConversationFlowDiagram', () => {
       const actionChipsSection = actionChipsHeading.closest('.card-container');
       const expandButton = within(actionChipsSection!).getByLabelText('Expand section');
       fireEvent.click(expandButton);
-
-      // Should show routing type
-      expect(screen.getByText('Explicit Route')).toBeInTheDocument();
 
       // Should show target branch - use getAllByText since branch-1 appears in multiple places
       const branchRefs = screen.getAllByText(/branch-1/);

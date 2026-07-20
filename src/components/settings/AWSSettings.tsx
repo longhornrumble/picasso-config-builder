@@ -14,7 +14,10 @@ import { Shield } from 'lucide-react';
  *
  * Manages AWS service configuration:
  * - knowledge_base_id: Bedrock Knowledge Base ID
- * - aws_region: AWS region
+ *
+ * (aws_region removed 2026-07-19 — zero readers; both Lambdas take their
+ * region from the runtime environment, never tenant config. Stored values
+ * round-trip untouched.)
  *
  * @example
  * ```tsx
@@ -82,15 +85,6 @@ export const AWSSettings: React.FC = () => {
           onChange={(e) => updateAWS('knowledge_base_id', e.target.value)}
           placeholder="e.g., ABCDEFGHIJ"
           helperText="AWS Bedrock Knowledge Base identifier"
-        />
-
-        {/* AWS Region */}
-        <Input
-          label="AWS Region"
-          value={aws.aws_region || ''}
-          onChange={(e) => updateAWS('aws_region', e.target.value)}
-          placeholder="e.g., us-east-1"
-          helperText="AWS region for services"
         />
 
       </CardContent>

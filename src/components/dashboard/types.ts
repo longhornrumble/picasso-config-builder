@@ -176,7 +176,6 @@ export interface ProgramMetadata {
  * Rich metadata for action chip nodes
  */
 export interface ActionChipMetadata {
-  routingType: 'explicit_route' | 'smart_routing';
   routingTarget?: string;
 }
 

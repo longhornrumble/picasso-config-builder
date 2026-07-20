@@ -74,6 +74,45 @@ describe('Form Validation', () => {
   });
 
   describe('field validation', () => {
+    it('should error on unsupported field types (e.g. seeder-authored boolean)', () => {
+      const form: ConversationalForm = {
+        enabled: true,
+        form_id: 'test-form',
+        program: 'test-program',
+        title: 'Test Form',
+        description: 'Test description',
+        trigger_phrases: ['test'],
+        fields: [
+          // Old-shape record from an externally-authored config — the type
+          // system forbids this, but stored data can still carry it.
+          { id: 'consent', type: 'boolean', label: 'Consent', prompt: 'OK?', required: true } as unknown as FormField,
+        ],
+      };
+
+      const result = validateForm(form, 'test-form', allPrograms);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.message.includes('unsupported type "boolean"'))).toBe(true);
+    });
+
+    it('should accept every supported field type', () => {
+      const form: ConversationalForm = {
+        enabled: true,
+        form_id: 'test-form',
+        program: 'test-program',
+        title: 'Test Form',
+        description: 'Test description',
+        trigger_phrases: ['test'],
+        fields: [
+          { id: 'a', type: 'text', label: 'A', prompt: 'A?', required: true },
+          { id: 'b', type: 'select', label: 'B', prompt: 'B?', required: false, options: [{ value: 'x', label: 'X' }] },
+          { id: 'c', type: 'name', label: 'C', prompt: 'C?', required: false, subfields: [{ id: 'c.first_name', label: 'First Name', required: true, type: 'text' }] },
+        ],
+      };
+
+      const result = validateForm(form, 'test-form', allPrograms);
+      expect(result.errors.some((e) => e.message.includes('unsupported type'))).toBe(false);
+    });
+
     it('should require at least one field', () => {
       const form: ConversationalForm = {
         enabled: true,

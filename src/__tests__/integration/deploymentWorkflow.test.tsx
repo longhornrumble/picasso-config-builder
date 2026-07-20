@@ -30,7 +30,6 @@ vi.mock('@/lib/api/config-operations', () => ({
   saveConfig: vi.fn(),
   deployConfig: vi.fn(),
   listTenants: vi.fn(),
-  getTenantMetadata: vi.fn(),
 }));
 
 describe('S3 Deployment Workflow Integration Tests', () => {
@@ -51,9 +50,6 @@ describe('S3 Deployment Workflow Integration Tests', () => {
       mockS3.deployConfig(tenantId, config)
     );
     vi.mocked(configOps.listTenants).mockImplementation(() => mockS3.listTenants());
-    vi.mocked(configOps.getTenantMetadata).mockImplementation((tenantId: string) =>
-      mockS3.getTenantMetadata(tenantId)
-    );
 
     // Reset store state
     resetConfigStore(useConfigStore);

@@ -34,7 +34,6 @@ vi.mock('@/lib/api/config-operations', () => ({
   saveConfig: vi.fn(),
   deployConfig: vi.fn(),
   listTenants: vi.fn(),
-  getTenantMetadata: vi.fn(),
 }));
 
 describe('merge payload contract (getMergedConfig vs shared section contract)', () => {
@@ -103,7 +102,7 @@ describe('merge payload contract (getMergedConfig vs shared section contract)', 
       cta_settings: { max_ctas_per_response: 3 },
       feature_flags: { V5_SINGLE_PASS: true },
       quick_help: { items: [] },
-      action_chips: { explicit_routes: {} },
+      action_chips: { default_chips: [] },
       widget_behavior: { greeting_delay_ms: 0 },
       bedrock_instructions: {
         _version: '1',
@@ -117,6 +116,9 @@ describe('merge payload contract (getMergedConfig vs shared section contract)', 
         custom_constraints: [],
         fallback_message: 'x',
       },
+      // topic_definitions is cb_not_emitted (passthrough dropped in the dead-field
+      // cleanup) — present here to prove the merge path sheds it while the server
+      // preserves the stored value.
       topic_definitions: [{ id: 't1', label: 'T1' }],
       notification_settings: { enabled: true },
       messenger_behavior: { escalation_email: 'notify@myrecruiter.ai' },
@@ -153,6 +155,47 @@ describe('merge payload contract (getMergedConfig vs shared section contract)', 
         `getMergedConfig emitted "${section}" but CB has no editor for it`
       ).toBe(false);
     }
+  });
+
+  it('NEVER-CLEAR fix: a cleared model_id ("") is still emitted so the server persists the clear', async () => {
+    const { result } = renderHook(() => useConfigStore());
+    const mockS3 = createMockS3API();
+
+    const testConfig = createTestTenantConfig('CLEAR_TENANT') as TenantConfig &
+      Record<string, unknown>;
+    testConfig.model_id = 'claude-x'; // stored override the user is about to clear
+
+    mockS3._setMockConfig('CLEAR_TENANT', testConfig);
+    vi.mocked(configOps.loadConfig).mockImplementation((tenantId) =>
+      mockS3.loadConfig(tenantId)
+    );
+
+    await act(async () => {
+      await result.current.config.loadConfig('CLEAR_TENANT');
+    });
+
+    // User clears the model override in AI & AWS settings.
+    act(() => {
+      useConfigStore.setState((state) => {
+        if (state.config.baseConfig) {
+          (state.config.baseConfig as Record<string, unknown>).model_id = '';
+        }
+      });
+    });
+
+    const merged = result.current.config.getMergedConfig() as Record<string, unknown>;
+    // Truthy-emit dropped the key here, making clears silently no-op server-side.
+    expect(Object.prototype.hasOwnProperty.call(merged, 'model_id')).toBe(true);
+    expect(merged.model_id).toBe('');
+
+    // And a tenant that never had model_id still omits the key (absence = preserve).
+    const bare = createTestTenantConfig('NO_MODEL_TENANT') as TenantConfig & Record<string, unknown>;
+    mockS3._setMockConfig('NO_MODEL_TENANT', bare);
+    await act(async () => {
+      await result.current.config.loadConfig('NO_MODEL_TENANT');
+    });
+    const merged2 = result.current.config.getMergedConfig() as Record<string, unknown>;
+    expect(Object.prototype.hasOwnProperty.call(merged2, 'model_id')).toBe(false);
   });
 
   it('FORWARD-COMPAT: an old-shape config without messenger_behavior round-trips without emitting the key (Schema Discipline)', async () => {

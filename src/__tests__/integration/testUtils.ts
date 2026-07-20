@@ -210,15 +210,6 @@ export function createMockS3API() {
       { tenantId: 'TEST_TENANT_2', lastModified: Date.now() },
     ]),
 
-    getTenantMetadata: vi.fn((tenantId: string) =>
-      Promise.resolve({
-        tenantId,
-        version: '1.3.0',
-        lastModified: Date.now(),
-        exists: true,
-      })
-    ),
-
     loadConfig: vi.fn((tenantId: string) => {
       const config = mockConfigs.get(tenantId) || createTestTenantConfig(tenantId);
       mockConfigs.set(tenantId, config);
@@ -247,8 +238,6 @@ export function createMockS3API() {
       mockConfigs.delete(tenantId);
       return Promise.resolve();
     }),
-
-    healthCheck: vi.fn().mockResolvedValue(true),
 
     // Utility methods for tests
     _getMockConfig: (tenantId: string) => mockConfigs.get(tenantId),

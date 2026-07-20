@@ -24,9 +24,6 @@ export const mockTenantConfig: TenantConfig = {
     uploads: false,
     photo_uploads: false,
     voice_input: false,
-    streaming: true,
-    conversational_forms: true,
-    smart_cards: true,
     callout: {
       enabled: true,
       auto_dismiss: false,
@@ -34,7 +31,6 @@ export const mockTenantConfig: TenantConfig = {
   },
   aws: {
     knowledge_base_id: 'ABCD123456',
-    aws_region: 'us-east-1',
   },
   conversational_forms: {},
   cta_definitions: {},
@@ -72,13 +68,6 @@ export const mockListTenants = async (): Promise<TenantListItem[]> => {
   return mockTenantList;
 };
 
-export const mockGetTenantMetadata = async (tenantId: string): Promise<TenantMetadata> => {
-  return {
-    ...mockMetadata,
-    tenantId,
-  };
-};
-
 export const mockLoadConfig = async (tenantId: string): Promise<LoadConfigResponse> => {
   return {
     config: {
@@ -107,17 +96,11 @@ export const mockDeleteConfig = async (): Promise<void> => {
   // Mock successful delete
 };
 
-export const mockCheckAPIHealth = async (): Promise<boolean> => {
-  return true;
-};
-
 // Export all as default for easier importing
 export default {
   listTenants: mockListTenants,
-  getTenantMetadata: mockGetTenantMetadata,
   loadConfig: mockLoadConfig,
   saveConfig: mockSaveConfig,
   deployConfig: mockDeployConfig,
   deleteConfig: mockDeleteConfig,
-  checkAPIHealth: mockCheckAPIHealth,
 };

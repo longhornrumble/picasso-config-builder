@@ -309,12 +309,8 @@ export function getProgramMetadata(
  * Extract rich metadata for action chip nodes
  */
 export function getActionChipMetadata(chip: ActionChip): ActionChipMetadata {
-  const routingType = chip.target_branch ? 'explicit_route' : 'smart_routing';
-  const routingTarget = chip.target_branch || undefined;
-
   return {
-    routingType,
-    routingTarget,
+    routingTarget: chip.target_branch || undefined,
   };
 }
 

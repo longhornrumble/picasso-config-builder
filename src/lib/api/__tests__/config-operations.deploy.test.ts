@@ -46,6 +46,25 @@ describe('config-operations deployConfig', () => {
     expect(sentConfig.version).toBe('1.10');
   });
 
+  it('tolerates a numeric stored version (schema discipline — BRI071351 shipped version: 1)', async () => {
+    // Regression: version.split on a number crashed every deploy with
+    // "e.split is not a function".
+    await deployConfig('TEST_TENANT', makeConfig(1 as unknown as string));
+
+    const [, sentConfig] = vi.mocked(configApiClient.deployConfig).mock.calls[0];
+    expect(sentConfig.version).toBe('2');
+  });
+
+  it('tolerates a missing or unparseable version (falls back to 1.x)', async () => {
+    await deployConfig('TEST_TENANT', makeConfig(undefined as unknown as string));
+    let [, sentConfig] = vi.mocked(configApiClient.deployConfig).mock.calls[0];
+    expect(sentConfig.version).toBe('1.1');
+
+    await deployConfig('TEST_TENANT', makeConfig('not-a-version'));
+    [, sentConfig] = vi.mocked(configApiClient.deployConfig).mock.calls[1];
+    expect(sentConfig.version).toBe('1.0');
+  });
+
   it('forces tenant_id to the request tenant and stamps generated_at', async () => {
     await deployConfig('TEST_TENANT', makeConfig('2.0'));
 

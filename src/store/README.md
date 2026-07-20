@@ -12,7 +12,6 @@ ConfigBuilderState
 ├── forms           → Form & field management
 ├── ctas            → CTA definitions with validation
 ├── branches        → Conversation routing
-├── cardInventory   → Smart cards (read-only for MVP)
 ├── ui              → Application UI state
 ├── validation      → Error/warning tracking
 └── config          → Load/save/deploy lifecycle
@@ -256,28 +255,6 @@ branches.removeKeyword('volunteer-branch', 'help');
 branches.setPrimaryCTA('volunteer-branch', 'different-cta');
 branches.addSecondaryCTA('volunteer-branch', 'new-cta');
 branches.removeSecondaryCTA('volunteer-branch', 'old-cta');
-```
-
-### Card Inventory Slice
-
-Manages smart response cards (mostly read-only for MVP).
-
-```typescript
-const cardInventory = useCardInventory();
-
-// Update
-cardInventory.updateCardInventory({
-  strategy: 'exploration_first',
-  readiness_thresholds: {
-    show_requirements: 0.2,
-    show_programs: 0.4,
-    show_cta: 0.6,
-    show_forms: 0.8
-  }
-});
-
-// Get
-const cards = cardInventory.getCardInventory();
 ```
 
 ## Cross-Cutting Slices

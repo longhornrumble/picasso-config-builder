@@ -38,9 +38,13 @@ const FeatureToggle: React.FC<FeatureToggleProps> = ({ label, checked, onChange,
  * Features Settings Component
  *
  * Manages feature flags and capabilities:
- * - Core features (uploads, voice, streaming, etc.)
- * - Dashboard features
- * - Optional callout configuration
+ * - Core features (uploads, photo/voice coming-soons, SMS entitlement)
+ * - Dashboard access toggles
+ * - Callout banner configuration
+ *
+ * Dead toggles (streaming, conversational_forms, smart_cards, webchat,
+ * bedrock_kb, qr, ats, interview_scheduling) were removed in the 2026-07-19
+ * Features trim — no runtime read them; stored values round-trip untouched.
  *
  * @example
  * ```tsx
@@ -116,57 +120,16 @@ export const FeaturesSettings: React.FC = () => {
               {...flag('voice_input')}
               description="Enable voice-to-text input — not yet implemented"
             />
-            <FeatureToggle
-              label="Streaming Responses"
-              {...flag('streaming')}
-              description="Stream AI responses in real-time"
-            />
-            <FeatureToggle
-              label="Conversational Forms"
-              {...flag('conversational_forms')}
-              description="Enable forms collected through conversation"
-            />
-            <FeatureToggle
-              label="Smart Response Cards"
-              {...flag('smart_cards')}
-              description="Show contextual action cards"
-            />
+            {/* SMS is a paid per-tenant add-on (Telnyx registration carries a
+                monthly cost), so this is an ENTITLEMENT flag, not a feature
+                switch. The product-side wiring (off → "subscribe" upsell in
+                the dashboards; on → tenant admin controls SMS) is future work
+                — the flag stays here as the operator-set entitlement bit.
+                (Chris ruling, 2026-07-19.) */}
             <FeatureToggle
               label="SMS Notifications"
               {...flag('sms')}
-              description="Enable SMS notifications"
-            />
-            <FeatureToggle
-              label="Web Chat"
-              {...flag('webchat')}
-              description="Enable web-based chat interface"
-            />
-            <FeatureToggle
-              label="QR Code Access (Coming Soon)"
-              {...flag('qr')}
-              description="Allow QR code scanning for quick access — not yet implemented"
-            />
-          </div>
-        </div>
-
-        {/* AI & Integration Features */}
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">AI & Integrations</h3>
-          <div className="space-y-1">
-            <FeatureToggle
-              label="Bedrock Knowledge Base"
-              {...flag('bedrock_kb')}
-              description="Use AWS Bedrock for knowledge retrieval"
-            />
-            <FeatureToggle
-              label="ATS Integration (Coming Soon)"
-              {...flag('ats')}
-              description="Applicant Tracking System integration — not yet implemented"
-            />
-            <FeatureToggle
-              label="Interview Scheduling (Coming Soon)"
-              {...flag('interview_scheduling')}
-              description="Enable automated interview scheduling — not yet implemented"
+              description="Paid per-tenant add-on (Telnyx registration). Operator-set entitlement — product-side subscribe/upsell wiring is planned."
             />
           </div>
         </div>

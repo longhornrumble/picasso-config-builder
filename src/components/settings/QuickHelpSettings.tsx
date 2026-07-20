@@ -14,10 +14,11 @@ import { Plus, Trash2, AlertCircle } from 'lucide-react';
  *
  * Manages quick help menu configuration:
  * - enabled: Toggle quick help visibility
- * - title: Menu title
- * - toggle_text: Toggle button text
- * - close_after_selection: Auto-close behavior
  * - prompts: List of quick help prompts (max 8)
+ *
+ * (title / toggle_text / close_after_selection were removed in the dead-field
+ * cleanup — the post-Hairline widget no longer reads them; stored values
+ * round-trip untouched.)
  *
  * @example
  * ```tsx
@@ -82,42 +83,6 @@ export const QuickHelpSettings: React.FC = () => {
             type="checkbox"
             checked={quickHelp.enabled || false}
             onChange={(e) => updateQuickHelp('enabled', e.target.checked)}
-            className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer"
-          />
-        </div>
-
-        {/* Title */}
-        <Input
-          label="Menu Title"
-          value={quickHelp.title || ''}
-          onChange={(e) => updateQuickHelp('title', e.target.value)}
-          placeholder="e.g., Quick Help"
-          helperText="Title shown in the quick help menu"
-        />
-
-        {/* Toggle Text */}
-        <Input
-          label="Toggle Button Text"
-          value={quickHelp.toggle_text || ''}
-          onChange={(e) => updateQuickHelp('toggle_text', e.target.value)}
-          placeholder="e.g., Need help?"
-          helperText="Text shown on the toggle button"
-        />
-
-        {/* Close After Selection */}
-        <div className="flex items-start justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex-1 pr-4">
-            <label className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
-              Close After Selection
-            </label>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Automatically close menu when user selects a prompt
-            </p>
-          </div>
-          <input
-            type="checkbox"
-            checked={quickHelp.close_after_selection || false}
-            onChange={(e) => updateQuickHelp('close_after_selection', e.target.checked)}
             className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary cursor-pointer"
           />
         </div>

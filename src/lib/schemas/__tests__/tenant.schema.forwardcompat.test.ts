@@ -250,7 +250,7 @@ describe('scheduling forward-compat: old-shape MYR384719 scheduling config parse
     }
   });
 
-  it("accepts a schedule CTA with selection_metadata.role_axis 'act' (live MYR384719 value)", () => {
+  it("accepts a schedule CTA still carrying legacy selection_metadata (live MYR384719 value; field ignored since the dead-field cleanup)", () => {
     const r = ctaDefinitionSchema.safeParse({
       label: 'Schedule an intro call',
       action: 'start_scheduling',
@@ -258,16 +258,6 @@ describe('scheduling forward-compat: old-shape MYR384719 scheduling config parse
       selection_metadata: { topic_tags: ['scheduling'], depth_level: 'action', role_axis: 'act' },
     });
     expect(r.success).toBe(true);
-  });
-
-  it('still REJECTS a bogus role_axis (enum widened to add "act", not to z.string())', () => {
-    const r = ctaDefinitionSchema.safeParse({
-      label: 'Schedule an intro call',
-      action: 'start_scheduling',
-      type: 'scheduling_trigger',
-      selection_metadata: { topic_tags: ['scheduling'], depth_level: 'action', role_axis: 'sideways' },
-    });
-    expect(r.success).toBe(false);
   });
 });
 

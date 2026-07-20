@@ -70,7 +70,7 @@ afterEach(() => {
 
 describe('useSignInToken', () => {
   it('no token in URL → state stays idle, no Clerk call', async () => {
-    setUrl('/pending-changes?h=abc');
+    setUrl('/settings?h=abc');
     const { result } = renderHook(() => useSignInToken());
     // Give effects time to run.
     await new Promise((r) => setTimeout(r, 10));
@@ -80,7 +80,7 @@ describe('useSignInToken', () => {
 
   it('already signed in → state stays idle; token IS stripped if present', async () => {
     userState = { isSignedIn: true, isLoaded: true };
-    setUrl('/pending-changes?h=abc&token=SIGN_IN_TOKEN_XYZ');
+    setUrl('/settings?h=abc&token=SIGN_IN_TOKEN_XYZ');
     const { result } = renderHook(() => useSignInToken());
     await new Promise((r) => setTimeout(r, 10));
     expect(result.current.state).toBe('idle');
@@ -92,7 +92,7 @@ describe('useSignInToken', () => {
 
   it('clerk not yet loaded → no action', async () => {
     signInState = { ...signInState, isLoaded: false };
-    setUrl('/pending-changes?token=XYZ');
+    setUrl('/settings?token=XYZ');
     const { result } = renderHook(() => useSignInToken());
     await new Promise((r) => setTimeout(r, 10));
     expect(result.current.state).toBe('idle');
@@ -100,7 +100,7 @@ describe('useSignInToken', () => {
   });
 
   it('happy path: token present, signed out, Clerk ready → consuming → success; URL cleaned', async () => {
-    setUrl('/pending-changes?h=abc&token=VALID_TOKEN');
+    setUrl('/settings?h=abc&token=VALID_TOKEN');
     mockCreate.mockResolvedValueOnce({
       status: 'complete',
       createdSessionId: 'sess_123',
@@ -119,7 +119,7 @@ describe('useSignInToken', () => {
   });
 
   it('token rejected by Clerk → error; URL preserved for manual-sign-in fallback', async () => {
-    setUrl('/pending-changes?h=abc&token=EXPIRED_TOKEN');
+    setUrl('/settings?h=abc&token=EXPIRED_TOKEN');
     mockCreate.mockRejectedValueOnce(new Error('Token is expired'));
 
     const { result } = renderHook(() => useSignInToken());
@@ -135,7 +135,7 @@ describe('useSignInToken', () => {
   });
 
   it('incomplete sign-in attempt (needs second factor) → error', async () => {
-    setUrl('/pending-changes?token=TOKEN_NEEDS_2FA');
+    setUrl('/settings?token=TOKEN_NEEDS_2FA');
     mockCreate.mockResolvedValueOnce({
       status: 'needs_second_factor',
       createdSessionId: undefined,
@@ -150,14 +150,14 @@ describe('useSignInToken', () => {
 
   it('signIn client missing → error without network call', async () => {
     signInState = { signIn: null, setActive: null, isLoaded: true };
-    setUrl('/pending-changes?token=XYZ');
+    setUrl('/settings?token=XYZ');
     const { result } = renderHook(() => useSignInToken());
     await waitFor(() => expect(result.current.state).toBe('error'), { timeout: 500 });
     expect(mockCreate).not.toHaveBeenCalled();
   });
 
   it('state does not re-enter after reaching terminal state', async () => {
-    setUrl('/pending-changes?token=REJECT');
+    setUrl('/settings?token=REJECT');
     mockCreate.mockRejectedValueOnce(new Error('Invalid'));
 
     const { result, rerender } = renderHook(() => useSignInToken());

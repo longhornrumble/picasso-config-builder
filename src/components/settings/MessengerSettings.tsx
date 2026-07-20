@@ -2,20 +2,11 @@
  * MessengerSettings — the Messenger product page (Messenger Product Surface T2c).
  *
  * This is the FIRST "product" grouping under the hybrid IA: a single page that
- * bundles a product's enable flag + its behavior config + a readiness checklist.
- * It sets the pattern Forms/Scheduling inherit in a later program, so its shape
- * is deliberately generalizable:
- *
- *   product page = [enable toggle] + [config fields] + [readiness checklist of
- *   the preconditions THIS page can authoritatively determine from config,
- *   plus explicit deferral for state owned elsewhere]
- *
- * Readiness authority (D1 rule): the checklist reports the flag and escalation
- * recipient (config-authoritative) plus a display-only connection row that reads
- * the S3 `channels.*` mirror (written by the portal OAuth connect). D1 forbids runtime
- * code from GATING on that mirror (DDB is the source of truth) — it does not
- * forbid CB from DISPLAYING last-known connection metadata. Connecting/
- * disconnecting stays in the admin portal; this page never mutates it.
+ * bundles a product's enable flag + its behavior config. (The display-only
+ * Readiness checklist that originally shipped with the pattern was retired
+ * 2026-07-19 — it wrote nothing and restated state already visible in the
+ * controls above it. Connection status lives in the admin portal, which owns
+ * the Meta OAuth connect.)
  *
  * All edits mutate the whole messenger_behavior object in baseConfig; getMergedConfig
  * emits the complete section and Config Manager wholesale-replaces it — so the
@@ -23,7 +14,6 @@
  */
 
 import React from 'react';
-import { CheckCircle2, Circle, ExternalLink } from 'lucide-react';
 import {
   Card,
   CardHeader,
@@ -35,33 +25,6 @@ import {
 } from '@/components/ui';
 import { useConfigStore } from '@/store';
 import type { FeatureFlags, MessengerBehaviorConfig, MessengerStrings } from '@/types/config';
-
-// ---------------------------------------------------------------------------
-// Readiness checklist
-// ---------------------------------------------------------------------------
-
-interface ReadinessItem {
-  label: string;
-  done: boolean;
-  detail: string;
-}
-
-const ReadinessRow: React.FC<ReadinessItem> = ({ label, done, detail }) => (
-  <div className="flex items-start gap-3 py-2">
-    {done ? (
-      <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400" aria-hidden="true" />
-    ) : (
-      <Circle className="h-5 w-5 shrink-0 text-gray-300 dark:text-gray-600" aria-hidden="true" />
-    )}
-    <div>
-      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-        {label}
-        <span className="sr-only">{done ? ' — done' : ' — not done'}</span>
-      </p>
-      <p className="text-xs text-gray-500 dark:text-gray-400">{detail}</p>
-    </div>
-  </div>
-);
 
 // ---------------------------------------------------------------------------
 // Component
@@ -78,15 +41,6 @@ export const MessengerSettings: React.FC = () => {
   const escalationEmail = behavior.escalation_email ?? '';
   const disclosureLine = strings.disclosure_line ?? '';
   const toneOverride = behavior.tone_override ?? '';
-
-  // Connection state: read the S3 channels mirror the portal writes on connect —
-  // display-only, never for gating (D1 authority rule: DDB is the runtime source
-  // of truth; the mirror is last-known display metadata). Connect/disconnect
-  // stays in the admin portal, not here.
-  const channels = baseConfig?.channels;
-  const messengerPage = channels?.messenger?.page_name;
-  const instagramConnected = Boolean(channels?.instagram);
-  const anyConnected = Boolean(channels?.messenger) || instagramConnected;
 
   const setFlag = (value: boolean) => {
     useConfigStore.setState((state) => {
@@ -120,7 +74,6 @@ export const MessengerSettings: React.FC = () => {
     });
   };
 
-  const recipientSet = escalationEmail.trim().length > 0;
 
   return (
     <div className="space-y-6">
@@ -205,44 +158,6 @@ export const MessengerSettings: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Readiness */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Readiness</CardTitle>
-          <CardDescription>
-            What still needs to be set for Messenger to work end-to-end on this tenant.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ReadinessRow
-            label="Channel enabled"
-            done={flagOn}
-            detail={flagOn ? 'MESSENGER_CHANNEL is on.' : 'Turn on the Messenger channel above.'}
-          />
-          <ReadinessRow
-            label="Escalation recipient set"
-            done={recipientSet}
-            detail={
-              recipientSet
-                ? `Notifications go to ${escalationEmail}.`
-                : 'Set an escalation recipient above (otherwise the platform default is used).'
-            }
-          />
-          <ReadinessRow
-            label="Facebook / Instagram page connected"
-            done={anyConnected}
-            detail={
-              anyConnected
-                ? `Connected${messengerPage ? `: ${messengerPage}` : ''}${instagramConnected ? ' (Instagram linked)' : ''}. Manage the connection in the admin portal.`
-                : 'No page connected yet — connect the page in the admin portal (Integrations → Meta).'
-            }
-          />
-          <p className="mt-2 flex items-center gap-1 text-xs text-gray-400">
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-            Connection is managed in the admin portal; this reflects last-known connection metadata.
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 };

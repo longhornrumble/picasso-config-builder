@@ -25,16 +25,25 @@ export interface Program {
 // FORMS
 // ============================================================================
 
-export type FormFieldType =
-  | 'text'
-  | 'email'
-  | 'phone'
-  | 'select'
-  | 'textarea'
-  | 'number'
-  | 'date'
-  | 'name'      // Composite: first/middle/last name fields
-  | 'address';  // Composite: street/city/state/zip fields
+/**
+ * Single source of truth for supported form field types.
+ * Used by the Zod save-schema AND the validation engine so the editor and the
+ * validation panel can never disagree about what a valid field is.
+ * Widget renderers (Picasso FormFieldPrompt.jsx) support exactly this set.
+ */
+export const FORM_FIELD_TYPES = [
+  'text',
+  'email',
+  'phone',
+  'select',
+  'textarea',
+  'number',
+  'date',
+  'name',      // Composite: first/middle/last name fields
+  'address',   // Composite: street/city/state/zip fields
+] as const;
+
+export type FormFieldType = (typeof FORM_FIELD_TYPES)[number];
 
 export interface FormFieldOption {
   value: string;
@@ -231,17 +240,10 @@ export interface CTADefinition {
   program_id?: string;
 
   /**
-   * When true, this CTA is included in the AI vocabulary for dynamic selection.
-   * V4.1: Pool selection filters by selection_metadata tags.
-   * V3.5: AI picks CTA IDs from vocabulary via cta_selector.
+   * When true, this CTA is included in the AI vocabulary for dynamic selection
+   * (V5 single-pass / V4.0 Action Selector).
    */
   ai_available?: boolean;
-
-  /**
-   * V4.1 Pool Selection metadata. Controls how this CTA is filtered and ranked
-   * by selectCTAsFromPool(). Only used when ai_available is true.
-   */
-  selection_metadata?: SelectionMetadata;
 }
 
 // ============================================================================
@@ -379,30 +381,25 @@ export interface ContentShowcase {
 // BRANDING
 // ============================================================================
 
+/**
+ * Hairline brand inputs. The widget derives its entire palette from
+ * primary_color (tenantTheme() ramp); font_family is a kebab-case key into
+ * the widget's self-hosted font menu. Legacy per-field colors (bubbles,
+ * header, logo/avatar, chat_position, …) are no longer typed here — stored
+ * values round-trip untouched (the whole branding object is loaded raw and
+ * saved back), and are edited directly in the config file when needed.
+ */
 export interface BrandingConfig {
-  // Primary colors
   primary_color: string;
-  background_color?: string;
-  // Header
-  header_background?: string;
-  header_text_color?: string;
-  header_subtitle_color?: string;
-  // Chat bubbles
-  user_bubble_color?: string;
-  user_text_color?: string;
-  bot_bubble_color?: string;
-  bot_text_color?: string;
-  // Widget
-  widget_color?: string;
-  widget_text_color?: string;
-  widget_icon_color?: string;
-  // Typography
+  /** Accepted by the Hairline engine but dormant (decision D10) — no UI yet. */
+  secondary_color?: string;
   font_family: string;
-  // Layout
+  /**
+   * Widget placement (per-client knob, kept per Chris 2026-07-19). The
+   * Hairline shell currently pins bottom-right (W6.1); honoring this again
+   * is a pending widget-host change.
+   */
   chat_position?: 'bottom-right' | 'bottom-left';
-  // Asset URLs
-  logo_url?: string;
-  avatar_url?: string;
 }
 
 // ============================================================================
@@ -421,18 +418,15 @@ export interface FeaturesConfig {
   uploads: boolean;
   photo_uploads: boolean;
   voice_input: boolean;
-  streaming: boolean;
-  conversational_forms: boolean;
-  smart_cards: boolean;
+  /**
+   * Paid per-tenant add-on entitlement (Telnyx registration carries a monthly
+   * cost). Operator-set; product-side subscribe/upsell wiring is planned.
+   */
   sms?: boolean;
-  webchat?: boolean;
-  qr?: boolean;
-  bedrock_kb?: boolean;
-  ats?: boolean;
-  interview_scheduling?: boolean;
   dashboard_conversations?: boolean;
   dashboard_forms?: boolean;
   dashboard_attribution?: boolean;
+  dashboard_notifications?: boolean;
   callout: CalloutConfig;
 }
 
@@ -442,9 +436,6 @@ export interface FeaturesConfig {
 
 export interface QuickHelpConfig {
   enabled: boolean;
-  title: string;
-  toggle_text: string;
-  close_after_selection: boolean;
   prompts: string[];
 }
 
@@ -516,48 +507,6 @@ export interface WidgetBehaviorConfig {
 }
 
 // ============================================================================
-// TOPIC DEFINITIONS (V4.1 Dynamic CTA Pool Selection)
-// ============================================================================
-
-export type TopicRole = 'give' | 'receive' | 'learn' | 'connect';
-export type DepthLevel = 'info' | 'action' | 'lateral';
-
-/**
- * V4.1 Pool Selection metadata on each CTA.
- * Controls how selectCTAsFromPool() filters and ranks CTAs.
- */
-export interface SelectionMetadata {
-  /** Tags linking this CTA to topics. Pool selection matches these against the classified topic's tags. */
-  topic_tags: string[];
-  /** Controls when this CTA surfaces: info = learning phase, action = ready to act, lateral = cross-cutting. */
-  depth_level: DepthLevel;
-  /** Disambiguates populations. 'learn' always passes the role filter. */
-  role_axis?: TopicRole;
-  /** If true, filtered out when AI just answered about the same primary topic. */
-  core_learning?: boolean;
-  /** Lower = higher priority. Default 50. Used for deterministic intra-depth sorting. */
-  priority?: number;
-}
-
-/**
- * A single topic definition for V4.1 classification.
- * The classifier reads the description and compares it to the user's messages.
- * Tags drive CTA pool selection — no branch routing needed.
- */
-export interface TopicDefinition {
-  /** Unique identifier. Used in logs and analytics. */
-  name: string;
-  /** Natural language description read by the classifier. Quality determines CTA accuracy. */
-  description: string;
-  /** Tags that map to CTA selection_metadata.topic_tags. Omit for informational topics (no CTAs). */
-  tags?: string[];
-  /** Filters CTAs by selection_metadata.role_axis. */
-  role?: TopicRole;
-  /** Set to 'action' to bypass depth gate for "I'm ready NOW" topics. */
-  depth_override?: 'action';
-}
-
-// ============================================================================
 // FEATURE FLAGS (Pipeline Behavior)
 // ============================================================================
 
@@ -603,7 +552,6 @@ export interface BedrockInstructions {
 
 export interface AWSConfig {
   knowledge_base_id: string;
-  aws_region: string;
 }
 
 // ============================================================================
@@ -719,10 +667,7 @@ export interface TenantConfig {
   active?: boolean;
   subscription_tier: SubscriptionTier;
   tenant_type?: string;
-  org_name?: string;
-  organization_name?: string;
   chat_title: string;
-  chat_subtitle?: string;
   tone_prompt: string;
   welcome_message: string;
   callout_text?: string;
@@ -749,10 +694,7 @@ export interface TenantConfig {
   bedrock_instructions?: BedrockInstructions;
   aws: AWSConfig;
 
-  // V4.1 topic-based classification and pool selection
-  topic_definitions?: TopicDefinition[];
-
-  // V4.1 pipeline feature flags
+  // Pipeline feature flags
   feature_flags?: FeatureFlags;
 
   // KB freshness monitoring

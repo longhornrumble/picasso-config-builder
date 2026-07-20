@@ -7,7 +7,7 @@
 import { configApiClient } from './client';
 import { ConfigAPIError, handleAPIError } from './errors';
 import type { TenantConfig } from '@/types/config';
-import type { TenantListItem, LoadConfigResponse, TenantMetadata } from '@/types/api';
+import type { TenantListItem, LoadConfigResponse } from '@/types/api';
 
 /**
  * List all tenant configurations from S3
@@ -16,22 +16,6 @@ import type { TenantListItem, LoadConfigResponse, TenantMetadata } from '@/types
 export async function listTenants(): Promise<TenantListItem[]> {
   try {
     return await configApiClient.listTenants();
-  } catch (error) {
-    throw handleAPIError(error);
-  }
-}
-
-/**
- * Get metadata for a specific tenant without loading full config
- * Useful for checking if tenant exists and getting basic info
- */
-export async function getTenantMetadata(tenantId: string): Promise<TenantMetadata> {
-  try {
-    if (!tenantId || tenantId.trim() === '') {
-      throw new ConfigAPIError('INVALID_TENANT_ID', 'Tenant ID is required');
-    }
-
-    return await configApiClient.getTenantMetadata(tenantId);
   } catch (error) {
     throw handleAPIError(error);
   }
@@ -197,17 +181,6 @@ export async function deleteConfig(tenantId: string, full: boolean = false): Pro
   }
 }
 
-/**
- * Check if API is available
- */
-export async function checkAPIHealth(): Promise<boolean> {
-  try {
-    return await configApiClient.healthCheck();
-  } catch {
-    return false;
-  }
-}
-
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
@@ -215,28 +188,22 @@ export async function checkAPIHealth(): Promise<boolean> {
 /**
  * Increment semantic version number
  * Examples: "1.0" -> "1.1", "1.9" -> "1.10", "2.5.3" -> "2.5.4"
+ *
+ * Schema discipline: stored configs may carry a numeric or missing version
+ * (externally-authored configs — BRI071351 shipped `version: 1`, and calling
+ * .split on a number crashed every save/deploy with "e.split is not a
+ * function"). Coerce to string and fall back to "1.0" when unparseable.
  */
-function incrementVersion(version: string): string {
-  const parts = version.split('.');
+function incrementVersion(version: unknown): string {
+  const parts = String(version ?? '1.0').split('.');
 
   // Increment the last part
   const lastIndex = parts.length - 1;
-  parts[lastIndex] = String(parseInt(parts[lastIndex], 10) + 1);
+  const last = parseInt(parts[lastIndex], 10);
+  if (Number.isNaN(last)) {
+    return '1.0';
+  }
+  parts[lastIndex] = String(last + 1);
 
   return parts.join('.');
-}
-
-/**
- * Validate tenant ID format
- * Should be alphanumeric, can include hyphens and underscores
- */
-export function isValidTenantId(tenantId: string): boolean {
-  return /^[a-zA-Z0-9_-]+$/.test(tenantId);
-}
-
-/**
- * Sanitize tenant ID for use in API calls
- */
-export function sanitizeTenantId(tenantId: string): string {
-  return tenantId.trim().toUpperCase();
 }
