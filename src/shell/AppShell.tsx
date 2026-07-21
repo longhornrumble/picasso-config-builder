@@ -18,6 +18,9 @@ import { PipelineView } from './views/PipelineView';
 import { SettingsView } from './views/SettingsView';
 import { TenantSwitcher } from './overlays/TenantSwitcher';
 import { PendingPopover } from './overlays/PendingPopover';
+import { GlobalSearch } from './overlays/GlobalSearch';
+import { ValidationPopover } from './overlays/ValidationPopover';
+import { WidgetPreviewModal } from './overlays/WidgetPreviewModal';
 import { EditorDrawerHost } from './editors/EditorDrawerHost';
 import { useShellStore } from './shellStore';
 
@@ -68,9 +71,12 @@ export function AppShell() {
       {/* Editor drawer (renders when an entity editor is open). */}
       <EditorDrawerHost />
 
-      {/* Overlays (command palettes / popovers / modals). More land in later phases. */}
+      {/* Overlays (command palettes / popovers / modals). */}
       <TenantSwitcher />
+      <GlobalSearch />
       <PendingPopover />
+      <ValidationPopover />
+      <WidgetPreviewModal />
     </div>
   );
 }
