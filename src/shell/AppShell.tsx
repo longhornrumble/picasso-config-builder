@@ -17,6 +17,7 @@ import { OverviewView } from './views/OverviewView';
 import { PipelineView } from './views/PipelineView';
 import { SettingsView } from './views/SettingsView';
 import { TenantSwitcher } from './overlays/TenantSwitcher';
+import { EditorDrawerHost } from './editors/EditorDrawerHost';
 import { useShellStore } from './shellStore';
 
 export function AppShell() {
@@ -62,6 +63,9 @@ export function AppShell() {
       </div>
 
       <InspectorDock />
+
+      {/* Editor drawer (renders when an entity editor is open). */}
+      <EditorDrawerHost />
 
       {/* Overlays (command palettes / popovers / modals). More land in later phases. */}
       <TenantSwitcher />

@@ -42,7 +42,7 @@ export function Drawer({ open, onRequestClose, width = 440, icon, title, subtitl
             e.preventDefault();
             onRequestClose();
           }}
-          className="cb-shell cb-anim-drawer fixed right-0 top-0 z-[111] flex h-full flex-col bg-white"
+          className="cb-scope cb-anim-drawer fixed right-0 top-0 z-[111] flex h-full flex-col bg-white"
           style={{ width: Math.min(width, typeof window !== 'undefined' ? window.innerWidth : width), maxWidth: '96vw', boxShadow: '-18px 0 48px rgba(2,6,23,.22)' }}
         >
           {/* Header */}

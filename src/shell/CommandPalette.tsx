@@ -40,7 +40,7 @@ export function CommandPalette(props: CommandPaletteProps) {
           style={{ background: 'rgba(15,23,42,.35)' }}
         />
         <Dialog.Content
-          className="cb-anim-pop fixed left-1/2 top-[14vh] z-[101] w-[600px] max-w-[92vw] -translate-x-1/2 overflow-hidden rounded-card bg-white"
+          className="cb-scope cb-anim-pop fixed left-1/2 top-[14vh] z-[101] w-[600px] max-w-[92vw] -translate-x-1/2 overflow-hidden rounded-card bg-white"
           style={{ boxShadow: '0 20px 48px rgba(2,6,23,.18)' }}
         >
           <Dialog.Title className="sr-only">{props.placeholder}</Dialog.Title>

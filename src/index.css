@@ -871,6 +871,21 @@
   box-sizing: border-box;
 }
 
+/* Typography/focus-only scope (NO layout) for portaled surfaces — drawers,
+   palettes, popovers — that render outside the .cb-shell root but should share
+   its 13px base + emerald focus ring. */
+.cb-scope {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #0F172A;
+  color-scheme: light;
+}
+.cb-scope :focus-visible {
+  outline: none;
+  border-color: #50C878;
+  box-shadow: 0 0 0 3px rgba(80, 200, 120, 0.15);
+}
+
 /* Focus ring — emerald, per design tokens. */
 .cb-shell :focus-visible {
   outline: none;
