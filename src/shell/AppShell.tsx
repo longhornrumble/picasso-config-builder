@@ -21,7 +21,9 @@ import { PendingPopover } from './overlays/PendingPopover';
 import { GlobalSearch } from './overlays/GlobalSearch';
 import { ValidationPopover } from './overlays/ValidationPopover';
 import { WidgetPreviewModal } from './overlays/WidgetPreviewModal';
+import { UndoToast } from './overlays/UndoToast';
 import { EditorDrawerHost } from './editors/EditorDrawerHost';
+import { ConflictBanner } from '@/components/layout/ConflictBanner';
 import { useShellStore } from './shellStore';
 
 export function AppShell() {
@@ -59,6 +61,8 @@ export function AppShell() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
+        {/* 409-conflict recovery banner (config changed elsewhere). */}
+        <ConflictBanner />
         <main className="cb-scroll flex-1 p-6">
           {view === 'overview' && <OverviewView />}
           {view === 'pipeline' && <PipelineView />}
@@ -77,6 +81,7 @@ export function AppShell() {
       <PendingPopover />
       <ValidationPopover />
       <WidgetPreviewModal />
+      <UndoToast />
     </div>
   );
 }

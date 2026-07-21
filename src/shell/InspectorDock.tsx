@@ -44,12 +44,15 @@ export function InspectorDock() {
   const info = describe(selection, store);
   const KindIcon = KIND_META[selection.kind].icon;
 
+  const setUndoDelete = useShellStore.getState().setUndoDelete;
+
   const onDelete = () => {
+    const snapshot = snapshotEntity(selection);
     deleteEntity(selection);
     // Some deletes are blocked by references (the slice raises its own toast).
-    // Only confirm + clear selection if the entity was actually removed.
+    // Only offer undo + clear selection if the entity was actually removed.
     if (!entityExists(selection)) {
-      useConfigStore.getState().ui.addToast({ type: 'info', message: `Deleted ${info.name} — deploy to apply, or reset to undo.` });
+      setUndoDelete({ kind: selection.kind, id: selection.id, label: info.name, data: snapshot });
       clearSelection();
     }
   };
@@ -268,6 +271,21 @@ function describe(sel: Selection, store: ReturnType<typeof useConfigStore.getSta
 
 function miss(id: string): Described {
   return { name: id, missing: true, fields: [], links: [] };
+}
+
+/** Deep-copy the raw store record for `sel` before deletion (for undo). */
+function snapshotEntity(sel: Selection): unknown {
+  const s = useConfigStore.getState();
+  let rec: unknown;
+  switch (sel.kind) {
+    case 'cta': rec = s.ctas.ctas[sel.id]; break;
+    case 'form': rec = s.forms.forms[sel.id]; break;
+    case 'program': rec = s.programs.programs[sel.id]; break;
+    case 'branch': rec = s.branches.branches[sel.id]; break;
+    case 'showcase': rec = s.contentShowcase.content_showcase.find((i) => i.id === sel.id); break;
+    case 'chip': rec = s.config.baseConfig?.action_chips?.default_chips?.[sel.id]; break;
+  }
+  return rec ? JSON.parse(JSON.stringify(rec)) : null;
 }
 
 function entityExists(sel: Selection): boolean {

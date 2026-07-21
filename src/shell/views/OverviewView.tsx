@@ -6,12 +6,13 @@
  */
 
 import React from 'react';
-import { Plus, ChevronRight, TriangleAlert, MessageSquare, FileText, Layers, Zap } from 'lucide-react';
+import { Plus, ChevronRight, TriangleAlert, MessageSquare, FileText, Layers } from 'lucide-react';
 import { useConfigStore } from '@/store';
 import type { CTADefinition, ConversationalForm, Program, ActionChip, ConversationBranch, ShowcaseItem } from '@/types/config';
 import { useShellStore, type EntityKind } from '../shellStore';
 import { useTenantSummary, useEntityCounts } from '../useShellData';
 import { EmptyTenantState } from './EmptyTenantState';
+import { RoutingChips } from './RoutingChips';
 
 export function OverviewView() {
   const tenant = useTenantSummary();
@@ -362,23 +363,7 @@ function RoutingSection() {
               Quick-action chips shown on the welcome screen.
             </div>
           ) : (
-            <div className="flex flex-col gap-1.5">
-              {chipEntries.map(([id, chip]) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => select({ kind: 'chip', id })}
-                  className="flex items-center gap-2 rounded-tile border px-2.5 py-2 text-left"
-                  style={{ borderColor: isSel('chip', id) ? '#50C878' : '#E2E8F0', background: isSel('chip', id) ? '#F7FDFA' : '#fff' }}
-                >
-                  <Zap size={12} className="flex-shrink-0" style={{ color: '#F59E0B' }} />
-                  <span className="truncate font-semibold" style={{ fontSize: '12px' }}>{chip.label || id}</span>
-                  {chip.target_branch && (
-                    <span className="ml-auto truncate font-mono" style={{ fontSize: '10px', color: '#64748B' }}>→ {chip.target_branch}</span>
-                  )}
-                </button>
-              ))}
-            </div>
+            <RoutingChips chips={chips} />
           )}
         </div>
 

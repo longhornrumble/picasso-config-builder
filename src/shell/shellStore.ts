@@ -34,6 +34,15 @@ export type OverlayName =
   | 'validationPopover'
   | 'previewModal';
 
+/** A just-deleted entity, retained briefly so it can be undone. */
+export interface UndoDelete {
+  kind: EntityKind;
+  id: string;
+  label: string;
+  /** Raw store-shape record, re-inserted on undo. */
+  data: unknown;
+}
+
 interface ShellState {
   view: ShellView;
   selection: Selection | null;
@@ -41,6 +50,8 @@ interface ShellState {
   overlays: Record<OverlayName, boolean>;
   /** Settings scroll-spy: id of the active section. */
   activeSettingsSection: string | null;
+  /** Most recent staged delete, offered for undo (~5s). */
+  undoDelete: UndoDelete | null;
 
   setView: (view: ShellView) => void;
   select: (sel: Selection | null) => void;
@@ -52,6 +63,7 @@ interface ShellState {
   toggleOverlay: (name: OverlayName) => void;
   closeAllOverlays: () => void;
   setActiveSettingsSection: (id: string | null) => void;
+  setUndoDelete: (u: UndoDelete | null) => void;
   /** Close the single topmost layer; returns true if something was closed. */
   closeTopLayer: () => boolean;
 }
@@ -70,6 +82,7 @@ export const useShellStore = create<ShellState>((set, get) => ({
   editor: null,
   overlays: { ...NO_OVERLAYS },
   activeSettingsSection: null,
+  undoDelete: null,
 
   setView: (view) => set({ view }),
   select: (selection) => set({ selection }),
@@ -83,6 +96,7 @@ export const useShellStore = create<ShellState>((set, get) => ({
     set((s) => (s.overlays[name] ? { overlays: { ...NO_OVERLAYS } } : { overlays: { ...NO_OVERLAYS, [name]: true } })),
   closeAllOverlays: () => set({ overlays: { ...NO_OVERLAYS } }),
   setActiveSettingsSection: (id) => set({ activeSettingsSection: id }),
+  setUndoDelete: (u) => set({ undoDelete: u }),
 
   closeTopLayer: () => {
     const s = get();

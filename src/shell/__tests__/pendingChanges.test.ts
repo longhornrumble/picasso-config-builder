@@ -61,6 +61,14 @@ describe('computePendingChanges', () => {
     ]);
   });
 
+  it('detects a pure key reorder (dictionary render order)', () => {
+    const a = cfg({ action_chips: { default_chips: { x: { label: 'X' }, y: { label: 'Y' } } } });
+    const b = cfg({ action_chips: { default_chips: { y: { label: 'Y' }, x: { label: 'X' } } } });
+    expect(computePendingChanges(a, b)).toEqual([
+      { path: 'action_chips.default_chips (order)', from: 'x, y', to: 'y, x' },
+    ]);
+  });
+
   it('records an appended array element as a single entry', () => {
     const a = cfg({ content_showcase: [{ name: 'A' }] });
     const b = cfg({ content_showcase: [{ name: 'A' }, { name: 'B' }] });

@@ -14,7 +14,6 @@ import type {
   Program,
   ConversationBranch,
   ActionChip,
-  ActionChipsConfig,
 } from '@/types/config';
 import type { ValidationContext } from '@/lib/crud/types';
 import type { ValidationErrors } from '@/types/validation';
@@ -34,6 +33,7 @@ import type { ShowcaseItemEntity } from '@/components/editors/ShowcaseEditor/typ
 
 import { useShellStore } from '../shellStore';
 import { DrawerEntityForm } from './DrawerEntityForm';
+import { createChip, updateChip } from './chipOps';
 
 export function EditorDrawerHost() {
   const editor = useShellStore((s) => s.editor);
@@ -249,26 +249,3 @@ function validateFormWithProgram(
   return errors;
 }
 
-// ── Action-chip mutators (chips have no store slice; mutate baseConfig) ───────
-function createChip(chip: ActionChip, chipId: string): void {
-  useConfigStore.setState((state) => {
-    if (!state.config.baseConfig) return;
-    if (!state.config.baseConfig.action_chips) {
-      state.config.baseConfig.action_chips = { default_chips: {} } as ActionChipsConfig;
-    }
-    if (!state.config.baseConfig.action_chips.default_chips) {
-      state.config.baseConfig.action_chips.default_chips = {};
-    }
-    state.config.baseConfig.action_chips.default_chips[chipId] = chip;
-    state.config.isDirty = true;
-  });
-}
-
-function updateChip(chipId: string, updates: Partial<ActionChip>): void {
-  useConfigStore.setState((state) => {
-    const chips = state.config.baseConfig?.action_chips?.default_chips;
-    if (!chips || !chips[chipId]) return;
-    chips[chipId] = { ...chips[chipId], ...updates };
-    state.config.isDirty = true;
-  });
-}
