@@ -258,6 +258,13 @@ export interface ConfigSlice {
   lastSaved: number | null;
 
   /**
+   * Deep snapshot of the last server-truth config — set on load, save, and
+   * deploy. Diffing getMergedConfig() against this yields the staged
+   * "pending changes" list (redesign). Null between tenant switches.
+   */
+  pristineConfig: TenantConfig | null;
+
+  /**
    * Non-null when the last save hit a 409 Conflict. UI should render
    * a reload banner. Cleared on successful reload + re-save or by
    * the user dismissing the banner.

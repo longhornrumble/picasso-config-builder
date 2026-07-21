@@ -39,6 +39,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
   // State
   tenantId: null,
   baseConfig: null,
+  pristineConfig: null,
   etag: null,
   isDirty: false,
   lastSaved: null,
@@ -97,6 +98,17 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
 
         // Clear validation state (re-validated below against the fresh load)
         state.validation.clearAll();
+      });
+
+      // Capture the canonical merged shape of the freshly-loaded config as the
+      // pristine baseline for staged pending-changes diffing (redesign). Using
+      // getMergedConfig() (not raw response.config) means later diffs reflect
+      // only the operator's edits — no getMergedConfig transform noise. Any
+      // load-time auto-repairs are already in the slices, so they bake into the
+      // baseline; the repair toast (below) signals those separately.
+      const loadedMerged = get().config.getMergedConfig();
+      set((state) => {
+        state.config.pristineConfig = loadedMerged;
       });
 
       // Validate immediately so every surface (validation panel, deploy
@@ -167,6 +179,8 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       // Update base config and mark clean
       set((state) => {
         state.config.baseConfig = mergedConfig;
+        // Saved config is the new server truth — clears pending changes.
+        state.config.pristineConfig = JSON.parse(JSON.stringify(mergedConfig));
         state.config.etag = saveResult.etag ?? null;
         state.config.conflictState = null;
         state.config.isDirty = false;
@@ -247,6 +261,8 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
       // Update base config and mark clean
       set((state) => {
         state.config.baseConfig = mergedConfig;
+        // Deployed config is the new server truth — clears pending changes.
+        state.config.pristineConfig = JSON.parse(JSON.stringify(mergedConfig));
         state.config.etag = deployResult?.etag ?? null;
         state.config.conflictState = null;
         state.config.isDirty = false;
@@ -353,6 +369,7 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
     set((state) => {
       state.config.tenantId = null;
       state.config.baseConfig = null;
+      state.config.pristineConfig = null;
       state.config.etag = null;
       state.config.conflictState = null;
       state.config.isDirty = false;
@@ -388,6 +405,9 @@ export const createConfigSlice: SliceCreator<ConfigSlice> = (set, get) => ({
         // superseded by the server's version here — the safe default when the
         // stored config changed under you.
         state.config.baseConfig = response.config;
+        // Adopt the server's latest as the new pristine baseline; preserved
+        // slice edits then surface as pending changes against it.
+        state.config.pristineConfig = JSON.parse(JSON.stringify(response.config));
         state.config.etag = response.etag ?? null;
         state.config.lastSaved = response.metadata.lastModified;
         state.config.conflictState = null;

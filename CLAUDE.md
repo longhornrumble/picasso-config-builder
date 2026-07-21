@@ -33,6 +33,16 @@ This file provides guidance to Claude Code when working with the Picasso Config 
 
 The Picasso Config Builder is a web-based internal operations tool for managing conversational forms, CTAs, conversation branches, and content showcase configurations for the Picasso chat widget. It allows non-technical team members to configure forms-enabled tenants without manual JSON editing.
 
+## UI Architecture — redesigned shell (`src/shell/`, 2026-07)
+
+The UI was rebuilt from the design handoff (`Sandbox/design_handoff_config_builder/`). It replaces the legacy page-per-entity routing (`src/pages/*`, `src/components/layout/{Layout,Sidebar,Header}`) with a single view-state-driven shell. `App.tsx` now renders `src/shell/AppShell.tsx`; there are no per-entity routes.
+
+- **Shell**: navy left rail + top bar + main scroll area + right-docked `InspectorDock`. Three views — **Overview** (all entities, click-to-select), **Pipeline** (5-column flow + click-to-trace route highlighting), **Settings** (scroll-spy page reusing the existing `src/components/settings/*` cards; AWS card gated to super admins via `useAuth().user?.role`). Navigation + selection + overlays live in a small separate store, `src/shell/shellStore.ts` (config data/CRUD/validation stay in `useConfigStore`).
+- **Editing**: `src/shell/editors/EditorDrawerHost.tsx` opens a right-overlay drawer per kind, **reusing the existing decoupled `*FormFields` bodies + validators verbatim** (field parity). Create/update adapters mirror the legacy `EntityEditor` configs. Chip ops live in `src/shell/editors/chipOps.ts` (chips have no store slice — they live on `baseConfig.action_chips.default_chips`).
+- **Staged deploys**: every edit updates working state; nothing ships until an explicit Deploy. Pending changes are **derived** by diffing `getMergedConfig()` against `config.pristineConfig` (a snapshot taken at load/save/deploy) — see `src/shell/pendingChanges.ts` (`computePendingChanges`, unit-tested). The pending popover reviews field-level diffs → confirm → existing `config.deployConfig()`.
+- **Overlays**: tenant switcher (`⌘K`) + global search (`⌘/`) built on `CommandPalette`; pending/deploy popover, validation popover, widget preview modal, undo toast.
+- **Deferred**: deployment history + rollback (needs a net-new Config Manager endpoint); physical deletion of the now-dead `src/pages/*` + legacy layout shell files (they're already excluded from the bundle since nothing imports them — a scoped cleanup commit will remove them).
+
 ## Key Features
 
 - **Forms Management**: Create and edit conversational forms with field builders (text, email, phone, select, multi-select, date, number, composite fields)
