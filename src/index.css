@@ -844,3 +844,61 @@
     }
   }
 }
+
+/* ===================================
+   CONFIG BUILDER REDESIGN SHELL
+   Scoped to .cb-shell so the 13px base font + light chrome do not rescale
+   or restyle reused components rendered elsewhere. Design handoff:
+   Sandbox/design_handoff_config_builder/README.md
+   =================================== */
+
+.cb-shell {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #0F172A;
+  background: #F8FAFC;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+  /* The design chrome is light-only; opt out of the global dark-mode body rule. */
+  color-scheme: light;
+}
+
+.cb-shell *,
+.cb-shell *::before,
+.cb-shell *::after {
+  box-sizing: border-box;
+}
+
+/* Focus ring — emerald, per design tokens. */
+.cb-shell :focus-visible {
+  outline: none;
+  border-color: #50C878;
+  box-shadow: 0 0 0 3px rgba(80, 200, 120, 0.15);
+}
+
+/* Thin scrollbars inside the shell's scroll regions. */
+.cb-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+.cb-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.cb-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 999px; }
+.cb-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Motion (120–320ms ease-out; no bounce) ─────────────────────────────── */
+@keyframes cb-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cb-drawer-in { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes cb-pop-in { from { transform: translateY(-6px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+@keyframes cb-inspector-in { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.cb-anim-fade { animation: cb-fade-in 160ms ease-out; }
+.cb-anim-drawer { animation: cb-drawer-in 240ms ease-out; }
+.cb-anim-pop { animation: cb-pop-in 140ms ease-out; }
+.cb-anim-inspector { animation: cb-inspector-in 200ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cb-anim-fade, .cb-anim-drawer, .cb-anim-pop, .cb-anim-inspector { animation: none; }
+}

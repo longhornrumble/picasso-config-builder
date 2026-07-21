@@ -8,19 +8,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Show, SignIn } from '@clerk/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer } from './components/ToastContainer';
-import { Layout } from './components/layout';
-import {
-  HomePage,
-  DashboardPage,
-  ProgramsPage,
-  FormsPage,
-  CTAsPage,
-  BranchesPage,
-  ActionChipsPage,
-  CardsPage,
-  SettingsPage,
-  NotFoundPage,
-} from './pages';
+import { AppShell } from './shell/AppShell';
 import { useAutoSave } from './hooks/useAutoSave';
 import { useSignInToken } from './hooks/useSignInToken';
 import { Spinner } from './components/ui';
@@ -138,42 +126,13 @@ function renderApp() {
         {/* Toast Notification System */}
         <ToastContainer />
 
-        {/* Main Routes */}
+        {/*
+          Redesigned shell. Navigation is view-state driven (Overview / Pipeline
+          / Settings) inside AppShell rather than per-entity routes. BrowserRouter
+          is retained so reused components relying on router context still work.
+        */}
         <Routes>
-          {/* Layout with nested routes */}
-          <Route path="/" element={<Layout />}>
-            {/* Home page */}
-            <Route index element={<HomePage />} />
-
-            {/* Dashboard - Configuration flow diagram */}
-            <Route path="dashboard" element={<DashboardPage />} />
-
-            {/* Programs section */}
-            <Route path="programs" element={<ProgramsPage />} />
-
-            {/* Forms section */}
-            <Route path="forms" element={<FormsPage />} />
-
-            {/* CTAs section */}
-            <Route path="ctas" element={<CTAsPage />} />
-
-            {/* Branches section */}
-            <Route path="branches" element={<BranchesPage />} />
-
-            {/* Action Chips section */}
-            <Route path="action-chips" element={<ActionChipsPage />} />
-
-            {/* Card inventory section (optional) */}
-            <Route path="cards" element={<CardsPage />} />
-
-            {/* KB-freshness review (read-only in Phase 2) */}
-
-            {/* Settings section */}
-            <Route path="settings" element={<SettingsPage />} />
-
-            {/* 404 Not Found */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
+          <Route path="*" element={<AppShell />} />
         </Routes>
       </BrowserRouter>
     </ErrorBoundary>
