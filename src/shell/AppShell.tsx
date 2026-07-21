@@ -17,6 +17,7 @@ import { OverviewView } from './views/OverviewView';
 import { PipelineView } from './views/PipelineView';
 import { SettingsView } from './views/SettingsView';
 import { TenantSwitcher } from './overlays/TenantSwitcher';
+import { PendingPopover } from './overlays/PendingPopover';
 import { EditorDrawerHost } from './editors/EditorDrawerHost';
 import { useShellStore } from './shellStore';
 
@@ -69,6 +70,7 @@ export function AppShell() {
 
       {/* Overlays (command palettes / popovers / modals). More land in later phases. */}
       <TenantSwitcher />
+      <PendingPopover />
     </div>
   );
 }
