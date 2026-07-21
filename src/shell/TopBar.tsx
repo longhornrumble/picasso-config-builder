@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useConfigStore } from '@/store';
 import { useShellStore, type ShellView } from './shellStore';
 import { useTenantSummary } from './useShellData';
+import { usePendingCount } from './pendingChanges';
 
 const VIEW_META: Record<ShellView, { title: string; subtitle: string }> = {
   overview: { title: 'Overview', subtitle: 'Every entity for this tenant, at a glance' },
@@ -25,7 +26,7 @@ export function TopBar() {
   const tenant = useTenantSummary();
   const { user } = useAuth();
 
-  const isDirty = useConfigStore((s) => s.config.isDirty);
+  const pendingCount = usePendingCount();
   const warningCount = useConfigStore(
     (s) => Object.values(s.validation.warnings).reduce((n, arr) => n + (arr?.length ?? 0), 0),
   );
@@ -79,9 +80,11 @@ export function TopBar() {
         >
           <span
             className="inline-block h-1.5 w-1.5 rounded-full"
-            style={{ background: isDirty ? '#fbbf24' : '#334155' }}
+            style={{ background: pendingCount > 0 ? '#fbbf24' : '#334155' }}
           />
-          {isDirty ? 'Unsaved changes' : 'No pending changes'}
+          {pendingCount > 0
+            ? `${pendingCount} pending ${pendingCount === 1 ? 'change' : 'changes'}`
+            : 'No pending changes'}
         </button>
 
         <button
@@ -97,7 +100,7 @@ export function TopBar() {
         <button
           type="button"
           onClick={() => toggleOverlay('pendingPopover')}
-          disabled={!tenant.loaded}
+          disabled={!tenant.loaded || pendingCount === 0}
           className="rounded-full px-4 py-1.5 font-bold text-white transition-transform hover:-translate-y-px disabled:opacity-40"
           style={{ background: '#50C878', fontSize: '11px', boxShadow: '0 4px 14px rgba(80,200,120,.3)' }}
         >
